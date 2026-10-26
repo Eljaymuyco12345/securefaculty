@@ -1,0 +1,47 @@
+# SecureFaculty Apache Routing & Clean URL Engine
+# College of Informatics and Computing Innovations (CICI) - ISUFST
+
+Options -Indexes
+DirectoryIndex public/index.php index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /securefaculty/
+
+    # 1. Security: Block direct HTTP access to core application & data directories
+    RewriteRule ^(app|storage|sql|python_engine|scratch|bin)(/.*)?$ - [F,L]
+
+    # 2. Canonical Clean URL: Strip /public/ from browser address bar (GET/HEAD only)
+    RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+    RewriteCond %{THE_REQUEST} \s/securefaculty/public/([^\s?]*) [NC]
+    RewriteRule ^public/(.*)$ /securefaculty/$1 [R=301,L]
+
+    # 3. Canonical Clean URL: Redirect index / index.php to root (GET/HEAD only)
+    RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+    RewriteCond %{THE_REQUEST} \s/securefaculty/index(\.php)? [NC]
+    RewriteRule ^index(\.php)?$ /securefaculty/ [R=301,L,QSA]
+
+    # 4. Canonical Clean URL: Strip .php from browser address bar for top-level pages (GET/HEAD only)
+    RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+    RewriteCond %{THE_REQUEST} \s/securefaculty/([a-zA-Z0-9_\-]+)\.php [NC]
+    RewriteCond %{REQUEST_URI} !^/securefaculty/api/
+    RewriteRule ^([a-zA-Z0-9_\-]+)\.php$ /securefaculty/$1 [R=301,L,QSA]
+
+    # 5. Clean Route Aliases
+    RewriteRule ^audit/?$ public/audit_logs.php [L,QSA]
+
+    # 6. Dynamic Clean URL Mapping: If $1.php exists in public/, rewrite to public/$1.php
+    RewriteCond %{DOCUMENT_ROOT}/securefaculty/public/$1.php -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1.php -f
+    RewriteRule ^([a-zA-Z0-9_\-]+)/?$ public/$1.php [L,QSA]
+
+    # 7. If request matches an existing file/dir in public/ (e.g. assets, images, api/)
+    RewriteCond %{DOCUMENT_ROOT}/securefaculty/public/$1 -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/securefaculty/public/$1 -d [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+
+    # 8. Default root / routes to public/index.php
+    RewriteRule ^$ public/index.php [L,QSA]
+</IfModule>

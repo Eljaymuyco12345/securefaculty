@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+scratch/node_modules/
+
+# Executable Binaries (cloudflared, etc.)
+bin/*.exe
+
+# Encrypted Vault Storage (Ignore payloads, keep directory)
+storage/vault/*.enc
+!storage/vault/.gitkeep
+
+# Temporary upload & conversion staging
+storage/temp/*
+!storage/temp/.gitkeep
+!storage/temp/sample_demo_cert.pdf
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Operating System & IDE artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/

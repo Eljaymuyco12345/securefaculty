@@ -1,0 +1,7 @@
+.git
+.gitignore
+.gemini
+scratch
+*.sqlite
+storage/temp/*
+!storage/temp/.gitkeep

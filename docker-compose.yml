@@ -1,0 +1,54 @@
+# SecureFaculty Multi-Container Orchestration
+# PHP 8.2 Apache (App) + MariaDB 10.11 (Database)
+# ISUFST - College of Informatics and Computing Innovations (CICI)
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: securefaculty_app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - DB_DRIVER=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=securefaculty_db
+      - DB_USER=root
+      - DB_PASS=root
+      - PYTHON_BIN=python3
+      - OCR_PRIMARY_KEY=K85711929288957
+      - OCR_BACKUP_KEY=helloworld
+      - SECUREFACULTY_MASTER_KEY=a4f89d38c114e590f23b7829a9041be5e8f49d21798ec4e1f8d48e89b2c3a501
+    volumes:
+      - .:/var/www/html
+      - storage_data:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:10.11
+    container_name: securefaculty_db
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=securefaculty_db
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
+    name: securefaculty_mysql_data
+  storage_data:
+    name: securefaculty_storage_data
