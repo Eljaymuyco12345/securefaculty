@@ -75,6 +75,29 @@ $searchAction = basename($_SERVER['PHP_SELF']);
         body {
             transition: background-color 0.15s ease, color 0.15s ease;
         }
+        /* Comprehensive Dark Mode Fallback Safeguards for Modals & Form Fields */
+        html.dark [id*="modal"] > div.bg-white,
+        html.dark .modal-content,
+        html.dark .modal-card {
+            background-color: #111c36 !important;
+            border-color: #334155 !important;
+            color: #f1f5f9 !important;
+        }
+        html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="file"]),
+        html.dark select,
+        html.dark textarea {
+            color: #f1f5f9 !important;
+            background-color: #0f172a !important;
+            border-color: #334155 !important;
+        }
+        html.dark input::placeholder,
+        html.dark textarea::placeholder {
+            color: #64748b !important;
+        }
+        html.dark select option {
+            background-color: #0f172a !important;
+            color: #f1f5f9 !important;
+        }
     </style>
 </head>
 <body class="bg-[#f0f4f8] dark:bg-[#081225] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans select-none antialiased">

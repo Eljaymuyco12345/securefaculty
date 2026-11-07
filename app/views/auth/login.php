@@ -63,6 +63,18 @@ $msg = $msg ?? null;
         html.dark .card-shadow {
             box-shadow: 0 14px 35px -5px rgba(0, 0, 0, 0.6), 0 10px 14px -6px rgba(0, 0, 0, 0.4);
         }
+        /* Comprehensive Dark Mode Input Safeguards */
+        html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="file"]),
+        html.dark select,
+        html.dark textarea {
+            color: #f1f5f9 !important;
+            background-color: #0f172a !important;
+            border-color: #334155 !important;
+        }
+        html.dark input::placeholder,
+        html.dark textarea::placeholder {
+            color: #64748b !important;
+        }
     </style>
 </head>
 <body class="min-h-screen flex bg-slate-100 dark:bg-[#081225] overflow-x-hidden select-none transition-colors duration-200">

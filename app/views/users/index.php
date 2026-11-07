@@ -208,13 +208,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <!-- Modal 1: Provision New User -->
 <div id="modal-create-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+    <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-user-plus text-emerald-600 text-sm"></i>
-                <h3 class="text-sm font-bold text-slate-900">Provision New Academic Account</h3>
+                <i class="fa-solid fa-user-plus text-emerald-600 dark:text-emerald-400 text-sm"></i>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Provision New Academic Account</h3>
             </div>
-            <button type="button" onclick="closeCreateUserModal()" class="text-slate-400 hover:text-slate-700">
+            <button type="button" onclick="closeCreateUserModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -222,62 +222,62 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <form id="createUserForm" onsubmit="submitCreateUser(event)" class="space-y-3 text-xs">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Username (CICI ID): *</label>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username (CICI ID): *</label>
                     <input type="text" id="new_username" required placeholder="e.g., juan.delacruz"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Temporary Password: *</label>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Temporary Password: *</label>
                     <input type="password" id="new_password" required minlength="6" placeholder="Min. 6 characters"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
                 </div>
             </div>
 
             <div>
-                <label class="block font-bold text-slate-700 mb-1">Full Name (with Honorifics): *</label>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name (with Honorifics): *</label>
                 <input type="text" id="new_fullname" required placeholder="e.g., Prof. Juan D. Dela Cruz, MIT"
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                       class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Official Email:</label>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Official Email:</label>
                     <input type="email" id="new_email" placeholder="juan.delacruz@isufst.edu.ph"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Role Clearance: *</label>
-                    <select id="new_role" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 font-medium">
-                        <option value="faculty" selected>Faculty (Standard Vault & Pipeline Access)</option>
-                        <option value="dean">Dean (Administrative Oversight & Audits)</option>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Role Clearance: *</label>
+                    <select id="new_role" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 font-medium transition-colors">
+                        <option value="faculty" class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100" selected>Faculty (Standard Vault & Pipeline Access)</option>
+                        <option value="dean" class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Dean (Administrative Oversight & Audits)</option>
                     </select>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Employee ID Number:</label>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Employee ID Number:</label>
                     <input type="text" id="new_empid" placeholder="e.g., ISUFST-2026-042"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Academic Rank:</label>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Academic Rank:</label>
                     <input type="text" id="new_rank" placeholder="e.g., Assistant Professor I"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
                 </div>
             </div>
 
             <div>
-                <label class="block font-bold text-slate-700 mb-1">Specialization / Discipline:</label>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Specialization / Discipline:</label>
                 <input type="text" id="new_spec" placeholder="e.g., Cybersecurity, Data Science, Software Engineering"
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                       class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
             </div>
 
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button type="button" onclick="closeCreateUserModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeCreateUserModal()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition-colors">
                     Cancel
                 </button>
-                <button type="submit" class="px-4 py-2 rounded-lg bg-[#1da055] hover:bg-[#188c49] text-white font-bold shadow-md shadow-emerald-600/20">
+                <button type="submit" class="px-4 py-2 rounded-lg bg-[#1da055] hover:bg-[#188c49] text-white font-bold shadow-md shadow-emerald-600/20 transition-colors">
                     Create Account
                 </button>
             </div>
@@ -287,13 +287,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <!-- Modal 2: Edit Profile -->
 <div id="modal-edit-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+    <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-user-pen text-blue-600 text-sm"></i>
-                <h3 class="text-sm font-bold text-slate-900">Update User Record</h3>
+                <i class="fa-solid fa-user-pen text-blue-600 dark:text-blue-400 text-sm"></i>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Update User Record</h3>
             </div>
-            <button type="button" onclick="closeEditUserModal()" class="text-slate-400 hover:text-slate-700">
+            <button type="button" onclick="closeEditUserModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -302,50 +302,50 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <input type="hidden" id="edit_user_id">
 
             <div>
-                <label class="block font-bold text-slate-700 mb-1">Full Name: *</label>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name: *</label>
                 <input type="text" id="edit_fullname" required
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                       class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Official Email:</label>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Official Email:</label>
                     <input type="email" id="edit_email"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Role Clearance: *</label>
-                    <select id="edit_role" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 font-medium">
-                        <option value="faculty">Faculty</option>
-                        <option value="dean">Dean</option>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Role Clearance: *</label>
+                    <select id="edit_role" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500 font-medium transition-colors">
+                        <option value="faculty" class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Faculty</option>
+                        <option value="dean" class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Dean</option>
                     </select>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Employee ID:</label>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Employee ID:</label>
                     <input type="text" id="edit_empid"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Academic Rank:</label>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Academic Rank:</label>
                     <input type="text" id="edit_rank"
-                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
                 </div>
             </div>
 
             <div>
-                <label class="block font-bold text-slate-700 mb-1">Specialization:</label>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Specialization:</label>
                 <input type="text" id="edit_spec"
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                       class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
             </div>
 
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button type="button" onclick="closeEditUserModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeEditUserModal()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition-colors">
                     Cancel
                 </button>
-                <button type="submit" class="px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white font-bold shadow-md">
+                <button type="submit" class="px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold shadow-md transition-colors">
                     Save Changes
                 </button>
             </div>
@@ -355,34 +355,34 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <!-- Modal 3: Reset Password -->
 <div id="modal-reset-pass" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+    <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-key text-amber-600 text-sm"></i>
-                <h3 class="text-sm font-bold text-slate-900">Reset User Password</h3>
+                <i class="fa-solid fa-key text-amber-600 dark:text-amber-400 text-sm"></i>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Reset User Password</h3>
             </div>
-            <button type="button" onclick="closeResetPasswordModal()" class="text-slate-400 hover:text-slate-700">
+            <button type="button" onclick="closeResetPasswordModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
         <form id="resetPassForm" onsubmit="submitResetPassword(event)" class="space-y-3 text-xs">
             <input type="hidden" id="reset_user_id">
-            <p class="text-slate-600 text-xs">
-                Resetting credentials for: <strong id="reset_user_name" class="text-slate-900"></strong>
+            <p class="text-slate-600 dark:text-slate-400 text-xs">
+                Resetting credentials for: <strong id="reset_user_name" class="text-slate-900 dark:text-slate-100"></strong>
             </p>
 
             <div>
-                <label class="block font-bold text-slate-700 mb-1">New Password (Bcrypt Hashed): *</label>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">New Password (Bcrypt Hashed): *</label>
                 <input type="password" id="reset_new_password" required minlength="6" placeholder="Min. 6 characters"
-                       class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+                       class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors">
             </div>
 
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button type="button" onclick="closeResetPasswordModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold">
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeResetPasswordModal()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition-colors">
                     Cancel
                 </button>
-                <button type="submit" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold shadow-md shadow-amber-600/20">
+                <button type="submit" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold shadow-md shadow-amber-600/20 transition-colors">
                     Set New Password
                 </button>
             </div>
