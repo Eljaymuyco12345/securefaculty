@@ -7,8 +7,7 @@
             </main>
 
             <!-- Standard System Footer -->
-            <!-- Standard System Footer -->
-            <footer class="py-3 px-6 bg-white dark:bg-[#0c1830] border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2 flex-shrink-0 transition-colors">
+            <footer class="py-3 px-6 safe-area-bottom bg-white dark:bg-[#0c1830] border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2 flex-shrink-0 transition-colors">
                 <div class="flex items-center gap-2">
                     <span class="font-bold text-slate-700 dark:text-slate-200">SecureFaculty</span>
                     <span class="text-slate-300 dark:text-slate-600">•</span>
@@ -27,18 +26,38 @@
 
     <!-- 1. System Preferences & Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="if(event.target===this)closeSettingsModal()">
-        <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+        <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-gear text-slate-600 dark:text-slate-400 text-sm"></i>
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">System Preferences & Theming</h3>
+                    <h3 class="modal-title text-sm font-bold text-slate-900 dark:text-slate-100">System Preferences & Theming</h3>
                 </div>
-                <button type="button" onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+                <button type="button" onclick="closeSettingsModal()" aria-label="Close Settings Modal" class="touch-target text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             <div class="space-y-3 text-xs">
+                <!-- Editable Profile Display Name (Dean / Faculty Self-Service) -->
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 space-y-1.5">
+                    <label for="self_display_name_input" class="font-semibold text-slate-700 dark:text-slate-200 block">
+                        My Profile Display Name (<?= ($isDean ?? false) ? 'Dean Signatory' : 'Faculty Holder' ?>):
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="self_display_name_input" maxlength="150"
+                               value="<?= htmlspecialchars($currentUser['full_name'] ?? '') ?>"
+                               placeholder="Enter your official name & honorifics..."
+                               onkeydown="if(event.key==='Enter'){event.preventDefault();saveSelfDisplayName();}"
+                               class="flex-1 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                        <button type="button" id="btn_save_self_name" onclick="saveSelfDisplayName()"
+                                class="px-3 py-1.5 rounded-lg bg-[#1da055] hover:bg-[#188c49] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer flex-shrink-0">
+                            <i class="fa-solid fa-check text-[10px]"></i>
+                            <span>Save Name</span>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500">Updates your name across the header, vault, audit logs, and official PDF/Print signature blocks.</p>
+                </div>
+
                 <!-- Theme Mode Setting -->
                 <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80">
                     <span class="font-semibold text-slate-700 dark:text-slate-200 block mb-1.5">Appearance & Color Scheme:</span>
@@ -71,7 +90,7 @@
                     <p class="text-[10px] text-slate-400 mb-2">Instantly switch between Dean and Faculty test profiles for system evaluation:</p>
                     <div class="grid grid-cols-2 gap-2">
                         <a href="login.php" onclick="event.preventDefault(); switchUser('dean', 'admin123')"
-                           class="py-2 px-3 text-center rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5">
+                           class="py-2 px-3 text-center rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-user-shield text-xs"></i>
                             <span>Dean Profile</span>
                         </a>
@@ -94,14 +113,14 @@
 
     <!-- 2. System Universal Alert & Validation Modal (Replaces browser alert()) -->
     <div id="system-alert-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="if(event.target===this)this.classList.add('hidden')">
-        <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-sm w-full p-6 text-center space-y-4 animate-in fade-in zoom-in-95">
-            <div id="alert-icon-container" class="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl shadow-inner">
+        <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
+            <div id="alert-icon-container" class="optical-center w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl shadow-inner">
                 <!-- Icon injected dynamically -->
             </div>
 
             <div>
-                <h3 id="alert-modal-title" class="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight"></h3>
-                <p id="alert-modal-message" class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed"></p>
+                <h3 id="alert-modal-title" class="modal-title text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight"></h3>
+                <p id="alert-modal-message" class="pretty-text prose-measure text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed"></p>
             </div>
 
             <div class="pt-2">
@@ -115,14 +134,14 @@
 
     <!-- 3. System Universal Confirmation Modal (Replaces browser confirm()) -->
     <div id="system-confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="if(event.target===this)this.classList.add('hidden')">
-        <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+        <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex items-start gap-3.5">
-                <div id="confirm-icon-box" class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                <div id="confirm-icon-box" class="optical-center w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
                     <!-- Icon injected dynamically -->
                 </div>
                 <div>
-                    <h3 id="confirm-modal-title" class="text-sm font-bold text-slate-900 dark:text-slate-100">Confirm Action</h3>
-                    <p id="confirm-modal-message" class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed"></p>
+                    <h3 id="confirm-modal-title" class="modal-title text-sm font-bold text-slate-900 dark:text-slate-100">Confirm Action</h3>
+                    <p id="confirm-modal-message" class="pretty-text prose-measure text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed"></p>
                 </div>
             </div>
 
@@ -141,6 +160,18 @@
 
     <!-- Global Modal Controller Script -->
     <script>
+        /**
+         * #20 Shared Element / View Transition Helper
+         */
+        function runWithViewTransition(callback) {
+            if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.startViewTransition(function() {
+                    callback();
+                });
+            } else {
+                callback();
+            }
+        }
         function toggleSidebar(open) {
             const sidebar = document.getElementById('main-sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');
@@ -187,6 +218,62 @@
             document.getElementById('settings-modal').classList.add('hidden');
         }
 
+        function saveSelfDisplayName() {
+            const input = document.getElementById('self_display_name_input');
+            const btn = document.getElementById('btn_save_self_name');
+            if (!input) return;
+            const newName = input.value.trim();
+            if (!newName) {
+                showSystemAlert({
+                    title: 'Name Required',
+                    message: 'Please enter a valid display name before saving.',
+                    type: 'warning'
+                });
+                return;
+            }
+            if (btn) btn.disabled = true;
+
+            fetch('api/user_handler.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.CSRF_TOKEN || ''
+                },
+                body: JSON.stringify({
+                    action: 'update_self_name',
+                    full_name: newName,
+                    csrf_token: window.CSRF_TOKEN || ''
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (btn) btn.disabled = false;
+                if (data.status === 'success') {
+                    closeSettingsModal();
+                    showSystemAlert({
+                        title: 'Display Name Updated',
+                        message: `Your profile name has been updated to "${data.full_name || newName}".`,
+                        type: 'success',
+                        onOk: () => location.reload()
+                    });
+                } else {
+                    showSystemAlert({
+                        title: 'Update Failed',
+                        message: data.message || 'Unable to update display name.',
+                        type: 'error'
+                    });
+                }
+            })
+            .catch(err => {
+                if (btn) btn.disabled = false;
+                showSystemAlert({
+                    title: 'Network Error',
+                    message: err.message,
+                    type: 'error'
+                });
+            });
+        }
+
         function switchUser(u, p) {
             const form = document.createElement('form');
             form.method = 'POST';
@@ -199,6 +286,10 @@
             passIn.name = 'password';
             passIn.value = p;
             form.appendChild(passIn);
+            const csrfIn = document.createElement('input');
+            csrfIn.name = 'csrf_token';
+            csrfIn.value = window.CSRF_TOKEN || '';
+            form.appendChild(csrfIn);
             document.body.appendChild(form);
             form.submit();
         }
@@ -218,19 +309,19 @@
             msgEl.innerHTML = opts.message || '';
 
             if (type === 'success') {
-                iconBox.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl bg-emerald-100 text-emerald-600';
+                iconBox.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400';
                 iconBox.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
                 btn.className = 'w-full py-2 px-4 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20';
             } else if (type === 'error') {
-                iconBox.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl bg-rose-100 text-rose-600';
+                iconBox.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400';
                 iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
                 btn.className = 'w-full py-2 px-4 rounded-xl font-bold text-xs bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-600/20';
             } else if (type === 'warning') {
-                iconBox.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl bg-amber-100 text-amber-600';
+                iconBox.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400';
                 iconBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
                 btn.className = 'w-full py-2 px-4 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-500 text-white shadow-md shadow-amber-600/20';
             } else {
-                iconBox.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl bg-blue-100 text-blue-600';
+                iconBox.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400';
                 iconBox.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
                 btn.className = 'w-full py-2 px-4 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/20';
             }
@@ -263,15 +354,15 @@
 
             const type = opts.type || 'danger';
             if (type === 'danger') {
-                iconBox.className = 'w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg';
+                iconBox.className = 'w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg';
                 iconBox.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
                 proceedBtn.className = 'px-4 py-2 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-500 text-xs shadow-md shadow-rose-600/20';
             } else if (type === 'warning') {
-                iconBox.className = 'w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg';
+                iconBox.className = 'w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg';
                 iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
                 proceedBtn.className = 'px-4 py-2 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-500 text-xs shadow-md shadow-amber-600/20';
             } else {
-                iconBox.className = 'w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg';
+                iconBox.className = 'w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg';
                 iconBox.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
                 proceedBtn.className = 'px-4 py-2 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500 text-xs shadow-md shadow-blue-600/20';
             }

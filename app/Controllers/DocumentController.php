@@ -17,8 +17,12 @@ class DocumentController extends BaseController {
 
         $result = CertificateService::retrieveDocument($id, $currentUser['id'], $isDean);
         if (!$result['success']) {
-            http_response_code($result['code']);
-            die($result['message']);
+            if (!headers_sent()) {
+                http_response_code($result['code']);
+                header('Content-Type: text/html; charset=UTF-8');
+            }
+            echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Error | SecureFaculty</title></head><body style="font-family:sans-serif;padding:2rem;background:#081225;color:#e2e8f0;"><div style="max-width:32rem;margin:auto;background:#111c36;padding:2rem;border-radius:0.75rem;border:1px solid #1e293b;"><h2 style="color:#f43f5e;">Access Error</h2><p>' . htmlspecialchars($result['message'], ENT_QUOTES, 'UTF-8') . '</p><p><a href="vault.php" style="color:#38bdf8;">Return to Vault</a></p></div></body></html>';
+            exit;
         }
 
         $cert = $result['cert'];

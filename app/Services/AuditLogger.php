@@ -9,9 +9,12 @@ require_once __DIR__ . '/../DAO/AuditLogDAO.php';
 
 class AuditLogger {
     public static function log(string $action, string $details, ?int $targetId = null): void {
-        $userId = $_SESSION['user_id'] ?? null;
-        $username = $_SESSION['username'] ?? 'Anonymous';
-        $role = $_SESSION['role'] ?? 'Guest';
+        $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
+        $username = isset($_SESSION['username']) ? preg_replace('/[^\w\s\.\-@]/', '', (string)$_SESSION['username']) : 'Anonymous';
+        if (empty($username)) {
+            $username = 'Anonymous';
+        }
+        $role = in_array($_SESSION['role'] ?? '', ['dean', 'faculty', 'admin'], true) ? $_SESSION['role'] : 'Guest';
         $ip = self::getClientIp();
         $userAgent = substr($_SERVER['HTTP_USER_AGENT'] ?? 'CLI/Unknown', 0, 255);
 

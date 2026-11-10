@@ -20,9 +20,20 @@ class VaultController extends BaseController {
         }
 
         // Strict Date Issued Filtering (NOT upload date)
-        $category = $_GET['category'] ?? 'All';
+        $allCategories = ['All', 'Modules & IMs', 'Research', 'Seminars', 'Trainings', 'Workshops', 'Awards', 'Milestones'];
+        $allowedCategoryKeys = array_merge($allCategories, [
+            'Instructional Material', 'Research Publication', 'Seminar', 'Training', 'Workshop', 'Award', 'Academic Milestone'
+        ]);
+        $rawCategory = $_GET['category'] ?? 'All';
+        $category = in_array($rawCategory, $allowedCategoryKeys, true) ? $rawCategory : 'All';
         $search = trim($_GET['search'] ?? '');
+        if (strlen($search) > 100) {
+            $search = substr($search, 0, 100);
+        }
         $targetFacultyId = !empty($_GET['faculty_id']) ? (int)$_GET['faculty_id'] : null;
+        if ($targetFacultyId !== null && $targetFacultyId <= 0) {
+            $targetFacultyId = null;
+        }
         $dateFrom = trim($_GET['date_from'] ?? '');
         $dateTo = trim($_GET['date_to'] ?? '');
         $issuedYear = trim($_GET['issued_year'] ?? '');
@@ -46,8 +57,6 @@ class VaultController extends BaseController {
             ];
             $certificates = CertificateModel::getForFaculty($currentUser['id'], $filters);
         }
-
-        $allCategories = ['All', 'Modules & IMs', 'Research', 'Seminars', 'Trainings', 'Workshops', 'Awards', 'Milestones'];
 
         $this->renderView('vault/index.php', [
             'currentUser' => $currentUser,

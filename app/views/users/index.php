@@ -165,11 +165,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
                             <td class="p-3 text-center">
                                 <?php if ($isActive): ?>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                    <span id="user-status-badge-<?= (int)$u['id'] ?>" class="inline-flex items-center justify-center min-w-[5.25rem] gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 transition-colors">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
                                     </span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                                    <span id="user-status-badge-<?= (int)$u['id'] ?>" class="inline-flex items-center justify-center min-w-[5.25rem] gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 transition-colors">
                                         <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Suspended
                                     </span>
                                 <?php endif; ?>
@@ -178,20 +178,20 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             <td class="p-3 text-right">
                                 <div class="inline-flex items-center gap-1.5">
                                     <button type="button" onclick="openEditUserModal(<?= htmlspecialchars(json_encode($u), ENT_QUOTES, 'UTF-8') ?>)"
-                                            class="p-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs transition-all cursor-pointer"
+                                            class="touch-target p-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs transition-all cursor-pointer"
                                             title="Edit Profile">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
 
                                     <button type="button" onclick="openResetPasswordModal(<?= (int)$u['id'] ?>, <?= htmlspecialchars(json_encode($u['full_name']), ENT_QUOTES, 'UTF-8') ?>)"
-                                            class="p-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-amber-700 dark:text-amber-400 text-xs transition-all cursor-pointer"
+                                            class="touch-target p-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-amber-700 dark:text-amber-400 text-xs transition-all cursor-pointer"
                                             title="Reset Security Password">
                                         <i class="fa-solid fa-key"></i>
                                     </button>
 
                                     <?php if (!$isSelf): ?>
-                                        <button type="button" onclick="toggleUserStatus(<?= (int)$u['id'] ?>, <?= htmlspecialchars(json_encode($u['full_name']), ENT_QUOTES, 'UTF-8') ?>, <?= $isActive ? 'true' : 'false' ?>)"
-                                                class="p-1.5 rounded <?= $isActive ? 'hover:bg-rose-100 dark:hover:bg-rose-950/60 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400' : 'hover:bg-emerald-100 dark:hover:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400' ?> text-xs transition-all cursor-pointer"
+                                        <button type="button" id="user-status-btn-<?= (int)$u['id'] ?>" onclick="toggleUserStatus(<?= (int)$u['id'] ?>, <?= htmlspecialchars(json_encode($u['full_name']), ENT_QUOTES, 'UTF-8') ?>, <?= $isActive ? 'true' : 'false' ?>)"
+                                                class="touch-target p-1.5 rounded <?= $isActive ? 'hover:bg-rose-100 dark:hover:bg-rose-950/60 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400' : 'hover:bg-emerald-100 dark:hover:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400' ?> text-xs transition-all cursor-pointer"
                                                 title="<?= $isActive ? 'Suspend User Access' : 'Reactivate User Access' ?>">
                                             <i class="fa-solid <?= $isActive ? 'fa-user-slash' : 'fa-user-check' ?>"></i>
                                         </button>
@@ -208,13 +208,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <!-- Modal 1: Provision New User -->
 <div id="modal-create-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+    <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-user-plus text-emerald-600 dark:text-emerald-400 text-sm"></i>
-                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Provision New Academic Account</h3>
+                <h3 class="modal-title text-sm font-bold text-slate-900 dark:text-slate-100">Provision New Academic Account</h3>
             </div>
-            <button type="button" onclick="closeCreateUserModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+            <button type="button" onclick="closeCreateUserModal()" aria-label="Close modal" class="touch-target text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -287,13 +287,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <!-- Modal 2: Edit Profile -->
 <div id="modal-edit-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+    <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-user-pen text-blue-600 dark:text-blue-400 text-sm"></i>
-                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Update User Record</h3>
+                <h3 class="modal-title text-sm font-bold text-slate-900 dark:text-slate-100">Update User Record</h3>
             </div>
-            <button type="button" onclick="closeEditUserModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+            <button type="button" onclick="closeEditUserModal()" aria-label="Close modal" class="touch-target text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -355,13 +355,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <!-- Modal 3: Reset Password -->
 <div id="modal-reset-pass" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95">
+    <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-sm w-full p-6 space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-key text-amber-600 dark:text-amber-400 text-sm"></i>
-                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Reset User Password</h3>
+                <h3 class="modal-title text-sm font-bold text-slate-900 dark:text-slate-100">Reset User Password</h3>
             </div>
-            <button type="button" onclick="closeResetPasswordModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+            <button type="button" onclick="closeResetPasswordModal()" aria-label="Close modal" class="touch-target text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -569,6 +569,39 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             type: currentlyActive ? 'danger' : 'info',
             confirmText: `Yes, ${actionWord.toUpperCase()}`,
             onConfirm: function() {
+                // #6 Optimistic UI Update: Immediately reflect target state in row badge & button
+                const badgeEl = document.getElementById(`user-status-badge-${userId}`);
+                const btnEl = document.getElementById(`user-status-btn-${userId}`);
+                const prevBadgeHtml = badgeEl ? badgeEl.innerHTML : '';
+                const prevBadgeClass = badgeEl ? badgeEl.className : '';
+                const prevBtnHtml = btnEl ? btnEl.innerHTML : '';
+                const prevBtnClass = btnEl ? btnEl.className : '';
+
+                const nextActive = !currentlyActive;
+                if (badgeEl) {
+                    if (nextActive) {
+                        badgeEl.className = 'inline-flex items-center justify-center min-w-[5.25rem] gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 transition-colors';
+                        badgeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active';
+                    } else {
+                        badgeEl.className = 'inline-flex items-center justify-center min-w-[5.25rem] gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 transition-colors';
+                        badgeEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Suspended';
+                    }
+                }
+                if (btnEl) {
+                    btnEl.innerHTML = `<i class="fa-solid ${nextActive ? 'fa-user-slash' : 'fa-user-check'}"></i>`;
+                }
+
+                const rollbackOptimisticUi = function() {
+                    if (badgeEl) {
+                        badgeEl.className = prevBadgeClass;
+                        badgeEl.innerHTML = prevBadgeHtml;
+                    }
+                    if (btnEl) {
+                        btnEl.className = prevBtnClass;
+                        btnEl.innerHTML = prevBtnHtml;
+                    }
+                };
+
                 fetch('api/user_handler.php', {
                     method: 'POST',
                     headers: {
@@ -591,10 +624,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             onOk: () => location.reload()
                         });
                     } else {
+                        rollbackOptimisticUi();
                         showSystemAlert({ title: 'Error', message: data.message, type: 'error' });
                     }
                 })
                 .catch(err => {
+                    rollbackOptimisticUi();
                     showSystemAlert({ title: 'Error', message: err.message, type: 'error' });
                 });
             }

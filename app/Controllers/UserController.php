@@ -63,8 +63,8 @@ class UserController extends BaseController {
         if (!headers_sent()) header('Content-Type: application/json');
         AuthService::initSession();
 
-        if (!AuthService::check() || !AuthService::isDean()) {
-            $this->jsonResponse(['status' => 'error', 'message' => 'Access Denied: Administrative privileges required.'], 403);
+        if (!AuthService::check()) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'Access Denied: Authentication required.'], 403);
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -81,7 +81,20 @@ class UserController extends BaseController {
         $action = $input['action'] ?? '';
         $currentUser = AuthService::user();
 
+        if ($action !== 'update_self_name' && !AuthService::isDean()) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'Access Denied: Administrative privileges required.'], 403);
+        }
+
         switch ($action) {
+            case 'update_self_name':
+                $selfId = (int)($currentUser['id'] ?? 0);
+                $newName = trim($input['full_name'] ?? '');
+                $res = UserService::updateProfile($selfId, ['full_name' => $newName], $selfId);
+                if (!$res['success']) {
+                    $this->jsonResponse(['status' => 'error', 'message' => $res['message']], $res['code'] ?? 400);
+                }
+                $this->jsonResponse(['status' => 'success', 'message' => 'Your display name has been updated.', 'full_name' => $newName]);
+
             case 'create':
                 $res = UserService::create($input);
                 if (!$res['success']) {

@@ -218,7 +218,7 @@ Upload a file above to extract metadata.</div>
                         </div>
                     </div>
                     <label class="flex items-center gap-2 pt-1.5 border-t border-amber-200 dark:border-amber-800/80 cursor-pointer">
-                        <input type="checkbox" id="field_force_duplicate" class="rounded text-amber-600 focus:ring-amber-500">
+                        <input type="checkbox" id="field_force_duplicate" class="rounded border-amber-400 dark:border-amber-700 dark:bg-slate-800 text-amber-600 accent-amber-600 focus:ring-amber-500">
                         <span class="text-[11px] font-semibold text-amber-900 dark:text-amber-200">Override duplicate warning and archive as distinct version</span>
                     </label>
                 </div>
@@ -240,14 +240,14 @@ Upload a file above to extract metadata.</div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Title:</label>
                     <input type="text" id="field_title" value="" placeholder="Extracted document title will appear here"
-                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
+                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Certificate / Reference No.:</label>
                         <input type="text" id="field_cert_number" value="" placeholder="e.g. CERT-2025-001 (Optional)"
-                            class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
+                            class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-0.5">
@@ -266,7 +266,7 @@ Upload a file above to extract metadata.</div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Issuing Authority:</label>
                     <input type="text" id="field_issuer" value="" placeholder="Extracted issuing authority will appear here"
-                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
+                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div>
@@ -427,8 +427,8 @@ Upload a file above to extract metadata.</div>
 </div>
 
 <!-- Stage Progress & Live Telemetry Modal (Requirements 2, 3, 4) -->
-<div id="stage-progress-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden animate-in fade-in duration-200">
-    <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+<div id="stage-progress-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
         <!-- Modal Header -->
         <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
             <div class="flex items-center gap-2.5">
@@ -436,11 +436,11 @@ Upload a file above to extract metadata.</div>
                     <i class="fa-solid fa-bars-progress"></i>
                 </div>
                 <div>
-                    <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">Certificate Pipeline Execution Telemetry</h3>
+                    <h3 class="modal-title text-sm font-extrabold text-slate-900 dark:text-white">Certificate Pipeline Execution Telemetry</h3>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400" id="modal-subtext">Live stage checklist and cryptographic processing monitor</p>
                 </div>
             </div>
-            <button type="button" onclick="closeProgressModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+            <button type="button" onclick="closeProgressModal()" aria-label="Close telemetry modal" class="touch-target text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                 <i class="fa-solid fa-xmark text-sm"></i>
             </button>
         </div>
@@ -452,14 +452,14 @@ Upload a file above to extract metadata.</div>
                     <span>Overall Progress:</span>
                     <span id="modal-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">Active</span>
                 </span>
-                <span id="modal-overall-percent" class="font-mono font-black text-blue-700 dark:text-blue-400 text-sm">0%</span>
+                <span id="modal-overall-percent" class="font-mono tabular-nums font-black text-blue-700 dark:text-blue-400 text-sm">0%</span>
             </div>
             <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
                 <div id="modal-progress-bar" class="bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
             </div>
             <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
                 <span id="modal-current-task" class="truncate max-w-xs font-mono">Stage: Ready for file ingestion</span>
-                <span id="modal-items-counter" class="font-mono font-semibold">0 / 0 items processed</span>
+                <span id="modal-items-counter" class="font-mono tabular-nums font-semibold">0 / 0 items processed</span>
             </div>
         </div>
 
@@ -468,9 +468,9 @@ Upload a file above to extract metadata.</div>
             <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block px-1">Pipeline Checkpoints:</span>
 
             <!-- Stage 1 -->
-            <div id="modal-stage-1" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
+            <div id="modal-stage-1" style="--stagger-i: 0" class="stagger-item p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
                 <div class="flex items-center gap-2.5">
-                    <span id="modal-icon-1" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold">1</span>
+                    <span id="modal-icon-1" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold tabular-nums">1</span>
                     <div>
                         <strong class="text-slate-800 dark:text-slate-200 block text-xs">Stage 1 — Ingestion &amp; Archive Unpack</strong>
                         <span class="text-[10px] text-slate-500 dark:text-slate-400">MIME validation, format verification, ZIP unpack</span>
@@ -480,9 +480,9 @@ Upload a file above to extract metadata.</div>
             </div>
 
             <!-- Stage 2 -->
-            <div id="modal-stage-2" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
+            <div id="modal-stage-2" style="--stagger-i: 1" class="stagger-item p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
                 <div class="flex items-center gap-2.5">
-                    <span id="modal-icon-2" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold">2</span>
+                    <span id="modal-icon-2" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold tabular-nums">2</span>
                     <div>
                         <strong class="text-slate-800 dark:text-slate-200 block text-xs">Stage 2 — Rasterization &amp; Image Optimization</strong>
                         <span class="text-[10px] text-slate-500 dark:text-slate-400">Dynamic downscaling under 5MB, targeted PDF rasterization</span>
@@ -492,9 +492,9 @@ Upload a file above to extract metadata.</div>
             </div>
 
             <!-- Stage 3 -->
-            <div id="modal-stage-3" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
+            <div id="modal-stage-3" style="--stagger-i: 2" class="stagger-item p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
                 <div class="flex items-center gap-2.5">
-                    <span id="modal-icon-3" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold">3</span>
+                    <span id="modal-icon-3" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold tabular-nums">3</span>
                     <div>
                         <strong class="text-slate-800 dark:text-slate-200 block text-xs">Stage 3 — OCR Metadata &amp; Date Normalization</strong>
                         <span class="text-[10px] text-slate-500 dark:text-slate-400">Document title, certificate number, ISO YYYY-MM-DD issued date</span>
@@ -504,9 +504,9 @@ Upload a file above to extract metadata.</div>
             </div>
 
             <!-- Stage 4 -->
-            <div id="modal-stage-4" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
+            <div id="modal-stage-4" style="--stagger-i: 3" class="stagger-item p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
                 <div class="flex items-center gap-2.5">
-                    <span id="modal-icon-4" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold">4</span>
+                    <span id="modal-icon-4" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold tabular-nums">4</span>
                     <div>
                         <strong class="text-slate-800 dark:text-slate-200 block text-xs">Stage 4 — Duplicate Screening &amp; H-I-T-L Validation</strong>
                         <span class="text-[10px] text-slate-500 dark:text-slate-400">SHA-256 fingerprint collision check &amp; Human-in-the-Loop review</span>
@@ -516,9 +516,9 @@ Upload a file above to extract metadata.</div>
             </div>
 
             <!-- Stage 5 -->
-            <div id="modal-stage-5" class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
+            <div id="modal-stage-5" style="--stagger-i: 4" class="stagger-item p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all">
                 <div class="flex items-center gap-2.5">
-                    <span id="modal-icon-5" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold">5</span>
+                    <span id="modal-icon-5" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold tabular-nums">5</span>
                     <div>
                         <strong class="text-slate-800 dark:text-slate-200 block text-xs">Stage 5 — Cryptographic Archiving (AES-256)</strong>
                         <span class="text-[10px] text-slate-500 dark:text-slate-400">AES-256-CBC encryption at rest &amp; audit ledger committal</span>
@@ -566,7 +566,7 @@ Upload a file above to extract metadata.</div>
                 <span id="lbl-toggle-errors">Inspect Error Log (0)</span>
             </button>
             <button type="button" onclick="closeProgressModal()"
-                class="px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white font-bold transition-all shadow-sm cursor-pointer">
+                class="px-4 py-2 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold transition-all shadow-sm cursor-pointer">
                 Close Telemetry
             </button>
         </div>
@@ -771,8 +771,8 @@ Upload a file above to extract metadata.</div>
         if (lbl) lbl.textContent = `Inspect Alerts & Errors (${telemetryState.errors.length})`;
         if (list) {
             const p = document.createElement('div');
-            p.className = "p-1.5 rounded bg-rose-100/60 border border-rose-200 text-rose-900";
-            p.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1"></i> ${escapeHtml(msg)}`;
+            p.className = "p-1.5 rounded bg-rose-100/60 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200";
+            p.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 dark:text-rose-400 mr-1"></i> ${escapeHtml(msg)}`;
             list.appendChild(p);
         }
         document.getElementById('modal-error-box').classList.remove('hidden');
@@ -805,7 +805,7 @@ Upload a file above to extract metadata.</div>
         updateModalProgress(20, 'Stage 1: Dynamic Optimization & Rasterization...');
 
         banner.innerHTML = `
-            <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 py-3">
+            <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
                 <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -818,7 +818,7 @@ Upload a file above to extract metadata.</div>
             setActiveStep(2);
             updateModalProgress(50, 'Stage 2: OCR Cloud Engine Transmission & Text Extraction...');
             banner.innerHTML = `
-                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-indigo-600 py-3">
+                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 py-3">
                     <i class="fa-solid fa-cloud-arrow-up animate-pulse text-base"></i>
                     <span>Stage 2: Outbound HTTPS Cloud Handshake with OCR Engine...</span>
                 </div>
@@ -897,7 +897,7 @@ Upload a file above to extract metadata.</div>
 
         if (isMultiple) {
             banner.innerHTML = `
-                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 py-3">
+                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
                     <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -912,7 +912,7 @@ Upload a file above to extract metadata.</div>
             const file = files[0];
             const isZip = file.name.toLowerCase().endsWith('.zip');
             banner.innerHTML = `
-                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 py-3">
+                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
                     <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -927,15 +927,20 @@ Upload a file above to extract metadata.</div>
             setActiveStep(2);
             updateModalProgress(45, 'Stage 2: Outbound HTTPS Handshake with OCR Engine...');
             banner.innerHTML = `
-                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-indigo-600 py-3">
+                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 py-3">
                     <i class="fa-solid fa-cloud-arrow-up animate-pulse text-base"></i>
                     <span>Stage 2: Outbound HTTPS Cloud Handshake with OCR Engine...</span>
                 </div>
             `;
         }, 700);
 
+        formData.append('csrf_token', window.CSRF_TOKEN || '');
+
         fetch('api/upload_handler.php', {
             method: 'POST',
+            headers: {
+                'X-CSRF-Token': window.CSRF_TOKEN || ''
+            },
             body: formData
         })
         .then(res => res.json())

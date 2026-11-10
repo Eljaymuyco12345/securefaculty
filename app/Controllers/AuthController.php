@@ -21,8 +21,10 @@ class AuthController extends BaseController {
             }
         }
 
-        $error = $_GET['error'] ?? null;
-        $msg = $_GET['msg'] ?? null;
+        $rawError = $_GET['error'] ?? null;
+        $rawMsg = $_GET['msg'] ?? null;
+        $error = $rawError !== null ? htmlspecialchars(strip_tags((string)$rawError), ENT_QUOTES, 'UTF-8') : null;
+        $msg = $rawMsg !== null ? htmlspecialchars(strip_tags((string)$rawMsg), ENT_QUOTES, 'UTF-8') : null;
         $this->renderView('auth/login.php', [
             'error' => $error,
             'msg' => $msg
@@ -36,6 +38,12 @@ class AuthController extends BaseController {
         AuthService::initSession();
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('index.php');
+        }
+
+        // CSRF Verification
+        $csrfToken = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+        if ($csrfToken !== null && !AuthService::verifyCsrfToken($csrfToken)) {
+            $this->redirect('index.php?error=csrf_violation');
         }
 
         $username = trim($_POST['username'] ?? '');

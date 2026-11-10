@@ -8,7 +8,16 @@ DirectoryIndex public/index.php index.php
     RewriteEngine On
     RewriteBase /securefaculty/
 
-    # 1. Security: Block direct HTTP access to core application & data directories
+    # Global Security Headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# 1. Security: Block direct HTTP access to core application & data directories
     RewriteRule ^(app|storage|sql|python_engine|scratch|bin)(/.*)?$ - [F,L]
 
     # 2. Canonical Clean URL: Strip /public/ from browser address bar (GET/HEAD only)
