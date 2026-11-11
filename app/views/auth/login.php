@@ -6,9 +6,14 @@ $msg = $msg ?? null;
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="view-transition" content="same-origin">
     <meta name="color-scheme" content="light dark">
     <title>SecureFaculty | One-Gate Login Portal</title>
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Instant anti-FOUC theme detector -->
     <script>
         (function() {
@@ -43,6 +48,30 @@ $msg = $msg ?? null;
     <style>
         :root {
             color-scheme: light dark;
+            accent-color: oklch(0.55 0.19 255);
+        }
+        html.dark {
+            color-scheme: dark;
+            accent-color: oklch(0.68 0.17 250);
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-kerning: normal;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+            line-height: 1.5;
+        }
+        h1, h2, h3 {
+            text-wrap: balance;
+        }
+        p {
+            text-wrap: pretty;
+        }
+        input:not([type="range"]):user-invalid {
+            border-color: oklch(0.62 0.21 25) !important;
+            box-shadow: 0 0 0 2px oklch(0.62 0.21 25 / 0.2);
+        }
+        button:not(:disabled):active {
+            transform: scale(0.98);
         }
         .grid-bg {
             background-color: #f7fafc;
@@ -75,12 +104,27 @@ $msg = $msg ?? null;
         html.dark textarea::placeholder {
             color: #64748b !important;
         }
+        html.dark input:-webkit-autofill,
+        html.dark input:-webkit-autofill:hover,
+        html.dark input:-webkit-autofill:focus,
+        html.dark select:-webkit-autofill,
+        html.dark textarea:-webkit-autofill {
+            -webkit-text-fill-color: #f1f5f9 !important;
+            -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
+            border-color: #334155 !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        html.dark input[type="date"],
+        html.dark input[type="checkbox"],
+        html.dark input[type="radio"] {
+            color-scheme: dark;
+        }
     </style>
 </head>
-<body class="min-h-screen flex bg-slate-100 dark:bg-[#081225] overflow-x-hidden select-none transition-colors duration-200">
+<body class="min-h-screen flex bg-slate-100 dark:bg-[#081225] overflow-x-hidden antialiased transition-colors duration-200">
 
     <!-- Left Navy Accent Panel matching Figure 4.2 -->
-    <aside class="w-16 sm:w-28 md:w-36 lg:w-44 bg-[#0d2342] dark:bg-[#060e1d] flex flex-col justify-between items-center py-6 border-r border-[#08182f] dark:border-slate-900 flex-shrink-0">
+    <aside class="w-16 sm:w-28 md:w-36 lg:w-44 bg-[#0d2342] dark:bg-[#060e1d] select-none flex flex-col justify-between items-center py-6 border-r border-[#08182f] dark:border-slate-900 flex-shrink-0">
         <div class="flex flex-col items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-white text-lg shadow-inner">
                 <i class="fa-solid fa-lock text-blue-300"></i>
@@ -152,10 +196,21 @@ $msg = $msg ?? null;
                         <i class="fa-solid fa-circle-check text-blue-500"></i>
                         <span>Secure session closed. Audit ledger updated.</span>
                     </div>
+                <?php elseif ($msg === 'auth_required'): ?>
+                    <div class="mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-amber-600"></i>
+                        <span>Authentication Required: Please sign in to access this portal resource.</span>
+                    </div>
+                <?php elseif ($error === 'csrf_violation'): ?>
+                    <div class="mb-4 p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-rose-500"></i>
+                        <span>Security Violation: Invalid or expired CSRF security token. Please try again.</span>
+                    </div>
                 <?php endif; ?>
 
                 <!-- Login Form -->
                 <form action="login.php" method="POST" class="space-y-4">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(AuthService::getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
 
                     <!-- Username Field -->
                     <div>

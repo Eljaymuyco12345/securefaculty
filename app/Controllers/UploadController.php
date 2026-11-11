@@ -37,6 +37,12 @@ class UploadController extends BaseController {
             $this->jsonResponse(['status' => 'error', 'message' => 'Unauthorized session'], 401);
         }
 
+        // CSRF Verification (OWASP A01)
+        $csrfToken = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        if (!AuthService::verifyCsrfToken($csrfToken)) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'CSRF Security Violation: Invalid or expired token.'], 403);
+        }
+
         // Housekeeping: purge stale uncommitted staged files older than 1 hour
         CertificateService::purgeStaleTempFiles(3600);
 
@@ -123,6 +129,13 @@ class UploadController extends BaseController {
         $file = $_FILES['file'];
         if ($file['error'] !== UPLOAD_ERR_OK) {
             $this->jsonResponse(['status' => 'error', 'message' => 'Upload error code: ' . $file['error']], 400);
+        }
+
+        // Enforce maximum file upload size (25 MiB)
+        $maxFileSize = 25 * 1024 * 1024;
+        $fileSize = $file['size'] ?? (file_exists($file['tmp_name']) ? filesize($file['tmp_name']) : 0);
+        if ($fileSize > $maxFileSize) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'File size exceeds 25MB maximum limit.'], 400);
         }
 
         $originalName = basename($file['name']);

@@ -125,6 +125,19 @@ class AuthControllerTest extends TestCase {
         $this->assertFalse(AuthService::check());
     }
 
+    public function testHandleLoginWithInvalidCsrfTokenRedirectsWithError(): void {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST['username'] = 'dean';
+        $_POST['password'] = 'admin123';
+        $_POST['csrf_token'] = 'malicious_invalid_csrf_token_12345';
+
+        $controller = new TestableAuthController();
+        $this->runControllerAction(fn() => $controller->handleLogin());
+
+        $this->assertEquals('index.php?error=csrf_violation', $controller->redirectedTo);
+        $this->assertFalse(AuthService::check());
+    }
+
     public function testLogout(): void {
         AuthService::attempt('dean', 'admin123');
         $this->assertTrue(AuthService::check());

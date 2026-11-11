@@ -327,9 +327,12 @@ class CertificateDAO implements CertificateDAOInterface {
             $refStmt = $pdo->prepare("SELECT COUNT(*) FROM certificates WHERE file_path = ? AND id != ?");
             $refStmt->execute([$cert['file_path'], $id]);
             if ((int)$refStmt->fetchColumn() === 0) {
-                $filePath = VAULT_DIR . DIRECTORY_SEPARATOR . $cert['file_path'];
-                if (file_exists($filePath)) {
-                    @unlink($filePath);
+                $cleanFilename = basename($cert['file_path']);
+                $filePath = VAULT_DIR . DIRECTORY_SEPARATOR . $cleanFilename;
+                $realVaultDir = realpath(VAULT_DIR);
+                $realFilePath = realpath($filePath);
+                if ($realFilePath !== false && $realVaultDir !== false && str_starts_with($realFilePath, $realVaultDir . DIRECTORY_SEPARATOR)) {
+                    @unlink($realFilePath);
                 }
             }
 

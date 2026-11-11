@@ -143,3 +143,21 @@ The system utilizes an Apache `mod_rewrite` engine and standalone `router.php`, 
 | **User Management Registry** | `http://localhost/securefaculty/users` |
 | **Accreditation Export** | `http://localhost/securefaculty/export` |
 | **RA 10173 Audit Ledger** | `http://localhost/securefaculty/audit` |
+
+
+---
+
+## 🛡️ Security Hardening & Audit Compliance
+
+In accordance with institutional accreditation standards and Philippine Republic Act No. 10173 (Data Privacy Act of 2012), the SecureFaculty platform includes comprehensive security hardening against OWASP Top 10 vulnerabilities:
+
+| Category | Vulnerability Mitigated | Technical Implementation |
+| :--- | :--- | :--- |
+| **CSRF Defense** | Cross-Site Request Forgery | Cryptographic synchronizer tokens (`AuthService::getCsrfToken()`) generated via `random_bytes(32)` and validated using timing-safe `hash_equals()` across all state-changing endpoints (`AuthController::handleLogin`, `UploadController::handleUploadApi`, `UploadController::handleCommitApi`, `VaultController::handleDelete`, and `UserController::handleApi`). |
+| **Path Traversal** | Arbitrary File Deletion (`CWE-22`) | Sanitized vault file paths using `basename()` and validated canonical filesystem boundaries via `realpath()` prefix checking in `UserDAO::deleteUser` and `CertificateDAO::delete` before executing `unlink()`. |
+| **XSS Mitigation** | Reflected / Stored Cross-Site Scripting | All dynamic inputs and view notifications (`error`, `msg`, `search`, `status`) are sanitized via `strip_tags()` and escaped with `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')`. |
+| **Upload DoS Guard** | Unrestricted Resource Consumption | Enforced strict server-side upload quotas (25 MiB single file limit, 10 MiB per-page image limit), zero-plaintext temp file lifecycle (`purgeStaleTempFiles`), and cryptographic magic-byte MIME inspection (`finfo`). |
+| **Query Safety & DoS** | SQL Injection & ReDoS Wildcard Attacks | 100% parameterized PDO prepared statements across all Data Access Objects. Added strict bounding on pagination offsets (`max(1, min(1000, $page))`) and truncated search/action terms to prevent resource exhaustion. |
+| **Session Integrity** | Session Fixation & Spoofing | Session ID regeneration (`session_regenerate_id(true)`) on successful authentication, strict session cookie settings (`HttpOnly`, `SameSite=Lax`, `Secure` when HTTPS), and real-time database active status verification. |
+| **Audit Compliance** | Log Injection & Identity Tampering | Sanitized session context fields (`user_id`, `username`, `role`) before committing to the immutable RA 10173 audit trail, backed by trusted-proxy IP resolution. |
+| **Security Headers** | Clickjacking & MIME Confusion | Global OWASP headers dispatched both at runtime in `app/bootstrap.php` and at the web server level in `.htaccess` (`X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`). |

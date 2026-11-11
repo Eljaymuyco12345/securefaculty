@@ -34,50 +34,50 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 <!-- Clickable Stats Row (4 interactive cards) -->
 <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
     <!-- Total Audit Events -->
-    <a href="audit_logs.php"
-       class="bg-white dark:bg-[#111c36] rounded-xl border <?= empty($actionFilter) ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group">
+    <a href="audit_logs.php" style="--stagger-i: 0"
+       class="stagger-item bg-white dark:bg-[#111c36] rounded-xl border <?= empty($actionFilter) ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group">
         <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
             <i class="fa-solid fa-scroll"></i>
         </div>
         <div>
             <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Events</p>
-            <p class="text-lg font-black text-slate-900 dark:text-white leading-tight"><?= number_format($statTotal) ?></p>
+            <p class="text-lg font-black tabular-nums text-slate-900 dark:text-white leading-tight"><?= number_format($statTotal) ?></p>
         </div>
     </a>
 
     <!-- Login Events -->
-    <a href="audit_logs.php?action=LOGIN_SUCCESS"
-       class="bg-white dark:bg-[#111c36] rounded-xl border <?= $actionFilter === 'LOGIN_SUCCESS' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group">
+    <a href="audit_logs.php?action=LOGIN_SUCCESS" style="--stagger-i: 1"
+       class="stagger-item bg-white dark:bg-[#111c36] rounded-xl border <?= $actionFilter === 'LOGIN_SUCCESS' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group">
         <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
             <i class="fa-solid fa-right-to-bracket"></i>
         </div>
         <div>
             <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Login Events</p>
-            <p class="text-lg font-black text-slate-900 dark:text-white leading-tight"><?= number_format($statLogins) ?></p>
+            <p class="text-lg font-black tabular-nums text-slate-900 dark:text-white leading-tight"><?= number_format($statLogins) ?></p>
         </div>
     </a>
 
     <!-- Document Operations -->
-    <a href="audit_logs.php?action=ARCHIVE_DOCUMENT"
-       class="bg-white dark:bg-[#111c36] rounded-xl border <?= $actionFilter === 'ARCHIVE_DOCUMENT' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group">
+    <a href="audit_logs.php?action=ARCHIVE_DOCUMENT" style="--stagger-i: 2"
+       class="stagger-item bg-white dark:bg-[#111c36] rounded-xl border <?= $actionFilter === 'ARCHIVE_DOCUMENT' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group">
         <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
             <i class="fa-solid fa-file-shield"></i>
         </div>
         <div>
             <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Doc Operations</p>
-            <p class="text-lg font-black text-slate-900 dark:text-white leading-tight"><?= number_format($statDocs) ?></p>
+            <p class="text-lg font-black tabular-nums text-slate-900 dark:text-white leading-tight"><?= number_format($statDocs) ?></p>
         </div>
     </a>
 
     <!-- Security Alerts -->
-    <a href="audit_logs.php?action=LOGIN_FAILED"
-       class="bg-white dark:bg-[#111c36] rounded-xl border <?= $actionFilter === 'LOGIN_FAILED' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group">
+    <a href="audit_logs.php?action=LOGIN_FAILED" style="--stagger-i: 3"
+       class="stagger-item bg-white dark:bg-[#111c36] rounded-xl border <?= $actionFilter === 'LOGIN_FAILED' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group">
         <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
             <i class="fa-solid fa-shield-halved"></i>
         </div>
         <div>
             <p class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Security Alerts</p>
-            <p class="text-lg font-black text-<?= $statAlerts > 0 ? 'rose-600 dark:text-rose-400' : 'slate-900 dark:text-white' ?> leading-tight"><?= number_format($statAlerts) ?></p>
+            <p class="text-lg font-black tabular-nums text-<?= $statAlerts > 0 ? 'rose-600 dark:text-rose-400' : 'slate-900 dark:text-white' ?> leading-tight"><?= number_format($statAlerts) ?></p>
         </div>
     </a>
 </div>

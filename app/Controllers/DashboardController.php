@@ -17,9 +17,15 @@ class DashboardController extends BaseController {
         $metrics = CertificateModel::getDepartmentMetrics();
 
         // Fetch Audit Logs for the central live ledger via AuditLogger Service
-        $search = $_GET['search'] ?? '';
-        $actionFilter = $_GET['action'] ?? '';
-        $page = max(1, (int)($_GET['page'] ?? 1));
+        $search = trim($_GET['search'] ?? '');
+        if (strlen($search) > 100) {
+            $search = substr($search, 0, 100);
+        }
+        $actionFilter = trim($_GET['action'] ?? '');
+        if (strlen($actionFilter) > 50) {
+            $actionFilter = substr($actionFilter, 0, 50);
+        }
+        $page = max(1, min(1000, (int)($_GET['page'] ?? 1)));
         $perPage = 10;
 
         $logData = AuditLogger::getPaginatedLogs($search, $actionFilter, $page, $perPage);

@@ -59,6 +59,21 @@ class UploadControllerTest extends TestCase {
         $this->assertEquals('error', $controller->jsonOutput['status']);
     }
 
+    public function testHandleUploadApiRejectsInvalidCsrfToken(): void {
+        AuthService::attempt('dean', 'admin123');
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = [
+            'csrf_token' => 'invalid_csrf_token_xyz'
+        ];
+
+        $controller = new TestableUploadController();
+        $this->runControllerAction(fn() => $controller->handleUploadApi());
+
+        $this->assertEquals(403, $controller->jsonStatusCode);
+        $this->assertStringContains('CSRF', $controller->jsonOutput['message']);
+    }
+
     public function testHandleCommitApiRejectsInvalidCsrfToken(): void {
         AuthService::attempt('dean', 'admin123');
 

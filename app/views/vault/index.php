@@ -119,11 +119,25 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </a>
         <?php endforeach; ?>
     </div>
+    <?php
+        $activeFilterCount = ($search !== '' ? 1 : 0) + ($dateFrom !== '' ? 1 : 0) + ($dateTo !== '' ? 1 : 0) + ($issuedYear !== '' ? 1 : 0) + ($isDean && $targetFacultyId ? 1 : 0);
+    ?>
+    <button type="button" onclick="toggleVaultFilters()" id="vaultFilterToggleBtn" aria-expanded="true" aria-controls="vaultFilterDisclosure"
+            class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer">
+        <i class="fa-solid fa-sliders text-[10px] text-blue-600 dark:text-blue-400"></i>
+        <span>Date &amp; Search Filters</span>
+        <?php if ($activeFilterCount > 0): ?>
+            <span class="px-1.5 py-0.2 rounded-full bg-blue-600 text-white text-[9px] font-bold tabular-nums"><?= $activeFilterCount ?></span>
+        <?php endif; ?>
+        <i id="vaultFilterChevron" class="fa-solid fa-chevron-up text-[9px] text-slate-400 transition-transform duration-200"></i>
+    </button>
 </div>
 
-<!-- Date Issued & Multi-Field Filter Bar (Requirements 7 & 8) -->
-<div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 shadow-sm space-y-3 transition-colors">
-    <form method="GET" action="vault.php" class="space-y-3">
+<!-- Date Issued & Multi-Field Filter Bar with Progressive Disclosure (#19 Progressive disclosure) -->
+<div id="vaultFilterDisclosure" class="disclosure-panel">
+    <div>
+        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 shadow-sm space-y-3 transition-colors">
+            <form method="GET" action="vault.php" class="space-y-3">
         <input type="hidden" name="view" value="<?= htmlspecialchars($viewMode) ?>">
         <?php if ($category !== 'All'): ?>
             <input type="hidden" name="category" value="<?= htmlspecialchars($category) ?>">
@@ -212,19 +226,21 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
         <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
             <span class="flex items-center gap-1.5">
-                <i class="fa-solid fa-shield-halved text-emerald-600 text-xs"></i>
-                <span class="font-medium text-slate-600">Strict Date Filtering: Evaluates certificate's actual <strong>Issued Date</strong> (normalized ISO YYYY-MM-DD), not system upload timestamp.</span>
+                <i class="fa-solid fa-shield-halved text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                <span class="font-medium text-slate-600 dark:text-slate-300">Strict Date Filtering: Evaluates certificate's actual <strong>Issued Date</strong> (normalized ISO YYYY-MM-DD), not system upload timestamp.</span>
             </span>
-            <span class="font-mono text-slate-600">Matching Records: <strong><?= count($records) ?></strong></span>
+            <span class="font-mono tabular-nums text-slate-600 dark:text-slate-300">Matching Records: <strong><?= count($records) ?></strong></span>
         </div>
-    </form>
+            </form>
+        </div>
+    </div>
 </div>
 
 <!-- Bulk Actions Toolbar (Requirement 9) -->
 <div id="bulk-toolbar" class="hidden bg-slate-900 text-white rounded-xl p-3 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in duration-200">
     <div class="flex items-center gap-3">
         <label class="flex items-center gap-2 font-bold cursor-pointer">
-            <input type="checkbox" id="bulk-select-all" onchange="toggleSelectAll(this)" class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4">
+            <input type="checkbox" id="bulk-select-all" onchange="toggleSelectAll(this)" class="rounded border-slate-500 dark:border-slate-600 dark:bg-slate-800 text-blue-600 accent-blue-600 focus:ring-blue-500 w-4 h-4">
             <span id="bulk-selection-count">0 items selected</span>
         </label>
         <span class="text-white/40">|</span>
@@ -246,23 +262,23 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <!-- Main Records Display: Table View or Grid View (Requirement 5) -->
 <?php if (empty($records)): ?>
-    <div class="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm space-y-3">
-        <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center text-2xl">
+    <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-sm space-y-3 transition-colors">
+        <div class="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 mx-auto flex items-center justify-center text-2xl">
             <i class="fa-regular fa-folder-open"></i>
         </div>
         <div>
-            <h3 class="text-sm font-bold text-slate-800">No cryptographic records found</h3>
-            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">No cryptographic records found</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
                 <?= $search || $dateFrom || $dateTo || $issuedYear ? 'No records match the selected Issued Date range or keyword.' : 'Ingest your seminars, publications, or certificates via the Smart Pipeline to securely archive them.' ?>
             </p>
         </div>
         <div class="pt-2 flex items-center justify-center gap-2">
             <?php if ($search || $dateFrom || $dateTo || $issuedYear): ?>
-                <a href="vault.php?view=<?= urlencode($viewMode) ?>" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">
+                <a href="vault.php?view=<?= urlencode($viewMode) ?>" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
                     Reset Date &amp; Keyword Filters
                 </a>
             <?php endif; ?>
-            <a href="upload.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white text-xs font-bold shadow-sm transition-all">
+            <a href="upload.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white text-xs font-bold shadow-sm transition-all">
                 <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
                 <span>Ingest Document Now</span>
             </a>
@@ -276,7 +292,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <thead class="bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold">
                     <tr>
                         <th class="p-3 w-10 text-center">
-                            <input type="checkbox" onchange="toggleSelectAll(this)" class="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
+                            <input type="checkbox" onchange="toggleSelectAll(this)" class="rounded border-slate-300 dark:border-slate-600 dark:bg-slate-800 text-blue-600 accent-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
                         </th>
                         <th class="p-3 w-12 text-slate-400 font-mono">#</th>
                         <th class="p-3">Document Title</th>
@@ -297,7 +313,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         ?>
                         <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors group <?= $isCoAuthor ? 'bg-purple-50/30 dark:bg-purple-950/10' : '' ?>">
                             <td class="p-3 text-center">
-                                <input type="checkbox" name="record_select" value="<?= $cert['id'] ?>" onchange="updateSelectionBar()" class="record-checkbox rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
+                                <input type="checkbox" name="record_select" value="<?= $cert['id'] ?>" onchange="updateSelectionBar()" class="record-checkbox rounded border-slate-300 dark:border-slate-600 dark:bg-slate-800 text-blue-600 accent-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
                             </td>
                             <td class="p-3 font-mono text-slate-400 font-bold"><?= $idx + 1 ?></td>
                             <td class="p-3 font-bold text-slate-900 dark:text-slate-100 max-w-xs">
@@ -389,12 +405,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                         <span>View</span>
                                     </a>
                                     <a href="view_document.php?id=<?= $cert['id'] ?>&download=1"
-                                       class="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs transition-all"
+                                       class="touch-target p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs transition-all"
                                        title="Volatile Download">
                                         <i class="fa-solid fa-download"></i>
                                     </a>
                                     <button type="button" onclick="confirmDelete(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= $isCoAuthor ? 'true' : 'false' ?>, <?= htmlspecialchars(json_encode($cert['faculty_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>)"
-                                            class="p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/60 <?= $isCoAuthor ? 'text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300' : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400' ?> transition-colors cursor-pointer"
+                                            class="touch-target p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/60 <?= $isCoAuthor ? 'text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300' : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400' ?> transition-colors cursor-pointer"
                                             title="<?= $isCoAuthor ? 'Remove from My Vault (Disassociate Co-Authorship)' : 'Permanently Delete Record' ?>">
                                         <i class="<?= $isCoAuthor ? 'fa-solid fa-user-minus' : 'fa-regular fa-trash-can' ?>"></i>
                                     </button>
@@ -409,17 +425,17 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 <?php else: ?>
     <!-- Grid View -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        <?php foreach ($records as $cert): ?>
+        <?php foreach ($records as $cardIdx => $cert): ?>
             <?php
                 $isOwner = ((int)$cert['faculty_id'] === (int)$currentUser['id']);
                 $isCoAuthor = !$isDean && !$isOwner;
             ?>
-            <div class="bg-white dark:bg-[#111c36] rounded-xl border <?= $isCoAuthor ? 'border-purple-200 dark:border-purple-900/60 ring-1 ring-purple-100 dark:ring-purple-900/30' : 'border-slate-200 dark:border-slate-800' ?> p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+            <div style="--stagger-i: <?= (int)$cardIdx ?>" class="stagger-item bg-white dark:bg-[#111c36] rounded-xl border <?= $isCoAuthor ? 'border-purple-200 dark:border-purple-900/60 ring-1 ring-purple-100 dark:ring-purple-900/30' : 'border-slate-200 dark:border-slate-800' ?> p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
                 <div>
                     <!-- Card Header -->
                     <div class="flex items-start justify-between gap-2 mb-2">
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <input type="checkbox" name="record_select" value="<?= $cert['id'] ?>" onchange="updateSelectionBar()" class="record-checkbox rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
+                            <input type="checkbox" name="record_select" value="<?= $cert['id'] ?>" onchange="updateSelectionBar()" class="record-checkbox rounded border-slate-300 dark:border-slate-600 dark:bg-slate-800 text-blue-600 accent-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                                 <?= htmlspecialchars($cert['category']) ?>
                             </span>
@@ -538,6 +554,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 <?php endif; ?>
 
 <script>
+    function toggleVaultFilters() {
+        const panel = document.getElementById('vaultFilterDisclosure');
+        const btn = document.getElementById('vaultFilterToggleBtn');
+        const chevron = document.getElementById('vaultFilterChevron');
+        if (!panel) return;
+        const isCollapsed = panel.classList.toggle('is-collapsed');
+        if (btn) btn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        if (chevron) chevron.style.transform = isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
     function updateSelectionBar() {
         const checkboxes = document.querySelectorAll('.record-checkbox:checked');
         const count = checkboxes.length;

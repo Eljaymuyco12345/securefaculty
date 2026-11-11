@@ -57,25 +57,25 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </span>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 text-xs">
-            <div class="bg-white/10 rounded-xl p-3">
-                <span class="text-blue-200 text-[10px] uppercase font-bold block">Active Faculty</span>
-                <strong class="text-xl font-black block mt-0.5"><?= $metrics['total_faculty'] ?> Members</strong>
+            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 0">
+                <span class="text-blue-200 text-[10px] uppercase font-bold tracking-wider block">Active Faculty</span>
+                <strong class="text-xl font-black tabular-nums block mt-0.5"><?= $metrics['total_faculty'] ?> Members</strong>
                 <span class="text-[10px] text-emerald-300 flex items-center gap-1 mt-1"><i class="fa-solid fa-check"></i> 100% RBAC Covered</span>
             </div>
-            <div class="bg-white/10 rounded-xl p-3">
-                <span class="text-blue-200 text-[10px] uppercase font-bold block">Archived Assets</span>
-                <strong class="text-xl font-black block mt-0.5"><?= $metrics['total_records'] ?> Records</strong>
+            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 1">
+                <span class="text-blue-200 text-[10px] uppercase font-bold tracking-wider block">Archived Assets</span>
+                <strong class="text-xl font-black tabular-nums block mt-0.5"><?= $metrics['total_records'] ?> Records</strong>
                 <span class="text-[10px] text-blue-300 mt-1 block">AES-256 Encrypted</span>
             </div>
-            <div class="bg-white/10 rounded-xl p-3">
-                <span class="text-blue-200 text-[10px] uppercase font-bold block">Encrypted Storage</span>
-                <strong class="text-xl font-black block mt-0.5"><?= $metrics['vault_size_mb'] ?> MB</strong>
+            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 2">
+                <span class="text-blue-200 text-[10px] uppercase font-bold tracking-wider block">Encrypted Storage</span>
+                <strong class="text-xl font-black tabular-nums block mt-0.5"><?= $metrics['vault_size_mb'] ?> MB</strong>
                 <span class="text-[10px] text-blue-300 mt-1 block">Volatile RAM Decryption</span>
             </div>
-            <div class="bg-white/10 rounded-xl p-3">
-                <span class="text-blue-200 text-[10px] uppercase font-bold block">OCR Cloud Quota</span>
-                <strong class="text-xl font-black block mt-0.5"><?= number_format($quota['remaining']) ?></strong>
-                <span class="text-[10px] text-emerald-300 mt-1 block"><?= $quota['percentage'] ?>% Used / 25,000</span>
+            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 3">
+                <span class="text-blue-200 text-[10px] uppercase font-bold tracking-wider block">OCR Cloud Quota</span>
+                <strong class="text-xl font-black tabular-nums block mt-0.5"><?= number_format($quota['remaining']) ?></strong>
+                <span class="text-[10px] text-emerald-300 tabular-nums mt-1 block"><?= $quota['percentage'] ?>% Used / 25,000</span>
             </div>
         </div>
     </div>
@@ -253,11 +253,46 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 </button>
             </div>
 
-            <!-- Faculty Name -->
-            <div>
-                <label class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Faculty Name</label>
-                <input type="text" id="advFacultyName" placeholder="Autocomplete input (e.g. Dr. Aaliyah)"
-                    class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500">
+            <!-- Faculty Name Interactive Combobox (#17 Combobox) -->
+            <?php
+                $comboboxFacultyOptions = [];
+                foreach ($displayRows as $r) {
+                    $fn = trim($r['faculty_display'] ?? '');
+                    if ($fn !== '' && !in_array($fn, $comboboxFacultyOptions, true)) {
+                        $comboboxFacultyOptions[] = $fn;
+                    }
+                }
+            ?>
+            <div class="relative" id="advFacultyComboboxWrapper">
+                <label for="advFacultyName" class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Faculty Name (Combobox)</label>
+                <div class="relative">
+                    <input type="text" id="advFacultyName"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-controls="advFacultyListbox"
+                        autocomplete="off"
+                        placeholder="Search or select faculty..."
+                        onfocus="openFacultyCombobox()"
+                        oninput="filterFacultyCombobox(this.value); applyDashboardLiveFilter();"
+                        onkeydown="handleFacultyComboboxKey(event)"
+                        class="w-full pl-2.5 pr-7 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                    <button type="button" tabindex="-1" onclick="toggleFacultyCombobox()" aria-label="Toggle faculty options"
+                            class="absolute inset-y-0 right-0 px-2 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                    </button>
+                </div>
+                <ul id="advFacultyListbox" role="listbox"
+                    class="hidden origin-top-right-menu absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-40 py-1 text-xs divide-y divide-slate-100 dark:divide-slate-800/60">
+                    <?php foreach ($comboboxFacultyOptions as $idx => $facOpt): ?>
+                        <li role="option" id="fac-opt-<?= $idx ?>" data-value="<?= htmlspecialchars($facOpt) ?>"
+                            onclick="selectFacultyComboboxOption(this.dataset.value)"
+                            class="combobox-option px-2.5 py-1.5 cursor-pointer text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-between transition-colors">
+                            <span class="truncate"><?= htmlspecialchars($facOpt) ?></span>
+                            <i class="fa-solid fa-check text-[9px] text-blue-600 dark:text-blue-400 hidden option-check"></i>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
 
             <!-- Date Range & Action -->
@@ -348,26 +383,28 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     let selectedCategoryTag = '';
     let selectedActionTag = '';
 
+    const defaultAdvTagClass = "adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+
     function toggleTag(btn, type) {
         if (type === 'cat') {
             document.querySelectorAll('.adv-tag[data-val="Research"], .adv-tag[data-val="Service"], .adv-tag[data-val="Training"], .adv-tag[data-val="Education"]').forEach(b => {
-                b.className = "adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 text-slate-700 text-[10px] border border-slate-200 hover:bg-slate-200 transition-colors";
+                b.className = defaultAdvTagClass;
             });
             if (selectedCategoryTag === btn.dataset.val) {
                 selectedCategoryTag = '';
             } else {
                 selectedCategoryTag = btn.dataset.val;
-                btn.className = "adv-tag w-full text-left px-2 py-1 rounded bg-blue-100 text-blue-800 font-bold text-[10px] border border-blue-300 transition-colors ring-1 ring-blue-400";
+                btn.className = "adv-tag w-full text-left px-2 py-1 rounded bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-200 font-bold text-[10px] border border-blue-300 dark:border-blue-700 transition-colors ring-1 ring-blue-400 dark:ring-blue-500";
             }
         } else {
             document.querySelectorAll('.adv-tag[data-val="Approve"], .adv-tag[data-val="Reject"], .adv-tag[data-val="Create"], .adv-tag[data-val="Delete"]').forEach(b => {
-                b.className = "adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 text-slate-700 text-[10px] border border-slate-200 hover:bg-slate-200 transition-colors";
+                b.className = defaultAdvTagClass;
             });
             if (selectedActionTag === btn.dataset.val) {
                 selectedActionTag = '';
             } else {
                 selectedActionTag = btn.dataset.val;
-                btn.className = "adv-tag w-full text-left px-2 py-1 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-300 transition-colors ring-1 ring-emerald-400";
+                btn.className = "adv-tag w-full text-left px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 font-bold text-[10px] border border-emerald-300 dark:border-emerald-700 transition-colors ring-1 ring-emerald-400 dark:ring-emerald-500";
             }
         }
         applyDashboardLiveFilter();
@@ -379,7 +416,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         document.getElementById('advFacultyName').value = '';
         document.getElementById('advActionSelect').value = '';
         document.querySelectorAll('.adv-tag').forEach(b => {
-            b.className = "adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 text-slate-700 text-[10px] border border-slate-200 hover:bg-slate-200 transition-colors";
+            b.className = defaultAdvTagClass;
         });
         applyDashboardLiveFilter();
     }
@@ -476,11 +513,116 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     }
 
     function sortTableByTimestamp() {
-        const tbody = document.getElementById('dashboardTableBody');
-        const rows = Array.from(tbody.querySelectorAll('.table-row-item'));
-        rows.reverse();
-        rows.forEach(r => tbody.appendChild(r));
+        const executeSort = function() {
+            const tbody = document.getElementById('dashboardTableBody');
+            const rows = Array.from(tbody.querySelectorAll('.table-row-item'));
+            rows.reverse();
+            rows.forEach(r => tbody.appendChild(r));
+        };
+        if (typeof runWithViewTransition === 'function') {
+            runWithViewTransition(executeSort);
+        } else {
+            executeSort();
+        }
     }
+
+    // #17 Interactive Combobox Controller for Faculty Filter
+    let activeComboboxIndex = -1;
+
+    function openFacultyCombobox() {
+        const listbox = document.getElementById('advFacultyListbox');
+        const input = document.getElementById('advFacultyName');
+        if (!listbox || !input) return;
+        listbox.classList.remove('hidden');
+        input.setAttribute('aria-expanded', 'true');
+        filterFacultyCombobox(input.value);
+    }
+
+    function closeFacultyCombobox() {
+        const listbox = document.getElementById('advFacultyListbox');
+        const input = document.getElementById('advFacultyName');
+        if (!listbox || !input) return;
+        listbox.classList.add('hidden');
+        input.setAttribute('aria-expanded', 'false');
+        activeComboboxIndex = -1;
+    }
+
+    function toggleFacultyCombobox() {
+        const listbox = document.getElementById('advFacultyListbox');
+        if (!listbox) return;
+        if (listbox.classList.contains('hidden')) {
+            openFacultyCombobox();
+            document.getElementById('advFacultyName')?.focus();
+        } else {
+            closeFacultyCombobox();
+        }
+    }
+
+    function filterFacultyCombobox(val) {
+        const listbox = document.getElementById('advFacultyListbox');
+        if (!listbox) return;
+        const q = (val || '').toLowerCase().trim();
+        const opts = Array.from(listbox.querySelectorAll('.combobox-option'));
+        let anyVisible = false;
+        opts.forEach(opt => {
+            const text = (opt.dataset.value || '').toLowerCase();
+            const isMatch = !q || text.includes(q);
+            opt.style.display = isMatch ? '' : 'none';
+            const check = opt.querySelector('.option-check');
+            if (check) {
+                check.classList.toggle('hidden', text !== q || !q);
+            }
+            if (isMatch) anyVisible = true;
+        });
+        activeComboboxIndex = -1;
+        listbox.classList.toggle('hidden', !anyVisible);
+    }
+
+    function selectFacultyComboboxOption(val) {
+        const input = document.getElementById('advFacultyName');
+        if (!input) return;
+        input.value = val;
+        closeFacultyCombobox();
+        applyDashboardLiveFilter();
+    }
+
+    function handleFacultyComboboxKey(e) {
+        const listbox = document.getElementById('advFacultyListbox');
+        if (!listbox) return;
+        const visibleOpts = Array.from(listbox.querySelectorAll('.combobox-option')).filter(o => o.style.display !== 'none');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (listbox.classList.contains('hidden')) openFacultyCombobox();
+            activeComboboxIndex = Math.min(activeComboboxIndex + 1, visibleOpts.length - 1);
+            highlightComboboxOption(visibleOpts);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeComboboxIndex = Math.max(activeComboboxIndex - 1, 0);
+            highlightComboboxOption(visibleOpts);
+        } else if (e.key === 'Enter' && activeComboboxIndex >= 0 && visibleOpts[activeComboboxIndex]) {
+            e.preventDefault();
+            selectFacultyComboboxOption(visibleOpts[activeComboboxIndex].dataset.value);
+        } else if (e.key === 'Escape') {
+            closeFacultyCombobox();
+        }
+    }
+
+    function highlightComboboxOption(visibleOpts) {
+        visibleOpts.forEach((opt, i) => {
+            if (i === activeComboboxIndex) {
+                opt.classList.add('bg-blue-50', 'dark:bg-blue-950/60', 'font-bold');
+                opt.scrollIntoView({ block: 'nearest' });
+            } else {
+                opt.classList.remove('bg-blue-50', 'dark:bg-blue-950/60', 'font-bold');
+            }
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#advFacultyComboboxWrapper')) {
+            closeFacultyCombobox();
+        }
+    });
 </script>
 
 <?php require_once __DIR__ . '/../layouts/layout_end.php'; ?>

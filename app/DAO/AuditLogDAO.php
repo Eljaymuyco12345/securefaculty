@@ -48,8 +48,9 @@ class AuditLogDAO implements AuditLogDAOInterface {
         ";
         $params = [];
         if ($search && trim($search) !== '') {
+            $trimmedSearch = mb_substr(trim($search), 0, 100);
             $countQuery .= " AND (a.details LIKE :s1 OR a.username LIKE :s2 OR a.ip_address LIKE :s3 OR a.action LIKE :s4)";
-            $term = "%" . trim($search) . "%";
+            $term = "%" . $trimmedSearch . "%";
             $params[':s1'] = $term;
             $params[':s2'] = $term;
             $params[':s3'] = $term;
@@ -57,7 +58,7 @@ class AuditLogDAO implements AuditLogDAOInterface {
         }
         if ($actionFilter && trim($actionFilter) !== '') {
             $countQuery .= " AND a.action = :act";
-            $params[':act'] = trim($actionFilter);
+            $params[':act'] = mb_substr(trim($actionFilter), 0, 50);
         }
 
         $countStmt = $pdo->prepare($countQuery);

@@ -230,6 +230,12 @@ class UserDAO implements UserDAOInterface {
             ]);
         }
 
+        // Synchronize active session if the logged-in user updated their own profile/name
+        if (($currentUserId !== null && $id === $currentUserId) || (isset($_SESSION['user_id']) && (int)$_SESSION['user_id'] === $id)) {
+            $_SESSION['full_name'] = $fullName;
+            $_SESSION['role'] = $newRole;
+        }
+
         return true;
     }
 
@@ -253,9 +259,12 @@ class UserDAO implements UserDAOInterface {
                 $refCheck = $pdo->prepare("SELECT COUNT(*) FROM certificates WHERE file_path = ? AND faculty_id != ?");
                 $refCheck->execute([$filePath, $id]);
                 if ((int)$refCheck->fetchColumn() === 0) {
-                    $fullPath = VAULT_DIR . DIRECTORY_SEPARATOR . $filePath;
-                    if (file_exists($fullPath)) {
-                        @unlink($fullPath);
+                    $cleanFilename = basename($filePath);
+                    $fullPath = VAULT_DIR . DIRECTORY_SEPARATOR . $cleanFilename;
+                    $realVaultDir = realpath(VAULT_DIR);
+                    $realFullPath = realpath($fullPath);
+                    if ($realFullPath !== false && $realVaultDir !== false && str_starts_with($realFullPath, $realVaultDir . DIRECTORY_SEPARATOR)) {
+                        @unlink($realFullPath);
                     }
                 }
             }
