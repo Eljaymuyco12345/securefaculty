@@ -118,7 +118,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <button type="button" onclick="openProgressModal()" class="text-[11px] font-bold text-blue-700 dark:text-blue-400 hover:underline">
                     View Live Telemetry Modal &rarr;
                 </button>
-                <button type="button" onclick="document.getElementById('stage-info-box').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
+                <button type="button" onclick="closeStageInfoBox()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm cursor-pointer" aria-label="Close stage details">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -630,6 +630,10 @@ Upload a file above to extract metadata.</div>
     };
 
     function handleStageClick(stageNum) {
+        if (stageNum === 1 && telemetryState.currentStage > 1 && telemetryState.currentStage <= 2) {
+            resetPipelineToDefault();
+            return;
+        }
         showStageInfo(stageNum);
     }
 
@@ -644,6 +648,14 @@ Upload a file above to extract metadata.</div>
         desc.textContent = info.desc;
         icon.className = `fa-solid ${info.icon} text-blue-600 text-base`;
         box.classList.remove('hidden');
+    }
+
+    function closeStageInfoBox() {
+        const box = document.getElementById('stage-info-box');
+        if (box) box.classList.add('hidden');
+        if (telemetryState.currentStage <= 2) {
+            resetPipelineToDefault();
+        }
     }
 
     function setDateDetectionStatus(dateVal) {
