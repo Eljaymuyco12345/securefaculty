@@ -207,13 +207,21 @@ class CertificateDAO implements CertificateDAOInterface {
         }
 
         if ($dateFrom && trim($dateFrom) !== '') {
+            $from = trim($dateFrom);
+            if (preg_match('/^\d{4}-\d{2}$/', $from)) {
+                $from .= '-01';
+            }
             $sql .= " AND c.date_issued >= :date_from";
-            $params[':date_from'] = trim($dateFrom);
+            $params[':date_from'] = $from;
         }
 
         if ($dateTo && trim($dateTo) !== '') {
+            $to = trim($dateTo);
+            if (preg_match('/^\d{4}-\d{2}$/', $to)) {
+                $to = date('Y-m-t', strtotime($to . '-01'));
+            }
             $sql .= " AND c.date_issued <= :date_to";
-            $params[':date_to'] = trim($dateTo);
+            $params[':date_to'] = $to;
         }
 
         if ($issuedYear && trim($issuedYear) !== '' && $issuedYear !== 'all') {
@@ -277,13 +285,21 @@ class CertificateDAO implements CertificateDAOInterface {
         }
 
         if ($dateFrom && trim($dateFrom) !== '') {
+            $from = trim($dateFrom);
+            if (preg_match('/^\d{4}-\d{2}$/', $from)) {
+                $from .= '-01';
+            }
             $sql .= " AND c.date_issued >= :date_from";
-            $params[':date_from'] = trim($dateFrom);
+            $params[':date_from'] = $from;
         }
 
         if ($dateTo && trim($dateTo) !== '') {
+            $to = trim($dateTo);
+            if (preg_match('/^\d{4}-\d{2}$/', $to)) {
+                $to = date('Y-m-t', strtotime($to . '-01'));
+            }
             $sql .= " AND c.date_issued <= :date_to";
-            $params[':date_to'] = trim($dateTo);
+            $params[':date_to'] = $to;
         }
 
         if ($issuedYear && trim($issuedYear) !== '' && $issuedYear !== 'all') {
