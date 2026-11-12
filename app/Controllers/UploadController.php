@@ -46,7 +46,7 @@ class UploadController extends BaseController {
         // Housekeeping: purge stale uncommitted staged files older than 1 hour
         CertificateService::purgeStaleTempFiles(3600);
 
-        $pythonBin = defined('PYTHON_BIN') ? PYTHON_BIN : 'python';
+        $pythonBin = $this->getPythonBinary();
 
         // Check for multiple files upload (e.g. multi-page photo compilation)
         $isMultiple = isset($_FILES['files']) && is_array($_FILES['files']['name']) && count($_FILES['files']['name']) > 1;
@@ -54,25 +54,38 @@ class UploadController extends BaseController {
         if ($isMultiple) {
             $tempPaths = [];
             $count = count($_FILES['files']['name']);
+            $maxPages = 30;
+            if ($count > $maxPages) {
+                $this->jsonResponse(['status' => 'error', 'message' => "Multi-page compilation exceeded maximum limit of {$maxPages} pages."], 400);
+            }
+
+            $maxFileSize = 25 * 1024 * 1024;
             $firstOriginalName = basename($_FILES['files']['name'][0]);
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
 
-            for ($i = 0; $i < $count; $i++) {
-                if ($_FILES['files']['error'][$i] !== UPLOAD_ERR_OK) continue;
-                $name = basename($_FILES['files']['name'][$i]);
-                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                if (!in_array($ext, ['jpg', 'jpeg', 'png'])) continue;
+            try {
+                for ($i = 0; $i < $count; $i++) {
+                    if ($_FILES['files']['error'][$i] !== UPLOAD_ERR_OK) continue;
 
-                // Server-side MIME validation (OWASP A04)
-                $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                $detectedMime = finfo_file($finfo, $_FILES['files']['tmp_name'][$i]);
-                finfo_close($finfo);
-                if (!in_array($detectedMime, ['image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png'])) continue;
+                    $pSize = $_FILES['files']['size'][$i] ?? (file_exists($_FILES['files']['tmp_name'][$i]) ? filesize($_FILES['files']['tmp_name'][$i]) : 0);
+                    if ($pSize > $maxFileSize) continue;
 
-                $tempName = bin2hex(random_bytes(10)) . "_page_{$i}.{$ext}";
-                $dest = TEMP_DIR . DIRECTORY_SEPARATOR . $tempName;
-                if (move_uploaded_file($_FILES['files']['tmp_name'][$i], $dest)) {
-                    $tempPaths[] = $dest;
+                    $name = basename($_FILES['files']['name'][$i]);
+                    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    if (!in_array($ext, ['jpg', 'jpeg', 'png'])) continue;
+
+                    // Server-side MIME validation (OWASP A04)
+                    $detectedMime = finfo_file($finfo, $_FILES['files']['tmp_name'][$i]);
+                    if (!in_array($detectedMime, ['image/jpeg', 'image/pjpeg', 'image/png', 'image/x-png'])) continue;
+
+                    $tempName = bin2hex(random_bytes(10)) . "_page_{$i}.{$ext}";
+                    $dest = TEMP_DIR . DIRECTORY_SEPARATOR . $tempName;
+                    if (move_uploaded_file($_FILES['files']['tmp_name'][$i], $dest)) {
+                        $tempPaths[] = $dest;
+                    }
                 }
+            } finally {
+                finfo_close($finfo);
             }
 
             if (empty($tempPaths)) {
@@ -91,6 +104,13 @@ class UploadController extends BaseController {
 
             $output = shell_exec($cmd);
             $result = json_decode($output, true);
+
+            // Housekeeping: Purge individual staged page slices immediately after compilation (Zero-Plaintext)
+            foreach ($tempPaths as $stagedPage) {
+                if (file_exists($stagedPage)) {
+                    @unlink($stagedPage);
+                }
+            }
 
             if ($result && isset($result['status']) && $result['status'] === 'success') {
                 $compiledFilename = $result['compiled_pdf'];

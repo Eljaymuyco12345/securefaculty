@@ -112,7 +112,7 @@
     </div>
 
     <!-- 2. System Universal Alert & Validation Modal (Replaces browser alert()) -->
-    <div id="system-alert-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+    <div id="system-alert-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="if(event.target===this){this.classList.add('hidden');if(typeof setBodyModalLock==='function')setBodyModalLock(false);}">
         <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
             <div id="alert-icon-container" class="optical-center w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl shadow-inner">
                 <!-- Icon injected dynamically -->
@@ -133,7 +133,7 @@
     </div>
 
     <!-- 3. System Universal Confirmation Modal (Replaces browser confirm()) -->
-    <div id="system-confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+    <div id="system-confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="if(event.target===this){this.classList.add('hidden');if(typeof setBodyModalLock==='function')setBodyModalLock(false);}">
         <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex items-start gap-3.5">
                 <div id="confirm-icon-box" class="optical-center w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
@@ -211,11 +211,28 @@
             });
         }
 
+        function setBodyModalLock(isLocked) {
+            if (isLocked) {
+                document.body.classList.add('overflow-hidden');
+            } else {
+                setTimeout(() => {
+                    const activeModals = document.querySelectorAll(
+                        '#settings-modal:not(.hidden), #system-alert-modal:not(.hidden), #system-confirm-modal:not(.hidden), #stage-progress-modal:not(.hidden), #modal-create-user:not(.hidden), #modal-edit-user:not(.hidden), #modal-reset-pass:not(.hidden)'
+                    );
+                    if (activeModals.length === 0) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                }, 50);
+            }
+        }
+
         function openSettingsModal() {
+            setBodyModalLock(true);
             document.getElementById('settings-modal').classList.remove('hidden');
         }
         function closeSettingsModal() {
             document.getElementById('settings-modal').classList.add('hidden');
+            setBodyModalLock(false);
         }
 
         function saveSelfDisplayName() {
@@ -275,6 +292,32 @@
         }
 
         function switchUser(u, p) {
+            fetch('api/user_handler.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.CSRF_TOKEN || ''
+                },
+                body: JSON.stringify({
+                    action: 'switch_profile',
+                    target_user: u,
+                    csrf_token: window.CSRF_TOKEN || ''
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success' && data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    fallbackFormSubmit(u, p);
+                }
+            })
+            .catch(() => {
+                fallbackFormSubmit(u, p);
+            });
+        }
+
+        function fallbackFormSubmit(u, p) {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = 'login.php';
@@ -293,6 +336,41 @@
             document.body.appendChild(form);
             form.submit();
         }
+
+        /**
+         * Real-Time Offline System Monitor (Item 11 Option A)
+         */
+        function initNetworkMonitor() {
+            const banner = document.getElementById('system-offline-banner');
+            const msg = document.getElementById('offline-message');
+            const icon = document.getElementById('offline-icon');
+            if (!banner) return;
+
+            function showOffline() {
+                banner.className = 'fixed top-0 inset-x-0 z-[100] px-4 py-2 text-xs font-semibold shadow-md flex items-center justify-between bg-amber-500 text-slate-950 transition-all duration-300';
+                if (icon) icon.className = 'fa-solid fa-wifi-slash text-sm mr-2';
+                if (msg) msg.textContent = 'System Offline: Local AES-256 Vault & Document Viewing operational. Cloud OCR extraction paused.';
+                banner.classList.remove('hidden');
+            }
+
+            function showOnline() {
+                banner.className = 'fixed top-0 inset-x-0 z-[100] px-4 py-2 text-xs font-semibold shadow-md flex items-center justify-between bg-emerald-600 text-white transition-all duration-300';
+                if (icon) icon.className = 'fa-solid fa-wifi text-sm mr-2';
+                if (msg) msg.textContent = 'Network Restored: Online services and Cloud OCR reconnected.';
+                banner.classList.remove('hidden');
+                setTimeout(() => {
+                    banner.classList.add('hidden');
+                }, 3500);
+            }
+
+            window.addEventListener('offline', showOffline);
+            window.addEventListener('online', showOnline);
+
+            if (!navigator.onLine) {
+                showOffline();
+            }
+        }
+        initNetworkMonitor();
 
         /**
          * Show custom styled System Alert Modal
@@ -330,11 +408,13 @@
 
             btn.onclick = function() {
                 modal.classList.add('hidden');
+                setBodyModalLock(false);
                 if (typeof opts.onOk === 'function') {
                     opts.onOk();
                 }
             };
 
+            setBodyModalLock(true);
             modal.classList.remove('hidden');
         }
 
@@ -372,14 +452,17 @@
 
             cancelBtn.onclick = function() {
                 modal.classList.add('hidden');
+                setBodyModalLock(false);
                 if (typeof opts.onCancel === 'function') opts.onCancel();
             };
 
             proceedBtn.onclick = function() {
                 modal.classList.add('hidden');
+                setBodyModalLock(false);
                 if (typeof opts.onConfirm === 'function') opts.onConfirm();
             };
 
+            setBodyModalLock(true);
             modal.classList.remove('hidden');
         }
 

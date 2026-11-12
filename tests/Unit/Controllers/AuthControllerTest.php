@@ -28,6 +28,7 @@ class AuthControllerTest extends TestCase {
         parent::setUp();
         AuthService::initSession();
         $_SESSION = [];
+        $_POST['csrf_token'] = AuthService::getCsrfToken();
         $pdo = Database::getConnection();
         $pdo->exec("DELETE FROM audit_logs WHERE action IN ('LOGIN_FAILED', 'LOGIN_RATE_LIMITED', 'BRUTE_FORCE_LOCKOUT')");
     }
@@ -130,6 +131,19 @@ class AuthControllerTest extends TestCase {
         $_POST['username'] = 'dean';
         $_POST['password'] = 'admin123';
         $_POST['csrf_token'] = 'malicious_invalid_csrf_token_12345';
+
+        $controller = new TestableAuthController();
+        $this->runControllerAction(fn() => $controller->handleLogin());
+
+        $this->assertEquals('index.php?error=csrf_violation', $controller->redirectedTo);
+        $this->assertFalse(AuthService::check());
+    }
+
+    public function testHandleLoginWithMissingCsrfTokenRedirectsWithError(): void {
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST['username'] = 'dean';
+        $_POST['password'] = 'admin123';
+        unset($_POST['csrf_token']);
 
         $controller = new TestableAuthController();
         $this->runControllerAction(fn() => $controller->handleLogin());

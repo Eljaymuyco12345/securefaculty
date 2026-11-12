@@ -14,13 +14,13 @@ class ExportController extends BaseController {
         $isDean = AuthService::isDean();
 
         $format = $_GET['format'] ?? 'html';
-        $rawIds = $_GET['ids'] ?? '';
-        $category = $_GET['category'] ?? 'All';
-        $search = trim($_GET['search'] ?? '');
+        $rawIds = substr($_GET['ids'] ?? '', 0, 500);
+        $category = substr($_GET['category'] ?? 'All', 0, 50);
+        $search = trim(substr($_GET['search'] ?? '', 0, 100));
         $targetFacultyId = !empty($_GET['faculty_id']) ? (int)$_GET['faculty_id'] : null;
-        $dateFrom = trim($_GET['date_from'] ?? '');
-        $dateTo = trim($_GET['date_to'] ?? '');
-        $issuedYear = trim($_GET['issued_year'] ?? '');
+        $dateFrom = trim(substr($_GET['date_from'] ?? '', 0, 10));
+        $dateTo = trim(substr($_GET['date_to'] ?? '', 0, 10));
+        $issuedYear = trim(substr($_GET['issued_year'] ?? '', 0, 4));
 
         // Query records based on bulk selected IDs or active filters
         if (!empty($rawIds)) {
@@ -120,7 +120,7 @@ class ExportController extends BaseController {
             $tempPdf = TEMP_DIR . DIRECTORY_SEPARATOR . 'report_' . bin2hex(random_bytes(8)) . '.pdf';
             file_put_contents($tempJson, json_encode($payload));
 
-            $pythonBin = defined('PYTHON_BIN') ? PYTHON_BIN : 'python3';
+            $pythonBin = $this->getPythonBinary();
             $generatorScript = BASE_DIR . DIRECTORY_SEPARATOR . 'python_engine' . DIRECTORY_SEPARATOR . 'generate_report_pdf.py';
 
             $cmd = sprintf(

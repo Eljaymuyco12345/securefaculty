@@ -48,6 +48,9 @@ CREATE TABLE IF NOT EXISTS `certificates` (
     `ocr_confidence` DECIMAL(5,2) DEFAULT 0.95,
     `status` VARCHAR(50) DEFAULT 'approved',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX `idx_certificates_faculty` (`faculty_id`),
+    INDEX `idx_certificates_hash` (`file_hash`),
+    INDEX `idx_certificates_date` (`date_issued`),
     FOREIGN KEY (`faculty_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -56,6 +59,8 @@ CREATE TABLE IF NOT EXISTS `certificate_authors` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `certificate_id` INT NOT NULL,
     `user_id` INT NOT NULL,
+    INDEX `idx_cert_authors_cert` (`certificate_id`),
+    INDEX `idx_cert_authors_user` (`user_id`),
     FOREIGN KEY (`certificate_id`) REFERENCES `certificates`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -71,7 +76,11 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
     `details` TEXT,
     `ip_address` VARCHAR(45),
     `user_agent` VARCHAR(255),
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX `idx_audit_created` (`created_at`),
+    INDEX `idx_audit_action` (`action`),
+    INDEX `idx_audit_user` (`user_id`),
+    INDEX `idx_audit_ip` (`ip_address`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 6. API Quotas Table (Real-Time Quota Monitor)
@@ -100,17 +109,6 @@ CREATE TABLE IF NOT EXISTS `processing_batches` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 8. Performance & Query Acceleration Indexes
-CREATE INDEX IF NOT EXISTS `idx_certificates_faculty` ON `certificates`(`faculty_id`);
-CREATE INDEX IF NOT EXISTS `idx_certificates_hash` ON `certificates`(`file_hash`);
-CREATE INDEX IF NOT EXISTS `idx_certificates_date` ON `certificates`(`date_issued`);
-CREATE INDEX IF NOT EXISTS `idx_cert_authors_cert` ON `certificate_authors`(`certificate_id`);
-CREATE INDEX IF NOT EXISTS `idx_cert_authors_user` ON `certificate_authors`(`user_id`);
-CREATE INDEX IF NOT EXISTS `idx_audit_created` ON `audit_logs`(`created_at`);
-CREATE INDEX IF NOT EXISTS `idx_audit_action` ON `audit_logs`(`action`);
-CREATE INDEX IF NOT EXISTS `idx_audit_user` ON `audit_logs`(`user_id`);
-CREATE INDEX IF NOT EXISTS `idx_audit_ip` ON `audit_logs`(`ip_address`);
 
 -- Initial API Quota Seed
 INSERT INTO `api_quotas` (`service_name`, `monthly_limit`, `current_usage`, `month_year`)

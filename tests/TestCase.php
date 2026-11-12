@@ -5,6 +5,11 @@
  * state isolation, and comprehensive failure diagnostic reporting.
  */
 
+// Default to sqlite driver for standalone testing if not explicitly configured in environment
+if (getenv('DB_DRIVER') === false) {
+    putenv('DB_DRIVER=sqlite');
+}
+
 require_once __DIR__ . '/../app/bootstrap.php';
 
 class ControllerTerminatedException extends Exception {

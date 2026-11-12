@@ -6,6 +6,7 @@ Produces publication-grade, portrait vector PDF reports with institutional lette
 import sys
 import json
 import os
+import html
 from datetime import datetime
 
 try:
@@ -54,7 +55,7 @@ class NumberedCanvas:
                 self.setFillColor(colors.HexColor("#475569"))
                 # Running Footer
                 footer_text = f"SecureFaculty Institutional Records System  |  Page {self._pageNumber} of {page_count}"
-                confidential_text = "OFFICIAL TRANSMITTAL  •  RA 10173 COMPLIANT  •  ISUFST CICI"
+                confidential_text = "OFFICIAL TRANSMITTAL  |  RA 10173 COMPLIANT  |  ISUFST CICI"
                 
                 # Portrait A4 width is 595.27 pt, height is 841.89 pt
                 self.drawString(24, 20, confidential_text)
@@ -71,6 +72,10 @@ class NumberedCanvas:
 
 
 def generate_pdf(data_json_path, output_pdf_path):
+    out_dir = os.path.dirname(os.path.abspath(output_pdf_path))
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+
     with open(data_json_path, 'r', encoding='utf-8') as f:
         payload = json.load(f)
 
@@ -126,16 +131,16 @@ def generate_pdf(data_json_path, output_pdf_path):
     story.append(divider)
     story.append(Spacer(1, 5))
 
-    # 2. Audit Scope & Metadata Header
-    category_text = meta.get('category', 'All')
-    date_scope = meta.get('date_scope', 'All Validated Records')
-    auditor = meta.get('auditor_name', 'Authorized Administrator')
-    generated_at = meta.get('generated_at', datetime.now().strftime("%B %d, %Y at %I:%M %p"))
+    # 2. Audit Scope & Metadata Header (HTML-escaped for XML safety)
+    category_text = html.escape(str(meta.get('category', 'All')))
+    date_scope = html.escape(str(meta.get('date_scope', 'All Validated Records')))
+    auditor = html.escape(str(meta.get('auditor_name', 'Authorized Administrator')))
+    generated_at = html.escape(str(meta.get('generated_at', datetime.now().strftime("%B %d, %Y at %I:%M %p"))))
     total_count = len(records)
 
     header_data = [
         [
-            Paragraph(f"<b>OFFICIAL CERTIFICATE &amp; ACCREDITATION LEDGER</b><br/><font color='#64748b'>Scope: <b>{category_text}</b>  •  Period: {date_scope}</font>", ledger_title),
+            Paragraph(f"<b>OFFICIAL CERTIFICATE &amp; ACCREDITATION LEDGER</b><br/><font color='#64748b'>Scope: <b>{category_text}</b>  |  Period: {date_scope}</font>", ledger_title),
             Paragraph(f"<b>Audited By:</b> {auditor}<br/><b>Generated:</b> {generated_at}<br/><b>Total Records:</b> {total_count}", ledger_meta_r)
         ]
     ]
@@ -169,28 +174,30 @@ def generate_pdf(data_json_path, output_pdf_path):
         table_data.append(empty_row)
     else:
         for idx, r in enumerate(records, start=1):
-            title = r.get('title', 'Untitled')
-            ftype = r.get('file_type', 'PDF').upper()
+            if not isinstance(r, dict):
+                continue
+            title = html.escape(str(r.get('title', 'Untitled')))
+            ftype = html.escape(str(r.get('file_type', 'PDF')).upper())
             title_p = Paragraph(f"<b>{title}</b><br/><font size=6.5 color='#64748b'>FORMAT: {ftype}</font>", td_style)
 
-            holder = r.get('faculty_name', 'Faculty Member')
-            rank = r.get('academic_rank', 'CICI Faculty')
-            coauthors = r.get('co_authors', '')
+            holder = html.escape(str(r.get('faculty_name', 'Faculty Member')))
+            rank = html.escape(str(r.get('academic_rank', 'CICI Faculty')))
+            coauthors = html.escape(str(r.get('co_authors', ''))) if r.get('co_authors') else ''
             holder_text = f"<b>{holder}</b><br/><font size=6.5 color='#475569'>{rank}</font>"
             if coauthors:
                 holder_text += f"<br/><font size=6 color='#7c3aed'><b>Co-Authors:</b> {coauthors}</font>"
             holder_p = Paragraph(holder_text, td_style)
 
-            ref_no = r.get('cert_number') or 'N/A'
+            ref_no = html.escape(str(r.get('cert_number') or 'N/A'))
             ref_p = Paragraph(f"<font color='#475569'>{ref_no}</font>", td_center)
 
-            date_issued = r.get('date_issued') or 'Undated'
+            date_issued = html.escape(str(r.get('date_issued') or 'Undated'))
             date_p = Paragraph(f"<b>{date_issued}</b>", td_center)
 
-            issuer = r.get('issuer') or 'Not Specified'
+            issuer = html.escape(str(r.get('issuer') or 'Not Specified'))
             issuer_p = Paragraph(issuer, td_style)
 
-            cat = r.get('category') or 'General'
+            cat = html.escape(str(r.get('category') or 'General'))
             cat_p = Paragraph(cat, td_badge)
 
             crypto_p = Paragraph("AES-256<br/><font size=6 color='#047857'>VERIFIED</font>", td_crypto)
@@ -218,10 +225,14 @@ def generate_pdf(data_json_path, output_pdf_path):
         ('RIGHTPADDING', (0,0), (-1,-1), 3.5),
     ]
 
-    # Alternating row colors
-    for i in range(1, len(table_data)):
-        if i % 2 == 0:
-            t_style.append(('BACKGROUND', (0, i), (-1, i), colors.HexColor("#f8fafc")))
+    if not records:
+        # Span the empty state across all 8 columns to maintain compact single-row height
+        t_style.append(('SPAN', (0, 1), (-1, 1)))
+    else:
+        # Alternating row colors
+        for i in range(1, len(table_data)):
+            if i % 2 == 0:
+                t_style.append(('BACKGROUND', (0, i), (-1, i), colors.HexColor("#f8fafc")))
 
     main_table.setStyle(TableStyle(t_style))
     story.append(main_table)

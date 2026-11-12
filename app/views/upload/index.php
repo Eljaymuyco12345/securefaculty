@@ -232,6 +232,17 @@ Upload a file above to extract metadata.</div>
                     </label>
                 </div>
 
+                <!-- Image Blur Warning Banner -->
+                <div id="image-blur-warning-box" class="hidden p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200 text-xs space-y-1">
+                    <div class="flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 dark:text-rose-400 mt-0.5 text-sm flex-shrink-0"></i>
+                        <div class="flex-1">
+                            <strong class="font-bold text-rose-950 dark:text-rose-100 block">Image Blur Detected</strong>
+                            <p class="text-[11px] text-rose-800 dark:text-rose-200 leading-snug mt-0.5" id="image-blur-warning-msg">Document image appears out-of-focus or low contrast. Please verify the extracted text below carefully.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <?php if ($isDean): ?>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Primary Faculty Record (Dean Oversight):</label>
@@ -720,11 +731,13 @@ Upload a file above to extract metadata.</div>
 
     // Modal Opening & Closing
     function openProgressModal() {
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(true);
         document.getElementById('stage-progress-modal').classList.remove('hidden');
     }
 
     function closeProgressModal(forceReset = false) {
         document.getElementById('stage-progress-modal').classList.add('hidden');
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(false);
         // Client feedback: "if e close telemetry ang stage, ga stuck sa stage 2. dpat ma reset to default without starting to stage 1"
         // If the telemetry modal is closed while the pipeline is in Stage 1 or 2 (pre-validation upload or OCR handshake),
         // or if forceReset is true, automatically reset the pipeline back to default ready state so the user is never stuck in Stage 2.
@@ -1106,6 +1119,10 @@ Upload a file above to extract metadata.</div>
         setActiveStep(1);
         updateModalProgress(15, `Stage 1: Pre-flight inspection & upload (${files.length} document${files.length > 1 ? 's' : ''})...`);
 
+        if (!navigator.onLine) {
+            addTelemetryError('System is currently offline. Ingestion will perform local document conversion; Cloud OCR extraction will fall back to local parser.');
+        }
+
         if (isMultiple) {
             banner.innerHTML = `
                 <div class="flex flex-col items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
@@ -1234,6 +1251,35 @@ Upload a file above to extract metadata.</div>
             document.getElementById('field_category').value = data.metadata.category;
             document.getElementById('field_cert_number').value = data.metadata.cert_number || '';
             setDateDetectionStatus(data.metadata.date_issued);
+
+            // Update dynamic confidence badge
+            const confBadge = document.getElementById('ocrConfidenceBadge');
+            if (confBadge && data.metadata && data.metadata.confidence !== undefined) {
+                const confScore = parseFloat(data.metadata.confidence);
+                const confPercent = data.metadata.confidence_percent || ((confScore * 100).toFixed(1) + '%');
+                if (confScore >= 0.85) {
+                    confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60';
+                    confBadge.textContent = 'Confidence: ' + confPercent;
+                } else if (confScore >= 0.65) {
+                    confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60';
+                    confBadge.textContent = 'Confidence: ' + confPercent + ' (Review Recommended)';
+                } else {
+                    confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60';
+                    confBadge.textContent = 'Confidence: ' + confPercent + ' (Low Accuracy)';
+                }
+            }
+
+            // Handle image blur warning
+            const blurBox = document.getElementById('image-blur-warning-box');
+            if (blurBox) {
+                if (data.metadata && data.metadata.blur_warning) {
+                    blurBox.classList.remove('hidden');
+                    const blurMsgEl = document.getElementById('image-blur-warning-msg');
+                    if (blurMsgEl) blurMsgEl.textContent = data.metadata.blur_warning;
+                } else {
+                    blurBox.classList.add('hidden');
+                }
+            }
 
             // Handle duplicate warning
             const dupBox = document.getElementById('duplicate-warning-box');
@@ -1408,6 +1454,36 @@ Upload a file above to extract metadata.</div>
         document.getElementById('field_date').value = item.metadata?.date_issued || '';
         document.getElementById('field_issuer').value = item.metadata?.issuer || '';
         document.getElementById('field_category').value = item.metadata?.category || 'Seminar';
+        setDateDetectionStatus(item.metadata?.date_issued);
+
+        // Update confidence badge for selected batch item
+        const confBadge = document.getElementById('ocrConfidenceBadge');
+        if (confBadge && item.metadata && item.metadata.confidence !== undefined) {
+            const confScore = parseFloat(item.metadata.confidence);
+            const confPercent = item.metadata.confidence_percent || ((confScore * 100).toFixed(1) + '%');
+            if (confScore >= 0.85) {
+                confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60';
+                confBadge.textContent = 'Confidence: ' + confPercent;
+            } else if (confScore >= 0.65) {
+                confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60';
+                confBadge.textContent = 'Confidence: ' + confPercent + ' (Review Recommended)';
+            } else {
+                confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60';
+                confBadge.textContent = 'Confidence: ' + confPercent + ' (Low Accuracy)';
+            }
+        }
+
+        // Handle image blur warning
+        const blurBox = document.getElementById('image-blur-warning-box');
+        if (blurBox) {
+            if (item.metadata && item.metadata.blur_warning) {
+                blurBox.classList.remove('hidden');
+                const blurMsgEl = document.getElementById('image-blur-warning-msg');
+                if (blurMsgEl) blurMsgEl.textContent = item.metadata.blur_warning;
+            } else {
+                blurBox.classList.add('hidden');
+            }
+        }
 
         const dupBox = document.getElementById('duplicate-warning-box');
         if (item.duplicate_warning) {

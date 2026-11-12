@@ -67,6 +67,49 @@ class TestGenerateReportPdf(unittest.TestCase):
             header = f.read(8)
             self.assertTrue(header.startswith(b'%PDF-1.'), f"File must be valid PDF, got: {header}")
 
+    def test_pdf_generation_empty_records(self):
+        empty_payload = {
+            "meta": {
+                "category": "All",
+                "date_scope": "Empty Records Test",
+                "auditor_name": "Test Auditor"
+            },
+            "records": []
+        }
+        with open(self.temp_json.name, 'w', encoding='utf-8') as f:
+            json.dump(empty_payload, f)
+        generate_report_pdf.generate_pdf(self.temp_json.name, self.temp_pdf.name)
+        self.assertTrue(os.path.exists(self.temp_pdf.name))
+        self.assertGreater(os.path.getsize(self.temp_pdf.name), 1000)
+
+    def test_pdf_generation_special_characters_escaping(self):
+        special_payload = {
+            "meta": {
+                "category": "Science & Tech <Advanced>",
+                "date_scope": "2024 & Beyond",
+                "auditor_name": "Engr. Peña & Partners <Auditor>"
+            },
+            "records": [
+                {
+                    "title": "Machine Learning & AI <Vision> in Education & 'Research'",
+                    "file_type": "PDF",
+                    "faculty_name": "Dr. Juan Dela Peña & Engr. Niño Ibañez",
+                    "academic_rank": "Professor & Dean <CICI>",
+                    "co_authors": "Johnson & Johnson Assoc. <Co-Authors>",
+                    "cert_number": "CERT-2024-#01 & #02",
+                    "date_issued": "2024-10-24",
+                    "issuer": "Department of Science & Technology <DOST>",
+                    "category": "Research & Publication"
+                }
+            ]
+        }
+        with open(self.temp_json.name, 'w', encoding='utf-8') as f:
+            json.dump(special_payload, f)
+        # Must execute cleanly without XML parsing crash
+        generate_report_pdf.generate_pdf(self.temp_json.name, self.temp_pdf.name)
+        self.assertTrue(os.path.exists(self.temp_pdf.name))
+        self.assertGreater(os.path.getsize(self.temp_pdf.name), 1000)
+
 
 if __name__ == '__main__':
     unittest.main()

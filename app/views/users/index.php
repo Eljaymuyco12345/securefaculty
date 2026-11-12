@@ -392,10 +392,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <script>
     function openCreateUserModal() {
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(true);
         document.getElementById('modal-create-user').classList.remove('hidden');
     }
     function closeCreateUserModal() {
         document.getElementById('modal-create-user').classList.add('hidden');
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(false);
         document.getElementById('createUserForm').reset();
     }
 
@@ -415,20 +417,24 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         document.getElementById('edit_empid').value = user.employee_id || '';
         document.getElementById('edit_rank').value = user.academic_rank || '';
         document.getElementById('edit_spec').value = user.specialization || '';
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(true);
         document.getElementById('modal-edit-user').classList.remove('hidden');
     }
     function closeEditUserModal() {
         document.getElementById('modal-edit-user').classList.add('hidden');
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(false);
     }
 
     function openResetPasswordModal(id, name) {
         document.getElementById('reset_user_id').value = id;
         document.getElementById('reset_user_name').textContent = name;
         document.getElementById('reset_new_password').value = '';
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(true);
         document.getElementById('modal-reset-pass').classList.remove('hidden');
     }
     function closeResetPasswordModal() {
         document.getElementById('modal-reset-pass').classList.add('hidden');
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(false);
     }
 
     function submitCreateUser(e) {

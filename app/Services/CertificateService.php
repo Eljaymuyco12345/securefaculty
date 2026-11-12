@@ -39,6 +39,40 @@ class CertificateService {
             return ['success' => false, 'code' => 400, 'message' => 'Specified faculty member does not exist in registry.'];
         }
 
+        $normalizedDate = CertificateModel::normalizeDate($input['date_issued'] ?? null);
+
+        // String clamping to prevent column truncation
+        $title = mb_substr(trim($input['title'] ?? 'Untitled Document'), 0, 255);
+        if ($title === '') {
+            $title = 'Untitled Document';
+        }
+
+        // Strict Duplicate Pre-Commit Interception
+        $forceDuplicate = !empty($input['force_duplicate']);
+        if (!$forceDuplicate) {
+            $existing = CertificateDAO::findByHash($fileHash);
+            if ($existing) {
+                return [
+                    'success' => false,
+                    'code' => 409,
+                    'status' => 'duplicate_detected',
+                    'message' => "Policy Intercept: An identical file already exists in the institutional vault: '{$existing['title']}' (Vault ID #{$existing['id']})."
+                ];
+            }
+
+            if (!empty($input['title']) && $normalizedDate !== null) {
+                $sameRecord = CertificateDAO::findDuplicateByTitleAndDate($assignedFacultyId, $title, $normalizedDate);
+                if ($sameRecord) {
+                    return [
+                        'success' => false,
+                        'code' => 409,
+                        'status' => 'duplicate_detected',
+                        'message' => "Policy Intercept: A certificate record with matching Title ('{$sameRecord['title']}') and Issued Date already exists in the vault (ID #{$sameRecord['id']})."
+                    ];
+                }
+            }
+        }
+
         $vaultFilename = bin2hex(random_bytes(16)) . '.enc';
         $vaultFilePath = VAULT_DIR . DIRECTORY_SEPARATOR . $vaultFilename;
 
@@ -46,8 +80,15 @@ class CertificateService {
             return ['success' => false, 'code' => 500, 'message' => 'Cryptographic Failure: AES-256 encryption operation failed'];
         }
 
-        // Clean up temporary plaintext staged file (Zero plaintext persistence)
+        // Clean up temporary plaintext staged file and intermediate derivatives (Zero plaintext persistence)
         @unlink($tempFilePath);
+        $baseTempName = pathinfo($tempFilePath, PATHINFO_FILENAME);
+        foreach (['_opt.jpg', '_page1.png', '_opt.png', '_compiled.pdf'] as $deriv) {
+            $derivPath = TEMP_DIR . DIRECTORY_SEPARATOR . $baseTempName . $deriv;
+            if (file_exists($derivPath)) {
+                @unlink($derivPath);
+            }
+        }
 
         // Validate co-authors to prevent foreign key integrity violations
         $coAuthorIds = [];
@@ -60,14 +101,6 @@ class CertificateService {
                 $vStmt->execute($candidateIds);
                 $coAuthorIds = $vStmt->fetchAll(PDO::FETCH_COLUMN);
             }
-        }
-
-        $normalizedDate = CertificateModel::normalizeDate($input['date_issued'] ?? null);
-
-        // String clamping to prevent column truncation
-        $title = mb_substr(trim($input['title'] ?? 'Untitled Document'), 0, 255);
-        if ($title === '') {
-            $title = 'Untitled Document';
         }
         $issuer = mb_substr(trim($input['issuer'] ?? 'Not Specified'), 0, 255);
         $category = mb_substr(trim($input['category'] ?? 'Seminar'), 0, 100);
@@ -144,7 +177,7 @@ class CertificateService {
 
     /**
      * Purge stale staged uncommitted files older than given threshold (default 1 hour)
-     * Enforces Zero-Plaintext persistence lifecycle
+     * Enforces Zero-Plaintext persistence lifecycle while safeguarding fixtures and hidden configs
      */
     public static function purgeStaleTempFiles(int $maxAgeSeconds = 3600): int {
         $tempDir = TEMP_DIR;
@@ -152,14 +185,48 @@ class CertificateService {
         $now = time();
         $purged = 0;
         $files = glob($tempDir . DIRECTORY_SEPARATOR . '*');
+        if ($files === false) return 0;
+
         foreach ($files as $file) {
-            if (basename($file) === '.gitkeep' || basename($file) === '.htaccess' || is_dir($file)) continue;
-            if ($now - filemtime($file) > $maxAgeSeconds) {
+            $base = basename($file);
+            // Protect critical fixtures, demo files, and hidden configs
+            if ($base === '.gitkeep' || $base === '.htaccess' || str_starts_with($base, '.') || str_starts_with($base, 'sample_demo')) {
+                continue;
+            }
+
+            if (is_dir($file)) {
+                $mtime = @filemtime($file);
+                if ($mtime !== false && ($now - $mtime > $maxAgeSeconds)) {
+                    self::deleteDirectoryRecursive($file);
+                    $purged++;
+                }
+                continue;
+            }
+
+            $mtime = @filemtime($file);
+            if ($mtime !== false && ($now - $mtime > $maxAgeSeconds)) {
                 if (@unlink($file)) {
                     $purged++;
                 }
             }
         }
         return $purged;
+    }
+
+    /**
+     * Recursively clean up stale subdirectories
+     */
+    private static function deleteDirectoryRecursive(string $dir): void {
+        $items = glob($dir . DIRECTORY_SEPARATOR . '*');
+        if ($items !== false) {
+            foreach ($items as $item) {
+                if (is_dir($item)) {
+                    self::deleteDirectoryRecursive($item);
+                } else {
+                    @unlink($item);
+                }
+            }
+        }
+        @rmdir($dir);
     }
 }

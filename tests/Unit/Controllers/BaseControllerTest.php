@@ -46,4 +46,13 @@ class BaseControllerTest extends TestCase {
             $this->assertEquals(500, http_response_code());
         }
     }
+
+    public function testGetPythonBinaryResolvesExecutable(): void {
+        $controller = new TestableConcreteController();
+        $binary = $controller->getPythonBinary();
+        $this->assertTrue(!empty($binary), "getPythonBinary must resolve a non-empty executable path/name");
+        $this->assertTrue(is_string($binary), "Resolved binary must be a string");
+        $binary2 = $controller->getPythonBinary();
+        $this->assertSame($binary, $binary2, "getPythonBinary must return identical cached binary on repeated calls");
+    }
 }

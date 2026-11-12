@@ -40,9 +40,9 @@ class AuthController extends BaseController {
             $this->redirect('index.php');
         }
 
-        // CSRF Verification
+        // CSRF Verification (OWASP A01 / A07)
         $csrfToken = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-        if ($csrfToken !== null && !AuthService::verifyCsrfToken($csrfToken)) {
+        if (!AuthService::verifyCsrfToken($csrfToken)) {
             $this->redirect('index.php?error=csrf_violation');
         }
 

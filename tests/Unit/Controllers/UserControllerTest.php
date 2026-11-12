@@ -100,4 +100,67 @@ class UserControllerTest extends TestCase {
         $this->assertEquals(400, $controller->jsonStatusCode);
         $this->assertEquals('Invalid action', $controller->jsonOutput['message']);
     }
+
+    public function testHandleApiSwitchProfileDeanToFaculty(): void {
+        AuthService::attempt('dean', 'admin123');
+        $this->assertTrue(AuthService::isDean());
+        $csrf = AuthService::getCsrfToken();
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = [
+            'action' => 'switch_profile',
+            'target_user' => 'mikhail',
+            'csrf_token' => $csrf
+        ];
+
+        $controller = new TestableUserController();
+        $this->runControllerAction(fn() => $controller->handleApi());
+
+        $this->assertEquals(200, $controller->jsonStatusCode);
+        $this->assertEquals('success', $controller->jsonOutput['status']);
+        $this->assertEquals('vault.php', $controller->jsonOutput['redirect']);
+        $this->assertEquals('mikhail', AuthService::user()['username']);
+        $this->assertTrue(AuthService::isFaculty());
+    }
+
+    public function testHandleApiSwitchProfileFacultyToDean(): void {
+        AuthService::attempt('mikhail', 'faculty123');
+        $this->assertTrue(AuthService::isFaculty());
+        $csrf = AuthService::getCsrfToken();
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = [
+            'action' => 'switch_profile',
+            'target_user' => 'dean',
+            'csrf_token' => $csrf
+        ];
+
+        $controller = new TestableUserController();
+        $this->runControllerAction(fn() => $controller->handleApi());
+
+        $this->assertEquals(200, $controller->jsonStatusCode);
+        $this->assertEquals('success', $controller->jsonOutput['status']);
+        $this->assertEquals('dashboard.php', $controller->jsonOutput['redirect']);
+        $this->assertEquals('dean', AuthService::user()['username']);
+        $this->assertTrue(AuthService::isDean());
+    }
+
+    public function testHandleApiSwitchProfileInvalidTargetRejects400(): void {
+        AuthService::attempt('dean', 'admin123');
+        $csrf = AuthService::getCsrfToken();
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = [
+            'action' => 'switch_profile',
+            'target_user' => 'invalid_hacker_target',
+            'csrf_token' => $csrf
+        ];
+
+        $controller = new TestableUserController();
+        $this->runControllerAction(fn() => $controller->handleApi());
+
+        $this->assertEquals(400, $controller->jsonStatusCode);
+        $this->assertEquals('error', $controller->jsonOutput['status']);
+        $this->assertStringContains('Invalid target profile', $controller->jsonOutput['message']);
+    }
 }

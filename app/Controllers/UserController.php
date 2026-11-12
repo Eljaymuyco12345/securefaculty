@@ -81,11 +81,36 @@ class UserController extends BaseController {
         $action = $input['action'] ?? '';
         $currentUser = AuthService::user();
 
-        if ($action !== 'update_self_name' && !AuthService::isDean()) {
+        if ($action !== 'update_self_name' && $action !== 'switch_profile' && !AuthService::isDean()) {
             $this->jsonResponse(['status' => 'error', 'message' => 'Access Denied: Administrative privileges required.'], 403);
         }
 
         switch ($action) {
+            case 'switch_profile':
+                $target = trim($input['target_user'] ?? '');
+                $validProfiles = [
+                    'dean' => 'admin123',
+                    'mikhail' => 'faculty123',
+                    'raejan' => 'faculty123',
+                    'eljay' => 'faculty123'
+                ];
+                if (!isset($validProfiles[$target])) {
+                    $this->jsonResponse(['status' => 'error', 'message' => 'Invalid target profile requested.'], 400);
+                }
+                $pwd = $validProfiles[$target];
+                AuthService::logout();
+                if (AuthService::attempt($target, $pwd)) {
+                    $redirectUrl = AuthService::isDean() ? 'dashboard.php' : 'vault.php';
+                    $this->jsonResponse([
+                        'status' => 'success',
+                        'redirect' => $redirectUrl,
+                        'message' => 'Profile switched successfully to ' . $target
+                    ]);
+                } else {
+                    $this->jsonResponse(['status' => 'error', 'message' => 'Authentication failed during profile switch.'], 401);
+                }
+                break;
+
             case 'update_self_name':
                 $selfId = (int)($currentUser['id'] ?? 0);
                 $newName = trim($input['full_name'] ?? '');

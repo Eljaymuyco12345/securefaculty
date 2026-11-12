@@ -27,18 +27,43 @@ if ($uri === '' || $uri === '/') {
 // Target path inside public directory
 $publicPath = __DIR__ . '/public' . $uri;
 
-// 1. If static file exists directly in public (css, js, images, etc.)
-if (is_file($publicPath)) {
-    return false; // Let PHP built-in server handle static asset
+// 1. Direct .php file in public (e.g. /dashboard.php, /vault.php, /backup.php, /login.php)
+if (is_file($publicPath) && str_ends_with($publicPath, '.php')) {
+    require $publicPath;
+    return true;
 }
 
-// 2. Direct .php file in public (e.g. /dashboard.php)
+// 2. Direct .php file where request omitted .php (e.g. /dashboard, /vault, /backup)
 if (is_file($publicPath . '.php')) {
     require $publicPath . '.php';
     return true;
 }
 
-// 3. Clean route aliases mapping to public controllers
+// 3. Static assets located in public directory (css, js, images, favicon.ico, fonts, etc.)
+if (is_file($publicPath)) {
+    $mimeTypes = [
+        'css' => 'text/css',
+        'js' => 'application/javascript',
+        'json' => 'application/json',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'ico' => 'image/x-icon',
+        'svg' => 'image/svg+xml',
+        'pdf' => 'application/pdf',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf' => 'font/ttf',
+    ];
+    $ext = strtolower(pathinfo($publicPath, PATHINFO_EXTENSION));
+    $mime = $mimeTypes[$ext] ?? 'application/octet-stream';
+    header("Content-Type: {$mime}");
+    readfile($publicPath);
+    return true;
+}
+
+// 4. Clean route aliases mapping to public controllers
 $routes = [
     '/dashboard' => '/public/dashboard.php',
     '/vault' => '/public/vault.php',
@@ -50,6 +75,7 @@ $routes = [
     '/login' => '/public/login.php',
     '/logout' => '/public/logout.php',
     '/view_document' => '/public/view_document.php',
+    '/backup' => '/public/backup.php',
 ];
 
 if (isset($routes[$uri])) {
@@ -76,7 +102,8 @@ if (is_file(__DIR__ . '/public' . $uri)) {
     return true;
 }
 
-// 404 Not Found
+// 404 Not Found (XSS Sanitized - OWASP A03)
 http_response_code(404);
-echo "404 Not Found: The requested route [{$uri}] does not exist.";
+$safeUri = htmlspecialchars($uri, ENT_QUOTES, 'UTF-8');
+echo "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><title>404 Not Found | SecureFaculty</title></head><body><h1>404 Not Found</h1><p>The requested route [{$safeUri}] does not exist.</p></body></html>";
 return true;
