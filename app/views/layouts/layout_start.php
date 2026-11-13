@@ -152,9 +152,13 @@ $searchAction = basename($_SERVER['PHP_SELF']);
             .touch-target,
             header button,
             nav a,
-            nav button {
+            nav button,
+            .pagination-btn {
                 min-height: 44px;
                 min-width: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
             }
         }
         .safe-area-bottom {
@@ -308,6 +312,17 @@ $searchAction = basename($_SERVER['PHP_SELF']);
     </style>
 </head>
 <body class="bg-[#f0f4f8] dark:bg-[#081225] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- Real-Time Network & Offline Status Banner (Item 11 Option A) -->
+    <div id="system-offline-banner" class="hidden fixed top-0 inset-x-0 z-[100] px-4 py-2 text-xs font-semibold shadow-md flex items-center justify-between transition-all duration-300">
+        <div class="flex items-center gap-2 mx-auto">
+            <i id="offline-icon" class="fa-solid fa-wifi-slash text-sm"></i>
+            <span id="offline-message">Offline Mode: Local AES-256 Vault & Document Viewing operational. Cloud OCR extraction paused.</span>
+        </div>
+        <button type="button" onclick="document.getElementById('system-offline-banner').classList.add('hidden')" aria-label="Dismiss network alert" class="touch-target text-xs opacity-75 hover:opacity-100 p-2 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer rounded-lg hover:bg-black/10 transition-colors">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
 
     <!-- Mobile Sidebar Backdrop Overlay -->
     <div id="sidebar-backdrop" onclick="toggleSidebar(false)"

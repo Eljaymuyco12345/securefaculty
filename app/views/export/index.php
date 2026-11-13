@@ -112,17 +112,113 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <i class="fa-solid fa-file-pdf text-sm"></i>
                 <span>Download PDF File</span>
             </a>
-            <a href="export.php?format=csv<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
-               class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
-                <i class="fa-solid fa-file-csv text-sm"></i>
-                <span>Download CSV (Excel)</span>
-            </a>
-            <button onclick="window.print()"
-                    class="px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
-                <i class="fa-solid fa-print text-sm"></i>
-                <span>Print Sheet</span>
-            </button>
         </div>
+    </div>
+
+    <!-- Interactive Date & Category Filter Bar (Client Requirement: Filter Date From & To e.g. Nov-Dec) -->
+    <div class="bg-white dark:bg-[#111c36] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 transition-colors print:hidden">
+        <form method="GET" action="export.php" id="exportFilterForm" class="space-y-3">
+            <?php if (!empty($rawIds)): ?>
+                <input type="hidden" name="ids" value="<?= htmlspecialchars($rawIds) ?>">
+            <?php endif; ?>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2.5 text-xs items-end">
+                <!-- Date From -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <i class="fa-regular fa-calendar-check text-blue-600 dark:text-blue-400 mr-1"></i>Date From:
+                    </label>
+                    <input type="date" id="date_from" name="date_from" value="<?= htmlspecialchars($dateFrom) ?>"
+                           class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500 font-mono">
+                </div>
+
+                <!-- Date To -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <i class="fa-regular fa-calendar-check text-blue-600 dark:text-blue-400 mr-1"></i>Date To:
+                    </label>
+                    <input type="date" id="date_to" name="date_to" value="<?= htmlspecialchars($dateTo) ?>"
+                           class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500 font-mono">
+                </div>
+
+                <!-- Category -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <i class="fa-solid fa-layer-group text-indigo-500 mr-1"></i>Category:
+                    </label>
+                    <select name="category"
+                            class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-blue-500">
+                        <?php
+                        $cats = ['All', 'Research Publication', 'Instructional Material', 'Seminar', 'Training', 'Workshop', 'Award', 'Academic Milestone'];
+                        foreach ($cats as $c):
+                        ?>
+                            <option value="<?= htmlspecialchars($c) ?>" <?= $category === $c ? 'selected' : '' ?>><?= htmlspecialchars($c) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Keyword Search -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <i class="fa-solid fa-magnifying-glass text-slate-400 mr-1"></i>Keyword Search:
+                    </label>
+                    <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Title, cert no, issuer..."
+                           class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <!-- Apply and Reset Buttons -->
+                <div class="flex items-center gap-1.5 sm:col-span-2">
+                    <button type="submit"
+                            class="flex-1 py-1.5 px-3 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-filter text-[10px]"></i>
+                        <span>Apply Filter</span>
+                    </button>
+                    <?php if ($dateFrom || $dateTo || $category !== 'All' || $search): ?>
+                        <a href="export.php<?= !empty($rawIds) ? '?ids=' . urlencode($rawIds) : '' ?>"
+                           class="py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all flex items-center justify-center cursor-pointer"
+                           title="Reset Filters">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Quick Date Range Presets (Nov–Dec example) -->
+            <div class="flex items-center gap-2 flex-wrap pt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                <span class="font-bold flex items-center gap-1">
+                    <i class="fa-regular fa-clock text-blue-500"></i>
+                    Quick Range Presets:
+                </span>
+                <button type="button" onclick="setExportDatePreset('nov-dec')"
+                        class="px-2.5 py-1 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer">
+                    Nov – Dec (Late Year)
+                </button>
+                <button type="button" onclick="setExportDatePreset('q1')"
+                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                    Jan – Mar (Q1)
+                </button>
+                <button type="button" onclick="setExportDatePreset('q2')"
+                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                    Apr – Jun (Q2)
+                </button>
+                <button type="button" onclick="setExportDatePreset('q3')"
+                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                    Jul – Sep (Q3)
+                </button>
+                <button type="button" onclick="setExportDatePreset('q4')"
+                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                    Oct – Dec (Q4)
+                </button>
+                <button type="button" onclick="setExportDatePreset('this-year')"
+                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                    Current Year (<?= date('Y') ?>)
+                </button>
+                <button type="button" onclick="setExportDatePreset('clear')"
+                        class="px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800 transition-colors cursor-pointer">
+                    Clear Dates
+                </button>
+            </div>
+        </form>
     </div>
 
     <!-- Active Scope Summary Pill Bar -->
@@ -289,5 +385,41 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     </div>
 
 </div>
+
+<script>
+function setExportDatePreset(type) {
+    const fromInput = document.getElementById('date_from');
+    const toInput = document.getElementById('date_to');
+    if (!fromInput || !toInput) return;
+
+    const curYear = new Date().getFullYear();
+
+    if (type === 'nov-dec') {
+        fromInput.value = `${curYear}-11-01`;
+        toInput.value = `${curYear}-12-31`;
+    } else if (type === 'q1') {
+        fromInput.value = `${curYear}-01-01`;
+        toInput.value = `${curYear}-03-31`;
+    } else if (type === 'q2') {
+        fromInput.value = `${curYear}-04-01`;
+        toInput.value = `${curYear}-06-30`;
+    } else if (type === 'q3') {
+        fromInput.value = `${curYear}-07-01`;
+        toInput.value = `${curYear}-09-30`;
+    } else if (type === 'q4') {
+        fromInput.value = `${curYear}-10-01`;
+        toInput.value = `${curYear}-12-31`;
+    } else if (type === 'this-year') {
+        fromInput.value = `${curYear}-01-01`;
+        toInput.value = `${curYear}-12-31`;
+    } else if (type === 'clear') {
+        fromInput.value = '';
+        toInput.value = '';
+    }
+
+    const form = document.getElementById('exportFilterForm');
+    if (form) form.submit();
+}
+</script>
 
 <?php require_once __DIR__ . '/../layouts/layout_end.php'; ?>

@@ -33,21 +33,40 @@ class DocumentController extends BaseController {
         AuditLogger::log($action, "Just-in-Time Decryption executed for certificate #{$id}: '{$cert['title']}'", $id);
 
         // Map MIME type
-        $ext = strtolower($cert['file_type']);
+        $ext = strtolower(ltrim($cert['file_type'] ?? '', '.'));
         $mimeMap = [
             'pdf' => 'application/pdf',
             'png' => 'image/png',
             'jpg' => 'image/jpeg',
             'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
             'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ];
         $mimeType = $mimeMap[$ext] ?? 'application/octet-stream';
 
+        // Force attachment disposition for .docx and binary streams since web browsers cannot render them inline
+        $disposition = ($isDownload || $ext === 'docx' || $mimeType === 'application/octet-stream') ? 'attachment' : 'inline';
+
+        // Safe filename sanitization (removes path traversal, control chars, quotes, backslashes, semicolons, and CRLF)
+        $rawFilename = basename(str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $cert['original_filename'] ?? 'document'));
+        $safeFilename = preg_replace('/[\x00-\x1F\x7F"\';\\\]/', '_', $rawFilename);
+        $safeFilename = trim($safeFilename, " .");
+        if ($safeFilename === '') {
+            $safeFilename = "certificate_{$id}." . ($ext ?: 'pdf');
+        }
+        $asciiFilename = preg_replace('/[^\x20-\x7E]/', '_', $safeFilename);
+        if ($asciiFilename === '') {
+            $asciiFilename = "certificate_{$id}." . ($ext ?: 'pdf');
+        }
+
+        // Clean any active output buffers to guarantee binary stream integrity
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         header('Content-Type: ' . $mimeType);
         header('Content-Length: ' . strlen($decryptedBytes));
-        $disposition = $isDownload ? 'attachment' : 'inline';
-        $safeFilename = str_replace(["\r", "\n", '"', ';', '/'], '_', basename($cert['original_filename']));
-        header("Content-Disposition: {$disposition}; filename=\"{$safeFilename}\"; filename*=UTF-8''" . rawurlencode($safeFilename));
+        header("Content-Disposition: {$disposition}; filename=\"{$asciiFilename}\"; filename*=UTF-8''" . rawurlencode($safeFilename));
         header('Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0');
         header('Pragma: no-cache');
         header('X-Content-Type-Options: nosniff');

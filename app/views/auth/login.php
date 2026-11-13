@@ -217,7 +217,7 @@ $msg = $msg ?? null;
                         <label for="username" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Username (CICI ID)
                         </label>
-                        <input type="text" id="username" name="username" required
+                        <input type="text" id="username" name="username" required autofocus
                             placeholder="ISUFST2026-01"
                             class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-900 text-xs font-medium transition-all">
                     </div>
@@ -230,21 +230,12 @@ $msg = $msg ?? null;
                         <div class="relative">
                             <input type="password" id="password" name="password" required
                                 placeholder="••••••••••"
-                                class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-900 text-xs font-medium transition-all">
+                                class="w-full pl-3.5 pr-12 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-900 text-xs font-medium transition-all">
                             <button type="button" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility"
-                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+                                    class="touch-target absolute inset-y-0 right-0 px-3 w-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
                                 <i id="passwordEyeIcon" class="fa-regular fa-eye text-xs"></i>
                             </button>
                         </div>
-                    </div>
-
-                    <!-- Role Checkbox matching Figure 4.2 -->
-                    <div class="flex items-center gap-2 pt-1">
-                        <input type="checkbox" id="is_dean_toggle" onchange="toggleDeanRole(this)"
-                            class="w-4 h-4 text-emerald-600 rounded border-slate-300 dark:border-slate-700 focus:ring-emerald-500 dark:bg-slate-800">
-                        <label for="is_dean_toggle" class="text-xs text-slate-600 dark:text-slate-400 font-medium cursor-pointer">
-                            Dean/Administrator? (XAMPP Environment)
-                        </label>
                     </div>
 
                     <!-- Green Pill Button matching Figure 4.2 -->
@@ -267,18 +258,6 @@ $msg = $msg ?? null;
 
             </div>
 
-            <!-- Quick Demo Helper Pill matching Capstone Evaluation -->
-            <div class="mt-4 text-center">
-                <div class="inline-flex items-center gap-2 bg-white/80 dark:bg-[#111c36]/90 backdrop-blur-sm border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-full shadow-sm text-[11px] text-slate-600 dark:text-slate-400">
-                    <span class="font-semibold text-slate-700 dark:text-slate-300">Quick Test:</span>
-                    <button type="button" onclick="fillCreds('dean', 'admin123', true)" class="text-blue-600 dark:text-blue-400 hover:underline font-medium cursor-pointer">Dean</button>
-                    <span class="text-slate-300 dark:text-slate-600">|</span>
-                    <button type="button" onclick="fillCreds('mikhail', 'faculty123', false)" class="text-emerald-600 dark:text-emerald-400 hover:underline font-medium cursor-pointer">Faculty (Mikhail)</button>
-                    <span class="text-slate-300 dark:text-slate-600">|</span>
-                    <button type="button" onclick="fillCreds('raejan', 'faculty123', false)" class="text-slate-600 dark:text-slate-300 hover:underline font-medium cursor-pointer">Faculty (Rae Jan)</button>
-                </div>
-            </div>
-
             <!-- Institutional System Footer -->
             <p class="text-center font-medium text-[11px] tracking-wide text-slate-400 dark:text-slate-500 mt-4">
                 ISUFST CICI • Systematic Records Management Portal
@@ -298,23 +277,6 @@ $msg = $msg ?? null;
                 document.documentElement.classList.remove('dark');
             }
             localStorage.setItem('securefaculty_theme', next);
-        }
-
-        function fillCreds(user, pass, isDean) {
-            document.getElementById('username').value = user;
-            document.getElementById('password').value = pass;
-            const cb = document.getElementById('is_dean_toggle');
-            cb.checked = isDean;
-        }
-
-        function toggleDeanRole(cb) {
-            if (cb.checked) {
-                document.getElementById('username').value = 'dean';
-                document.getElementById('password').value = 'admin123';
-            } else {
-                document.getElementById('username').value = 'mikhail';
-                document.getElementById('password').value = 'faculty123';
-            }
         }
 
         function togglePasswordVisibility() {

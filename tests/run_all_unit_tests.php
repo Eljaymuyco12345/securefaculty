@@ -26,6 +26,7 @@ $testFiles = [
         __DIR__ . '/Unit/Services/AuditLoggerTest.php',
         __DIR__ . '/Unit/Services/CertificateServiceTest.php',
         __DIR__ . '/Unit/Services/UserServiceTest.php',
+        __DIR__ . '/Unit/Services/BackupServiceTest.php',
     ],
     'Controllers' => [
         __DIR__ . '/Unit/Controllers/BaseControllerTest.php',

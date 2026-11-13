@@ -75,4 +75,14 @@ class AuthServiceTest extends TestCase {
         $this->assertFalse(AuthService::check(), "check() must be false after logout");
         $this->assertNull(AuthService::user(), "user() must be null after logout");
     }
+
+    public function testSessionInactivityTimeout(): void {
+        AuthService::attempt('dean', 'admin123');
+        $this->assertTrue(AuthService::check());
+
+        // Simulate 31 minutes of idle time (OWASP A07)
+        $_SESSION['last_activity'] = time() - 1860;
+        $this->assertFalse(AuthService::check(), "check() must return false after 30 minutes of inactivity");
+        $this->assertNull(AuthService::user(), "user() must be null after session timeout");
+    }
 }

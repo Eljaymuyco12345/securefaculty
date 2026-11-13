@@ -15,10 +15,12 @@ DirectoryIndex public/index.php index.php
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header always set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: blob:; font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-ancestors 'self';"
 </IfModule>
 
-# 1. Security: Block direct HTTP access to core application & data directories
-    RewriteRule ^(app|storage|sql|python_engine|scratch|bin)(/.*)?$ - [F,L]
+# 1. Security: Block direct HTTP access to core application, test, & data directories
+    RewriteRule ^(app|storage|sql|python_engine|scratch|bin|tests)(/.*)?$ - [F,L]
+    RewriteRule (^|/)\.(?!well-known) - [F]
 
     # 2. Canonical Clean URL: Strip /public/ from browser address bar (GET/HEAD only)
     RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$

@@ -48,4 +48,46 @@ class DashboardController extends BaseController {
             'pageTitle' => "Dean's Centralized Administrative Dashboard"
         ]);
     }
+
+    /**
+     * Plan B: Generate and stream on-demand database backup snapshot
+     */
+    public function backup(): void {
+        AuthService::requireDean();
+        $result = BackupService::createBackup();
+        if (!$result['success']) {
+            $this->redirect('dashboard.php?error=' . urlencode($result['message']));
+        }
+
+        $filepath = $result['filepath'];
+        $filename = basename($result['filename']);
+
+        if (!file_exists($filepath)) {
+            $this->redirect('dashboard.php?error=' . urlencode('Backup file could not be read.'));
+        }
+
+        // Clean any pre-existing output buffers to prevent file corruption
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        if (!headers_sent()) {
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Content-Length: ' . filesize($filepath));
+            header('Content-Transfer-Encoding: binary');
+            header('Cache-Control: private, no-store, no-cache, must-revalidate');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+        }
+        $this->streamFile($filepath);
+        exit;
+    }
+
+    /**
+     * Stream file content to output
+     */
+    protected function streamFile(string $filepath): void {
+        readfile($filepath);
+    }
 }

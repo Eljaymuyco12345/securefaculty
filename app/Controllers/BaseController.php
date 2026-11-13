@@ -44,4 +44,39 @@ abstract class BaseController {
         header('Location: ' . $url);
         exit;
     }
+
+    /**
+     * Resolves the working Python executable binary across Windows, Linux, and macOS environments.
+     */
+    public function getPythonBinary(): string {
+        static $resolved = null;
+        if ($resolved !== null) {
+            return $resolved;
+        }
+
+        $candidates = [];
+        if (defined('PYTHON_BIN') && PYTHON_BIN) {
+            $candidates[] = PYTHON_BIN;
+        }
+        if (PHP_OS_FAMILY === 'Windows') {
+            $candidates[] = 'python';
+            $candidates[] = 'py';
+            $candidates[] = 'python3';
+        } else {
+            $candidates[] = 'python3';
+            $candidates[] = 'python';
+        }
+
+        foreach ($candidates as $cand) {
+            $testCmd = escapeshellcmd($cand) . ' --version 2>&1';
+            $output = @shell_exec($testCmd);
+            if ($output && stripos($output, 'Python') !== false && stripos($output, 'not found') === false) {
+                $resolved = $cand;
+                return $resolved;
+            }
+        }
+
+        $resolved = (PHP_OS_FAMILY === 'Windows') ? 'python' : 'python3';
+        return $resolved;
+    }
 }

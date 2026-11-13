@@ -49,7 +49,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <div>
         <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1.5 px-1">
             <span class="font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">Pipeline Execution Stages:</span>
-            <span class="text-[10px] text-blue-600 dark:text-blue-400 italic">Click any stage below to inspect telemetry details</span>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="resetPipelineToDefault()"
+                    class="text-[10px] text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 font-bold flex items-center gap-1 hover:underline cursor-pointer"
+                    title="Reset pipeline and dropzone to default initial state">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Reset to Default</span>
+                </button>
+                <span class="text-slate-300 dark:text-slate-700">|</span>
+                <span class="text-[10px] text-blue-600 dark:text-blue-400 italic">Click any stage below to inspect telemetry details</span>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-center text-xs" id="pipeline-stepper">
@@ -109,7 +118,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <button type="button" onclick="openProgressModal()" class="text-[11px] font-bold text-blue-700 dark:text-blue-400 hover:underline">
                     View Live Telemetry Modal &rarr;
                 </button>
-                <button type="button" onclick="document.getElementById('stage-info-box').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
+                <button type="button" onclick="closeStageInfoBox()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm cursor-pointer" aria-label="Close stage details">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -221,6 +230,17 @@ Upload a file above to extract metadata.</div>
                         <input type="checkbox" id="field_force_duplicate" class="rounded border-amber-400 dark:border-amber-700 dark:bg-slate-800 text-amber-600 accent-amber-600 focus:ring-amber-500">
                         <span class="text-[11px] font-semibold text-amber-900 dark:text-amber-200">Override duplicate warning and archive as distinct version</span>
                     </label>
+                </div>
+
+                <!-- Image Blur Warning Banner -->
+                <div id="image-blur-warning-box" class="hidden p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200 text-xs space-y-1">
+                    <div class="flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 dark:text-rose-400 mt-0.5 text-sm flex-shrink-0"></i>
+                        <div class="flex-1">
+                            <strong class="font-bold text-rose-950 dark:text-rose-100 block">Image Blur Detected</strong>
+                            <p class="text-[11px] text-rose-800 dark:text-rose-200 leading-snug mt-0.5" id="image-blur-warning-msg">Document image appears out-of-focus or low contrast. Please verify the extracted text below carefully.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <?php if ($isDean): ?>
@@ -565,10 +585,18 @@ Upload a file above to extract metadata.</div>
                 <i class="fa-solid fa-list-check"></i>
                 <span id="lbl-toggle-errors">Inspect Error Log (0)</span>
             </button>
-            <button type="button" onclick="closeProgressModal()"
-                class="px-4 py-2 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold transition-all shadow-sm cursor-pointer">
-                Close Telemetry
-            </button>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="resetPipelineToDefault()"
+                    class="px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 font-bold transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
+                    title="Reset pipeline and dropzone to default initial state">
+                    <i class="fa-solid fa-rotate-left text-xs"></i>
+                    <span>Reset to Default</span>
+                </button>
+                <button type="button" onclick="closeProgressModal()"
+                    class="px-4 py-2 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold transition-all shadow-sm cursor-pointer">
+                    Close Telemetry
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -613,6 +641,10 @@ Upload a file above to extract metadata.</div>
     };
 
     function handleStageClick(stageNum) {
+        if (stageNum === 1 && telemetryState.currentStage > 1 && telemetryState.currentStage <= 2) {
+            resetPipelineToDefault();
+            return;
+        }
         showStageInfo(stageNum);
     }
 
@@ -627,6 +659,14 @@ Upload a file above to extract metadata.</div>
         desc.textContent = info.desc;
         icon.className = `fa-solid ${info.icon} text-blue-600 text-base`;
         box.classList.remove('hidden');
+    }
+
+    function closeStageInfoBox() {
+        const box = document.getElementById('stage-info-box');
+        if (box) box.classList.add('hidden');
+        if (telemetryState.currentStage <= 2) {
+            resetPipelineToDefault();
+        }
     }
 
     function setDateDetectionStatus(dateVal) {
@@ -691,11 +731,170 @@ Upload a file above to extract metadata.</div>
 
     // Modal Opening & Closing
     function openProgressModal() {
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(true);
         document.getElementById('stage-progress-modal').classList.remove('hidden');
     }
 
-    function closeProgressModal() {
+    function closeProgressModal(forceReset = false) {
         document.getElementById('stage-progress-modal').classList.add('hidden');
+        if (typeof setBodyModalLock === 'function') setBodyModalLock(false);
+        // Client feedback: "if e close telemetry ang stage, ga stuck sa stage 2. dpat ma reset to default without starting to stage 1"
+        // If the telemetry modal is closed while the pipeline is in Stage 1 or 2 (pre-validation upload or OCR handshake),
+        // or if forceReset is true, automatically reset the pipeline back to default ready state so the user is never stuck in Stage 2.
+        if (forceReset || telemetryState.currentStage <= 2) {
+            resetPipelineToDefault();
+        }
+    }
+
+    // Reset Pipeline To Default Initial State
+    function resetPipelineToDefault() {
+        // 1. Abort any active upload fetch request
+        if (window.currentUploadAbortController) {
+            try {
+                window.currentUploadAbortController.abort();
+            } catch (e) {}
+            window.currentUploadAbortController = null;
+        }
+
+        // 2. Clear any pending timeouts
+        if (window.stage2Timeout) {
+            clearTimeout(window.stage2Timeout);
+            window.stage2Timeout = null;
+        }
+        if (window.demoTimeout1) {
+            clearTimeout(window.demoTimeout1);
+            window.demoTimeout1 = null;
+        }
+        if (window.demoTimeout2) {
+            clearTimeout(window.demoTimeout2);
+            window.demoTimeout2 = null;
+        }
+        stopTelemetryTimer();
+
+        // 3. Reset file input
+        const fileInput = document.getElementById('file-input');
+        if (fileInput) fileInput.value = '';
+
+        // 4. Reset telemetry state
+        telemetryState.currentStage = 1;
+        telemetryState.totalItems = 1;
+        telemetryState.processedItems = 0;
+        telemetryState.successItems = 0;
+        telemetryState.failedItems = 0;
+        telemetryState.errors = [];
+        telemetryState.batchItems = [];
+
+        // 5. Reset modal progress and checklist items
+        updateModalProgress(0, 'Stage: Ready for file ingestion');
+        const errList = document.getElementById('modal-error-list');
+        if (errList) errList.innerHTML = '';
+        const errBox = document.getElementById('modal-error-box');
+        if (errBox) errBox.classList.add('hidden');
+        const errBadge = document.getElementById('modal-error-badge');
+        if (errBadge) errBadge.textContent = '0 errors';
+        const errLbl = document.getElementById('lbl-toggle-errors');
+        if (errLbl) errLbl.textContent = 'Inspect Error Log (0)';
+
+        for (let i = 1; i <= 5; i++) {
+            const row = document.getElementById(`modal-stage-${i}`);
+            const badge = document.getElementById(`modal-badge-${i}`);
+            const icon = document.getElementById(`modal-icon-${i}`);
+            if (!row || !badge || !icon) continue;
+
+            row.className = "p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1830] flex items-center justify-between text-xs transition-all";
+            badge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400";
+            badge.textContent = "Pending";
+            icon.className = "w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center text-[11px] font-bold";
+            icon.textContent = i;
+        }
+
+        // 6. Reset the 4 Stepper buttons to pristine default
+        resetStepperToDefault();
+
+        // 7. Restore the default dropzone banner
+        restoreDefaultUploadBanner();
+
+        // 8. Hide info box and work areas
+        const infoBox = document.getElementById('stage-info-box');
+        if (infoBox) infoBox.classList.add('hidden');
+        const workArea = document.getElementById('work-area');
+        if (workArea) workArea.classList.add('hidden');
+        const batchWorkArea = document.getElementById('batch-work-area');
+        if (batchWorkArea) batchWorkArea.classList.add('hidden');
+        const dupBox = document.getElementById('duplicate-warning-box');
+        if (dupBox) dupBox.classList.add('hidden');
+
+        // 9. Close modal
+        document.getElementById('stage-progress-modal').classList.add('hidden');
+    }
+
+    function resetStepperToDefault() {
+        for (let i = 1; i <= 4; i++) {
+            const btn = document.getElementById(`step-${i}`);
+            if (!btn) continue;
+            const subtext = btn.querySelector('span');
+            const title = btn.querySelector('strong');
+            const icon = btn.querySelector('i');
+
+            if (i === 1) {
+                btn.className = "p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-500 text-blue-800 dark:text-blue-200 font-bold transition-all text-left flex items-center justify-between shadow-sm cursor-pointer";
+                if (subtext) {
+                    subtext.className = "text-[10px] text-blue-600 dark:text-blue-400 block font-mono";
+                    subtext.textContent = "Stage 1 (Ready)";
+                }
+                if (title) {
+                    title.className = "text-xs text-blue-900 dark:text-blue-100";
+                    title.textContent = "Dynamic Optimization";
+                }
+                if (icon) icon.className = "fa-solid fa-compress text-blue-600 dark:text-blue-400 text-sm";
+            } else {
+                btn.className = "p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium transition-all text-left flex items-center justify-between group shadow-sm cursor-pointer";
+                if (subtext) {
+                    subtext.className = "text-[10px] text-slate-400 dark:text-slate-500 block font-mono";
+                    subtext.textContent = `Stage ${i}`;
+                }
+                if (title) {
+                    title.className = "text-xs group-hover:text-blue-600 dark:group-hover:text-blue-400";
+                    if (i === 2) title.textContent = "Cloud Handshake";
+                    if (i === 3) title.textContent = "H-I-T-L Validation";
+                    if (i === 4) title.textContent = "Cryptographic Encryption";
+                }
+                if (icon) {
+                    if (i === 2) icon.className = "fa-solid fa-cloud-arrow-up text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-sm";
+                    if (i === 3) icon.className = "fa-solid fa-user-check text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-sm";
+                    if (i === 4) icon.className = "fa-solid fa-shield-halved text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-sm";
+                }
+            }
+        }
+    }
+
+    function restoreDefaultUploadBanner() {
+        const banner = document.getElementById('upload-banner');
+        if (!banner) return;
+        banner.className = "p-6 rounded-xl border-2 border-dashed border-blue-400 dark:border-blue-700/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-center transition-all group";
+        banner.innerHTML = `
+            <div class="max-w-md mx-auto space-y-3">
+                <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-slate-900 dark:text-white">Select or Drag & Drop Documents Here</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF, DOCX, PNG, JPG, &amp; <strong>ZIP Archives</strong> (Batch auto-unpack &amp; OCR)</p>
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
+                    <button type="button" onclick="document.getElementById('file-input').click()"
+                        class="px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer">
+                        <i class="fa-regular fa-folder-open"></i>
+                        <span>Browse Document / ZIP Archive</span>
+                    </button>
+                    <button type="button" onclick="loadSampleDemoCertificate()"
+                        class="px-3.5 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+                        <span>Load Demo Sample</span>
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
     function startTelemetryTimer() {
@@ -805,27 +1004,45 @@ Upload a file above to extract metadata.</div>
         updateModalProgress(20, 'Stage 1: Dynamic Optimization & Rasterization...');
 
         banner.innerHTML = `
-            <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
-                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Stage 1: Dynamic Optimization &amp; Targeted Rasterization for "Certificate_Recognition_2026.pdf"...</span>
+            <div class="flex flex-col items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
+                <div class="flex items-center gap-2">
+                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Stage 1: Dynamic Optimization &amp; Targeted Rasterization for "Certificate_Recognition_2026.pdf"...</span>
+                </div>
+                <button type="button" onclick="resetPipelineToDefault()"
+                    class="mt-1 px-3 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Cancel / Reset to Default
+                </button>
             </div>
         `;
 
-        setTimeout(() => {
+        window.demoTimeout1 = setTimeout(() => {
             setActiveStep(2);
             updateModalProgress(50, 'Stage 2: OCR Cloud Engine Transmission & Text Extraction...');
             banner.innerHTML = `
-                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 py-3">
-                    <i class="fa-solid fa-cloud-arrow-up animate-pulse text-base"></i>
-                    <span>Stage 2: Outbound HTTPS Cloud Handshake with OCR Engine...</span>
+                <div class="flex flex-col items-center justify-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 py-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up animate-pulse text-base"></i>
+                        <span>Stage 2: Outbound HTTPS Cloud Handshake with OCR Engine...</span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <button type="button" onclick="openProgressModal()"
+                            class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold border border-indigo-200 dark:border-indigo-800 transition-all cursor-pointer">
+                            <i class="fa-solid fa-bars-progress mr-1"></i> View Telemetry
+                        </button>
+                        <button type="button" onclick="resetPipelineToDefault()"
+                            class="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Reset to Default
+                        </button>
+                    </div>
                 </div>
             `;
         }, 600);
 
-        setTimeout(() => {
+        window.demoTimeout2 = setTimeout(() => {
             setActiveStep(3);
             telemetryState.processedItems = 1;
             telemetryState.successItems = 1;
@@ -874,14 +1091,21 @@ Upload a file above to extract metadata.</div>
         }, 1200);
     }
 
-    // Live Upload & Batch Processor
-    document.getElementById('file-input').addEventListener('change', function(e) {
-        const files = e.target.files;
+    // Unified Upload & Pipeline Processor
+    function processUploadedFiles(files) {
         if (!files || files.length === 0) return;
 
         const banner = document.getElementById('upload-banner');
         const formData = new FormData();
         const isMultiple = files.length > 1;
+
+        // Cancel any existing pending upload
+        if (window.currentUploadAbortController) {
+            try {
+                window.currentUploadAbortController.abort();
+            } catch (e) {}
+        }
+        window.currentUploadAbortController = new AbortController();
 
         telemetryState.totalItems = files.length;
         telemetryState.processedItems = 0;
@@ -895,14 +1119,24 @@ Upload a file above to extract metadata.</div>
         setActiveStep(1);
         updateModalProgress(15, `Stage 1: Pre-flight inspection & upload (${files.length} document${files.length > 1 ? 's' : ''})...`);
 
+        if (!navigator.onLine) {
+            addTelemetryError('System is currently offline. Ingestion will perform local document conversion; Cloud OCR extraction will fall back to local parser.');
+        }
+
         if (isMultiple) {
             banner.innerHTML = `
-                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
-                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span>Stage 1: Compiling ${files.length} documents into unified batch pipeline...</span>
+                <div class="flex flex-col items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
+                    <div class="flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Stage 1: Compiling ${files.length} documents into unified batch pipeline...</span>
+                    </div>
+                    <button type="button" onclick="resetPipelineToDefault()"
+                        class="mt-1 px-3 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Cancel / Reset to Default
+                    </button>
                 </div>
             `;
             for (let i = 0; i < files.length; i++) {
@@ -912,24 +1146,42 @@ Upload a file above to extract metadata.</div>
             const file = files[0];
             const isZip = file.name.toLowerCase().endsWith('.zip');
             banner.innerHTML = `
-                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
-                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span>Stage 1: ${isZip ? 'Unpacking ZIP archive & pre-screening certificates' : 'Optimizing & rasterizing ' + file.name}...</span>
+                <div class="flex flex-col items-center justify-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 py-3">
+                    <div class="flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Stage 1: ${isZip ? 'Unpacking ZIP archive & pre-screening certificates' : 'Optimizing & rasterizing ' + file.name}...</span>
+                    </div>
+                    <button type="button" onclick="resetPipelineToDefault()"
+                        class="mt-1 px-3 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Cancel / Reset to Default
+                    </button>
                 </div>
             `;
             formData.append('file', file);
         }
 
-        setTimeout(() => {
+        window.stage2Timeout = setTimeout(() => {
             setActiveStep(2);
             updateModalProgress(45, 'Stage 2: Outbound HTTPS Handshake with OCR Engine...');
             banner.innerHTML = `
-                <div class="flex items-center justify-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 py-3">
-                    <i class="fa-solid fa-cloud-arrow-up animate-pulse text-base"></i>
-                    <span>Stage 2: Outbound HTTPS Cloud Handshake with OCR Engine...</span>
+                <div class="flex flex-col items-center justify-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 py-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up animate-pulse text-base"></i>
+                        <span>Stage 2: Outbound HTTPS Cloud Handshake with OCR Engine...</span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1">
+                        <button type="button" onclick="openProgressModal()"
+                            class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold border border-indigo-200 dark:border-indigo-800 transition-all cursor-pointer">
+                            <i class="fa-solid fa-bars-progress mr-1"></i> View Telemetry
+                        </button>
+                        <button type="button" onclick="resetPipelineToDefault()"
+                            class="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 text-[11px] font-bold shadow-sm transition-all cursor-pointer">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Reset to Default
+                        </button>
+                    </div>
                 </div>
             `;
         }, 700);
@@ -941,6 +1193,7 @@ Upload a file above to extract metadata.</div>
             headers: {
                 'X-CSRF-Token': window.CSRF_TOKEN || ''
             },
+            signal: window.currentUploadAbortController.signal,
             body: formData
         })
         .then(res => res.json())
@@ -999,6 +1252,35 @@ Upload a file above to extract metadata.</div>
             document.getElementById('field_cert_number').value = data.metadata.cert_number || '';
             setDateDetectionStatus(data.metadata.date_issued);
 
+            // Update dynamic confidence badge
+            const confBadge = document.getElementById('ocrConfidenceBadge');
+            if (confBadge && data.metadata && data.metadata.confidence !== undefined) {
+                const confScore = parseFloat(data.metadata.confidence);
+                const confPercent = data.metadata.confidence_percent || ((confScore * 100).toFixed(1) + '%');
+                if (confScore >= 0.85) {
+                    confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60';
+                    confBadge.textContent = 'Confidence: ' + confPercent;
+                } else if (confScore >= 0.65) {
+                    confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60';
+                    confBadge.textContent = 'Confidence: ' + confPercent + ' (Review Recommended)';
+                } else {
+                    confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60';
+                    confBadge.textContent = 'Confidence: ' + confPercent + ' (Low Accuracy)';
+                }
+            }
+
+            // Handle image blur warning
+            const blurBox = document.getElementById('image-blur-warning-box');
+            if (blurBox) {
+                if (data.metadata && data.metadata.blur_warning) {
+                    blurBox.classList.remove('hidden');
+                    const blurMsgEl = document.getElementById('image-blur-warning-msg');
+                    if (blurMsgEl) blurMsgEl.textContent = data.metadata.blur_warning;
+                } else {
+                    blurBox.classList.add('hidden');
+                }
+            }
+
             // Handle duplicate warning
             const dupBox = document.getElementById('duplicate-warning-box');
             const forceCheckbox = document.getElementById('field_force_duplicate');
@@ -1019,12 +1301,58 @@ Upload a file above to extract metadata.</div>
         })
         .catch(err => {
             stopTelemetryTimer();
-            banner.innerHTML = `<span class="text-xs font-bold text-rose-600 dark:text-rose-400">Ingestion error: ${escapeHtml(err.message)}</span>`;
-            setActiveStep(1);
+            if (err.name === 'AbortError') {
+                // Deliberate user reset / cancel; no error banner needed
+                return;
+            }
+            banner.innerHTML = `
+                <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-center space-y-2">
+                    <span class="text-xs font-bold text-rose-600 dark:text-rose-400 block">Ingestion error: ${escapeHtml(err.message)}</span>
+                    <button type="button" onclick="resetPipelineToDefault()"
+                        class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-sm transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Reset to Default</span>
+                    </button>
+                </div>
+            `;
+            resetStepperToDefault();
             addTelemetryError(err.message);
-            openProgressModal();
         });
+    }
+
+    // Attach File Input Listener & Drag-and-Drop to Upload Banner
+    document.getElementById('file-input').addEventListener('change', function(e) {
+        processUploadedFiles(e.target.files);
     });
+
+    (function initDragAndDrop() {
+        const zone = document.getElementById('upload-banner');
+        if (!zone) return;
+
+        ['dragenter', 'dragover'].forEach(name => {
+            zone.addEventListener(name, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                zone.classList.add('border-blue-600', 'bg-blue-100/40');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(name => {
+            zone.addEventListener(name, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                zone.classList.remove('border-blue-600', 'bg-blue-100/40');
+            }, false);
+        });
+
+        zone.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+            const files = dt ? dt.files : null;
+            if (files && files.length > 0) {
+                processUploadedFiles(files);
+            }
+        }, false);
+    })();
 
     // Batch Review UI Handler
     function handleBatchUploadResponse(data) {
@@ -1126,6 +1454,36 @@ Upload a file above to extract metadata.</div>
         document.getElementById('field_date').value = item.metadata?.date_issued || '';
         document.getElementById('field_issuer').value = item.metadata?.issuer || '';
         document.getElementById('field_category').value = item.metadata?.category || 'Seminar';
+        setDateDetectionStatus(item.metadata?.date_issued);
+
+        // Update confidence badge for selected batch item
+        const confBadge = document.getElementById('ocrConfidenceBadge');
+        if (confBadge && item.metadata && item.metadata.confidence !== undefined) {
+            const confScore = parseFloat(item.metadata.confidence);
+            const confPercent = item.metadata.confidence_percent || ((confScore * 100).toFixed(1) + '%');
+            if (confScore >= 0.85) {
+                confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60';
+                confBadge.textContent = 'Confidence: ' + confPercent;
+            } else if (confScore >= 0.65) {
+                confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60';
+                confBadge.textContent = 'Confidence: ' + confPercent + ' (Review Recommended)';
+            } else {
+                confBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60';
+                confBadge.textContent = 'Confidence: ' + confPercent + ' (Low Accuracy)';
+            }
+        }
+
+        // Handle image blur warning
+        const blurBox = document.getElementById('image-blur-warning-box');
+        if (blurBox) {
+            if (item.metadata && item.metadata.blur_warning) {
+                blurBox.classList.remove('hidden');
+                const blurMsgEl = document.getElementById('image-blur-warning-msg');
+                if (blurMsgEl) blurMsgEl.textContent = item.metadata.blur_warning;
+            } else {
+                blurBox.classList.add('hidden');
+            }
+        }
 
         const dupBox = document.getElementById('duplicate-warning-box');
         if (item.duplicate_warning) {

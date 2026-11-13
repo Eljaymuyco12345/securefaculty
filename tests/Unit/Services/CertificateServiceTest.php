@@ -98,4 +98,47 @@ class CertificateServiceTest extends TestCase {
         $this->assertGreaterThan(0, $purged);
         $this->assertFalse(file_exists($staleFile), "Stale temp file must be unlinked");
     }
+
+    public function testPurgeStaleTempFilesProtectsDemoAndHiddenFiles(): void {
+        $demoFile = TEMP_DIR . DIRECTORY_SEPARATOR . 'sample_demo_fixture_test.pdf';
+        file_put_contents($demoFile, "%PDF-1.4 DEMO FIXTURE");
+        touch($demoFile, time() - 7200);
+
+        CertificateService::purgeStaleTempFiles(3600);
+        $this->assertTrue(file_exists($demoFile), "Sample demo fixtures must be shielded from automatic purging");
+        @unlink($demoFile);
+    }
+
+    public function testCommitCertificateDuplicateHashInterception(): void {
+        $dupFile = 'staged_dup_' . bin2hex(random_bytes(4)) . '.pdf';
+        $dupPath = TEMP_DIR . DIRECTORY_SEPARATOR . $dupFile;
+        file_put_contents($dupPath, "%PDF-1.4 Duplicate Test Content " . time());
+
+        $input = [
+            'temp_filename' => $dupFile,
+            'title' => 'Original Cert Title',
+            'issuer' => 'ISUFST',
+            'date_issued' => '2026-01-10',
+            'category' => 'Seminar',
+            'original_name' => 'orig.pdf'
+        ];
+
+        $res1 = CertificateService::commitCertificate($input, 2, false);
+        $this->assertTrue($res1['success']);
+        $this->createdCerts[] = (int)$res1['certificate_id'];
+
+        // Re-create the same file content to simulate duplicate upload attempt
+        file_put_contents($dupPath, "%PDF-1.4 Duplicate Test Content " . time());
+        $input2 = [
+            'temp_filename' => $dupFile,
+            'title' => 'Another Title',
+            'original_name' => 'another.pdf'
+        ];
+
+        $res2 = CertificateService::commitCertificate($input2, 2, false);
+        $this->assertFalse($res2['success']);
+        $this->assertEquals(409, $res2['code']);
+        $this->assertEquals('duplicate_detected', $res2['status']);
+        @unlink($dupPath);
+    }
 }

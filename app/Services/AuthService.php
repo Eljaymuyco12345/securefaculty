@@ -79,13 +79,13 @@ class AuthService implements AuthServiceInterface {
         $pdo = Database::getConnection();
         try {
             $fiveMinsAgo = date('Y-m-d H:i:s', $now - 300);
-            $escapedUsername = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $trimmedUser);
+            $escapedUsername = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], htmlspecialchars($trimmedUser, ENT_QUOTES, 'UTF-8'));
             $userPattern = '%username: ' . $escapedUsername . '%';
             $stmtUser = $pdo->prepare("SELECT COUNT(*) FROM audit_logs WHERE action IN ('LOGIN_FAILED', 'LOGIN_RATE_LIMITED', 'BRUTE_FORCE_LOCKOUT') AND details LIKE ? AND created_at >= ?");
             $stmtUser->execute([$userPattern, $fiveMinsAgo]);
             $userFailCount = (int)$stmtUser->fetchColumn();
             if ($userFailCount >= 5) {
-                AuditLogger::log('LOGIN_RATE_LIMITED', "Target account brute-force protection engaged ({$userFailCount} failures in 5m): " . htmlspecialchars($trimmedUser));
+                AuditLogger::log('LOGIN_RATE_LIMITED', "Target account brute-force protection engaged ({$userFailCount} failures in 5m) for username: " . htmlspecialchars($trimmedUser, ENT_QUOTES, 'UTF-8'));
                 $_SESSION['login_error'] = 'rate_limited';
                 return false;
             }
@@ -96,7 +96,11 @@ class AuthService implements AuthServiceInterface {
         $stmt->execute([$trimmedUser]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password_hash'])) {
+        // Mitigation for user enumeration timing attack: run dummy verify if user does not exist
+        $dummyHash = '$2y$10$e8w6yQ6Vf4w7v5f/2f3L6.R2F4j1rO9wLwZ3uYn5U4kI3mO6pP8hG';
+        $passwordValid = $user ? password_verify($password, $user['password_hash']) : password_verify($password, $dummyHash);
+
+        if ($user && $passwordValid) {
             if (isset($user['is_active']) && (int)$user['is_active'] === 0) {
                 AuditLogger::log('LOGIN_BLOCKED', 'Deactivated account attempted authentication: ' . htmlspecialchars($username), $user['id']);
                 $_SESSION['login_error'] = 'deactivated';
@@ -114,6 +118,7 @@ class AuthService implements AuthServiceInterface {
             $_SESSION['full_name'] = $user['full_name'];
             $_SESSION['department'] = $user['department'];
             $_SESSION['is_active'] = 1;
+            $_SESSION['last_activity'] = $now;
 
             // Generate fresh CSRF token
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -130,10 +135,10 @@ class AuthService implements AuthServiceInterface {
         $throttle['last_time'] = $now;
         if ($throttle['count'] >= 5) {
             $throttle['locked_until'] = $now + 300;
-            AuditLogger::log('BRUTE_FORCE_LOCKOUT', "Security pause engaged (5 minutes) after 5 failed logins for: " . htmlspecialchars($username));
+            AuditLogger::log('BRUTE_FORCE_LOCKOUT', "Security pause engaged (5 minutes) after 5 failed logins for username: " . htmlspecialchars($username, ENT_QUOTES, 'UTF-8'));
             $_SESSION['login_error'] = 'rate_limited';
         } else {
-            AuditLogger::log('LOGIN_FAILED', 'Failed login attempt for username: ' . htmlspecialchars($username));
+            AuditLogger::log('LOGIN_FAILED', 'Failed login attempt for username: ' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8'));
             $_SESSION['login_error'] = 'invalid_credentials';
         }
         $_SESSION['login_throttle'] = $throttle;
@@ -148,6 +153,18 @@ class AuthService implements AuthServiceInterface {
         }
 
         $userId = (int)$_SESSION['user_id'];
+
+        // OWASP A07: Session Inactivity Timeout Guard (30 minutes = 1800s)
+        $now = time();
+        if (isset($_SESSION['last_activity']) && ($now - (int)$_SESSION['last_activity'] > 1800)) {
+            AuditLogger::log('SESSION_TIMEOUT', "User session invalidated after 30 minutes of inactivity", $userId);
+            self::logout();
+            self::$cachedCheckResult = false;
+            self::$cachedUserId = null;
+            return false;
+        }
+        $_SESSION['last_activity'] = $now;
+
         if (self::$cachedCheckResult !== null && self::$cachedUserId === $userId) {
             return self::$cachedCheckResult;
         }

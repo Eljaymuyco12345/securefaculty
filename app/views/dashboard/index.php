@@ -25,6 +25,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Centralized Administrative Oversight & Real-Time Cloud Quota Monitor</p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
+        <a href="backup.php"
+           title="Plan B: Generate and download an instant database snapshot for disaster recovery"
+           class="px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-database text-emerald-600 dark:text-emerald-400"></i>
+            <span>Plan B DB Backup</span>
+        </a>
         <a href="users.php"
            class="px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
             <i class="fa-solid fa-users-gear"></i>
@@ -42,6 +48,19 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </button>
     </div>
 </div>
+
+<?php if (isset($_GET['error'])): ?>
+<div class="mt-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs flex items-center justify-between shadow-sm">
+    <div class="flex items-center gap-2.5">
+        <i class="fa-solid fa-circle-exclamation text-rose-600 dark:text-rose-400 text-base"></i>
+        <div>
+            <span class="font-bold">System / Backup Alert:</span>
+            <span><?= htmlspecialchars($_GET['error'], ENT_QUOTES, 'UTF-8') ?></span>
+        </div>
+    </div>
+    <a href="dashboard.php" class="text-rose-600 dark:text-rose-400 hover:underline font-bold text-[11px] px-2 py-1 rounded border border-rose-300 dark:border-rose-700 bg-white dark:bg-rose-900/40">Dismiss</a>
+</div>
+<?php endif; ?>
 
 <!-- Permanent Institutional Department Metrics Banner -->
 <div id="institutionalOverviewPanel">
@@ -170,17 +189,29 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
             <!-- Pagination matching Figure 4.3 -->
             <div class="flex items-center gap-0.5 font-mono">
+                <?php
+                    $actionParam = !empty($actionFilter) ? '&action=' . urlencode($actionFilter) : '';
+                    $searchParam = $search ? '&search=' . urlencode($search) : '';
+                    $pageParam = $searchParam . $actionParam;
+                    $startPage = max(1, min($page - 1, max(1, $totalPages - 3)));
+                    $endPage = min($totalPages, max(1, $startPage + 3));
+                    if ($endPage - $startPage < 3 && $startPage > 1) {
+                        $startPage = max(1, $endPage - 3);
+                    }
+                ?>
                 <?php if ($page > 1): ?>
-                    <a href="dashboard.php?page=<?= $page - 1 ?><?= $search ? '&search=' . urlencode($search) : '' ?>"
-                       class="px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">&lt;</a>
+                    <a href="dashboard.php?page=<?= $page - 1 ?><?= $pageParam ?>"
+                       class="pagination-btn px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                       title="Previous Page">&lt;</a>
                 <?php endif; ?>
-                <?php for ($i = 1; $i <= min($totalPages, 4); $i++): ?>
-                    <a href="dashboard.php?page=<?= $i ?><?= $search ? '&search=' . urlencode($search) : '' ?>"
-                       class="px-1.5 py-0.5 rounded <?= $i === $page ? 'bg-blue-600 text-white font-bold' : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?> cursor-pointer"><?= $i ?></a>
+                <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                    <a href="dashboard.php?page=<?= $i ?><?= $pageParam ?>"
+                       class="pagination-btn px-1.5 py-0.5 rounded <?= $i === $page ? 'bg-blue-600 text-white font-bold' : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?> cursor-pointer"><?= $i ?></a>
                 <?php endfor; ?>
                 <?php if ($page < $totalPages): ?>
-                    <a href="dashboard.php?page=<?= $page + 1 ?><?= $search ? '&search=' . urlencode($search) : '' ?>"
-                       class="px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">&gt;</a>
+                    <a href="dashboard.php?page=<?= $page + 1 ?><?= $pageParam ?>"
+                       class="pagination-btn px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                       title="Next Page">&gt;</a>
                 <?php endif; ?>
             </div>
 
@@ -460,6 +491,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             }
 
             // Tag filters
+            if (selectedCategoryTag && !rowText.includes(selectedCategoryTag.toLowerCase())) {
+                match = false;
+            }
             if (selectedActionTag) {
                 if (!action.toLowerCase().includes(selectedActionTag.toLowerCase())) match = false;
             }

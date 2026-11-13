@@ -15,6 +15,7 @@ define('BASE_DIR', dirname(__DIR__));
 define('STORAGE_DIR', BASE_DIR . DIRECTORY_SEPARATOR . 'storage');
 define('VAULT_DIR', STORAGE_DIR . DIRECTORY_SEPARATOR . 'vault');
 define('TEMP_DIR', STORAGE_DIR . DIRECTORY_SEPARATOR . 'temp');
+define('BACKUP_DIR', STORAGE_DIR . DIRECTORY_SEPARATOR . 'backups');
 define('PYTHON_ENGINE_PATH', BASE_DIR . DIRECTORY_SEPARATOR . 'python_engine' . DIRECTORY_SEPARATOR . 'conversion_gate.py');
 
 // Database Driver Configuration ('sqlite' or 'mysql')
@@ -54,4 +55,7 @@ if (!is_dir(VAULT_DIR)) {
 }
 if (!is_dir(TEMP_DIR)) {
     mkdir(TEMP_DIR, 0755, true);
+}
+if (!is_dir(BACKUP_DIR)) {
+    mkdir(BACKUP_DIR, 0755, true);
 }
