@@ -114,6 +114,14 @@ def generate_pdf(data_json_path, output_pdf_path):
     story = []
 
     # 1. Official Letterhead
+    logo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'public', 'assets', 'images', 'isufst_logo.png'))
+    if os.path.exists(logo_path):
+        from reportlab.platypus import Image as RLImage
+        logo_img = RLImage(logo_path, width=58, height=40)
+        logo_img.hAlign = 'CENTER'
+        story.append(logo_img)
+        story.append(Spacer(1, 2))
+
     story.append(Paragraph("REPUBLIC OF THE PHILIPPINES", title_sub))
     story.append(Spacer(1, 1.5))
     story.append(Paragraph("ILOILO STATE UNIVERSITY OF FISHERIES SCIENCE AND TECHNOLOGY", title_main))

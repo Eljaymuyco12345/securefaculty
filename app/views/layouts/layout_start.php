@@ -334,11 +334,11 @@ $searchAction = basename($_SERVER['PHP_SELF']);
         <aside id="main-sidebar"
                class="fixed inset-y-0 left-0 z-50 w-64 lg:static lg:w-56 sidebar-navy safe-area-sidebar select-none text-slate-300 flex flex-col justify-between flex-shrink-0 border-r border-[#08182f] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
             <div>
-                <!-- Brand / Logo matching Figure 4.3 -->
+                <!-- Brand / Logo matching Figure 4.3 with Official ISUFST Seal -->
                 <div class="h-14 px-4 flex items-center justify-between border-b border-[#14335e]">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-blue-300 text-sm shadow-inner">
-                            <i class="fa-solid fa-lock"></i>
+                        <div class="w-8 h-8 rounded-lg bg-white p-0.5 flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden">
+                            <img src="assets/images/isufst_logo.png" alt="ISUFST Logo" class="max-w-full max-h-full object-contain">
                         </div>
                         <div>
                             <span class="font-bold text-sm tracking-tight text-white block leading-tight">SecureFaculty</span>

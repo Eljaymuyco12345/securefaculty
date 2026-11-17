@@ -24,6 +24,18 @@ except ImportError:
     docx = None
 
 try:
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
+    )
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+    import html
+except ImportError:
+    pass
+
+try:
     import requests
 except ImportError:
     requests = None
@@ -295,6 +307,259 @@ def parse_docx_xml_fallback(file_path):
     except Exception as e:
         sys.stderr.write(f"DOCX XML fallback parse error: {e}\n")
         return ""
+
+
+def convert_docx_to_pdf(docx_path, output_pdf_path):
+    """
+    Render DOCX document into a clean, immutable A4 PDF.
+    Extracts paragraphs, inline text runs (bold, italic, underline), tables, and embedded images.
+    Falls back gracefully to XML parsing if python-docx encounter non-standard constructs.
+    """
+    if not os.path.exists(docx_path):
+        return False
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import (
+            SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
+        )
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+        import html
+    except ImportError:
+        return False
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'DocxTitle',
+        parent=styles['Heading1'],
+        fontName='Helvetica-Bold',
+        fontSize=18,
+        leading=22,
+        textColor=colors.HexColor('#0f172a'),
+        spaceAfter=12
+    )
+    h2_style = ParagraphStyle(
+        'DocxH2',
+        parent=styles['Heading2'],
+        fontName='Helvetica-Bold',
+        fontSize=14,
+        leading=18,
+        textColor=colors.HexColor('#1e293b'),
+        spaceAfter=8
+    )
+    h3_style = ParagraphStyle(
+        'DocxH3',
+        parent=styles['Heading3'],
+        fontName='Helvetica-Bold',
+        fontSize=12,
+        leading=16,
+        textColor=colors.HexColor('#334155'),
+        spaceAfter=6
+    )
+    body_style = ParagraphStyle(
+        'DocxBody',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=10,
+        leading=14,
+        textColor=colors.HexColor('#334155'),
+        spaceAfter=6
+    )
+    table_cell_style = ParagraphStyle(
+        'DocxTableCell',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=9,
+        leading=12,
+        textColor=colors.HexColor('#1e293b')
+    )
+
+    story = []
+    temp_extracted_images = []
+
+    doc_parsed = False
+    if docx is not None:
+        try:
+            doc = docx.Document(docx_path)
+            for child in doc.element.body.iterchildren():
+                if child.tag.endswith('p'):
+                    p = docx.text.paragraph.Paragraph(child, doc)
+                    txt = p.text.strip()
+                    if not txt:
+                        story.append(Spacer(1, 6))
+                        continue
+                    p_html = []
+                    for r in p.runs:
+                        t = html.escape(r.text)
+                        if r.bold and r.italic:
+                            t = f"<b><i>{t}</i></b>"
+                        elif r.bold:
+                            t = f"<b>{t}</b>"
+                        elif r.italic:
+                            t = f"<i>{t}</i>"
+                        if r.underline:
+                            t = f"<u>{t}</u>"
+                        p_html.append(t)
+                    p_str = "".join(p_html) if p_html else html.escape(txt)
+                    st = body_style
+                    if p.style and p.style.name:
+                        sname = p.style.name.lower()
+                        if 'title' in sname or 'heading 1' in sname:
+                            st = title_style
+                        elif 'heading 2' in sname:
+                            st = h2_style
+                        elif 'heading 3' in sname:
+                            st = h3_style
+                    story.append(Paragraph(p_str, st))
+                    story.append(Spacer(1, 4))
+                elif child.tag.endswith('tbl'):
+                    t = docx.table.Table(child, doc)
+                    data = []
+                    for row in t.rows:
+                        seen_cells = set()
+                        rdata = []
+                        for cell in row.cells:
+                            if cell not in seen_cells:
+                                seen_cells.add(cell)
+                                rdata.append(Paragraph(html.escape(cell.text.strip()), table_cell_style))
+                        if rdata:
+                            data.append(rdata)
+                    if data:
+                        tbl = Table(data, colWidths=None)
+                        tbl.setStyle(TableStyle([
+                            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+                            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f1f5f9')),
+                            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                            ('TOPPADDING', (0,0), (-1,-1), 4),
+                            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+                        ]))
+                        story.append(tbl)
+                        story.append(Spacer(1, 8))
+            doc_parsed = True
+        except Exception:
+            doc_parsed = False
+
+    # Extract any embedded images from word/media/
+    try:
+        with zipfile.ZipFile(docx_path, 'r') as zf:
+            media_files = [m for m in zf.namelist() if m.startswith('word/media/') and not m.endswith('/')]
+            for mf in media_files:
+                mext = os.path.splitext(mf)[1].lower()
+                if mext in ('.png', '.jpg', '.jpeg', '.webp'):
+                    tmp_img = os.path.join(os.path.dirname(output_pdf_path) or '.', f"docx_img_{uuid.uuid4().hex[:8]}{mext}")
+                    with zf.open(mf) as src, open(tmp_img, 'wb') as dst:
+                        dst.write(src.read())
+                    temp_extracted_images.append(tmp_img)
+                    if Image is not None:
+                        try:
+                            with Image.open(tmp_img) as pim:
+                                pw, ph = pim.size
+                                max_w = 515
+                                max_h = 600
+                                aspect = pw / ph if ph > 0 else 1.0
+                                if pw > max_w:
+                                    pw = max_w
+                                    ph = pw / aspect
+                                if ph > max_h:
+                                    ph = max_h
+                                    pw = ph * aspect
+                                story.append(RLImage(tmp_img, width=pw, height=ph))
+                                story.append(Spacer(1, 8))
+                        except Exception:
+                            pass
+    except Exception:
+        pass
+
+    # Fallback to pure XML text if docx parsing didn't produce printable elements
+    if not doc_parsed or not story:
+        fallback_text = parse_docx_xml_fallback(docx_path)
+        for line in fallback_text.splitlines():
+            line_s = line.strip()
+            if not line_s:
+                story.append(Spacer(1, 6))
+                continue
+            if ' | ' in line_s:
+                cells = [Paragraph(html.escape(c.strip()), table_cell_style) for c in line_s.split(' | ')]
+                tbl = Table([cells])
+                tbl.setStyle(TableStyle([
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+                    ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                    ('TOPPADDING', (0,0), (-1,-1), 4),
+                    ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+                ]))
+                story.append(tbl)
+            else:
+                story.append(Paragraph(html.escape(line_s), body_style))
+            story.append(Spacer(1, 4))
+
+    if not story:
+        story.append(Paragraph("Official Academic Certificate / Record", title_style))
+        story.append(Spacer(1, 10))
+        story.append(Paragraph("This document has been ingested into the SecureFaculty Institutional Vault.", body_style))
+
+    try:
+        doc_pdf = SimpleDocTemplate(
+            output_pdf_path,
+            pagesize=A4,
+            leftMargin=40,
+            rightMargin=40,
+            topMargin=40,
+            bottomMargin=40
+        )
+        doc_pdf.build(story)
+        return os.path.exists(output_pdf_path) and os.path.getsize(output_pdf_path) > 0
+    except Exception as e:
+        sys.stderr.write(f"PDF build error: {e}\n")
+        return False
+    finally:
+        for tmp_img in temp_extracted_images:
+            if os.path.exists(tmp_img):
+                try:
+                    os.remove(tmp_img)
+                except Exception:
+                    pass
+
+
+def convert_image_to_pdf(image_path, output_pdf_path):
+    """Convert single image (JPG, PNG, WEBP) to clean, locked PDF format."""
+    if Image is None or not os.path.exists(image_path):
+        return False
+    try:
+        with Image.open(image_path) as img:
+            if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+                bg = Image.new("RGB", img.size, (255, 255, 255))
+                if img.mode != "RGBA":
+                    img = img.convert("RGBA")
+                bg.paste(img, mask=img.split()[3])
+                conv_img = bg
+            elif img.mode != "RGB":
+                conv_img = img.convert("RGB")
+            else:
+                conv_img = img
+
+            conv_img.save(output_pdf_path, "PDF", resolution=100.0)
+            return os.path.exists(output_pdf_path) and os.path.getsize(output_pdf_path) > 0
+    except Exception as e:
+        sys.stderr.write(f"Image to PDF conversion error: {e}\n")
+        return False
+
+
+def convert_file_to_pdf(input_path, output_pdf_path):
+    """Universal converter: ensures any supported document is converted to PDF."""
+    if not os.path.exists(input_path):
+        return False
+    ext = os.path.splitext(input_path)[1].lower()
+    if ext == '.pdf':
+        if os.path.abspath(input_path) != os.path.abspath(output_pdf_path):
+            import shutil
+            shutil.copy2(input_path, output_pdf_path)
+        return True
+    elif ext == '.docx':
+        return convert_docx_to_pdf(input_path, output_pdf_path)
+    elif ext in ('.jpg', '.jpeg', '.png', '.webp'):
+        return convert_image_to_pdf(input_path, output_pdf_path)
+    return False
 
 
 def call_ocr_space_api(image_path, api_key="helloworld"):
@@ -570,9 +835,27 @@ def process_document(file_path, api_key="helloworld"):
     confidence = compute_dynamic_confidence(ext, raw_text, title, issuer, date_issued, category, blur_info, ocr_used=ocr_used)
     confidence_pct = f"{round(confidence * 100, 1)}%"
 
+    converted_pdf = None
+    target_file_type = "pdf"
+    is_converted = False
+
+    if ext == '.pdf':
+        converted_pdf = os.path.basename(file_path)
+    else:
+        out_pdf = os.path.splitext(file_path)[0] + "_converted.pdf"
+        if convert_file_to_pdf(file_path, out_pdf):
+            converted_pdf = os.path.basename(out_pdf)
+            is_converted = True
+        else:
+            converted_pdf = os.path.basename(file_path)
+            target_file_type = ext.lstrip('.')
+
     return {
         "status": "success",
         "file_type": ext.lstrip('.'),
+        "target_file_type": target_file_type,
+        "converted_pdf": converted_pdf,
+        "is_converted": is_converted,
         "file_size": os.path.getsize(file_path),
         "optimized_file_path": optimized_path,
         "metadata": {
@@ -598,7 +881,21 @@ def main():
     parser.add_argument("--zip", help="Path to input ZIP archive of certificates")
     parser.add_argument("--outdir", help="Directory where files will be unpacked and staged")
     parser.add_argument("--apikey", default="helloworld", help="OCR.space API key")
+    parser.add_argument("--convert-to-pdf", help="Directly convert any input file (docx/image/pdf) to PDF")
+    parser.add_argument("--out", help="Output path for PDF conversion")
     args = parser.parse_args()
+
+    if args.convert_to_pdf:
+        if not os.path.exists(args.convert_to_pdf):
+            print(json.dumps({"status": "error", "message": f"File not found: {args.convert_to_pdf}"}))
+            return
+        out_path = args.out or (os.path.splitext(args.convert_to_pdf)[0] + "_converted.pdf")
+        ok = convert_file_to_pdf(args.convert_to_pdf, out_path)
+        if ok and os.path.exists(out_path):
+            print(json.dumps({"status": "success", "pdf": out_path}))
+        else:
+            print(json.dumps({"status": "error", "message": "Failed to convert document to PDF"}))
+        return
 
     if args.zip:
         if not os.path.exists(args.zip):
@@ -642,8 +939,18 @@ def main():
                             target.write(source.read())
 
                         doc_res = process_document(extracted_path, args.apikey)
-                        doc_res["temp_filename"] = safe_temp_name
-                        doc_res["original_name"] = orig_base
+                        if doc_res.get("converted_pdf") and doc_res["converted_pdf"] != safe_temp_name:
+                            doc_res["temp_filename"] = doc_res["converted_pdf"]
+                            doc_res["original_name"] = os.path.splitext(orig_base)[0] + ".pdf"
+                            doc_res["file_type"] = "pdf"
+                            if os.path.exists(extracted_path):
+                                try:
+                                    os.remove(extracted_path)
+                                except Exception:
+                                    pass
+                        else:
+                            doc_res["temp_filename"] = safe_temp_name
+                            doc_res["original_name"] = orig_base
                         items.append(doc_res)
                     except Exception as ex:
                         items.append({

@@ -73,6 +73,29 @@ class CertificateServiceTest extends TestCase {
         $this->assertEquals(403, $retrieveOther['code']);
     }
 
+    public function testCommitDocxNormalizesFileTypeAndFilenameToPdf(): void {
+        $tempPdf = 'staged_docx_conv_' . bin2hex(random_bytes(6)) . '.pdf';
+        file_put_contents(TEMP_DIR . DIRECTORY_SEPARATOR . $tempPdf, "%PDF-1.4 Converted Docx Test " . time());
+
+        $input = [
+            'temp_filename' => $tempPdf,
+            'title' => 'Docx Normalized Certificate',
+            'issuer' => 'CHED Philippines',
+            'date_issued' => '2026-06-20',
+            'category' => 'Award',
+            'original_name' => 'Original_Faculty_Award.docx'
+        ];
+
+        $res = CertificateService::commitCertificate($input, 2, false);
+        $this->assertTrue($res['success']);
+        $certId = (int)$res['certificate_id'];
+        $this->createdCerts[] = $certId;
+
+        $cert = CertificateDAO::find($certId);
+        $this->assertEquals('pdf', $cert['file_type'], "Committed file_type must be normalized to pdf");
+        $this->assertEquals('Original_Faculty_Award.pdf', $cert['original_filename'], "Original filename must end in .pdf");
+    }
+
     public function testCommitCertificateMissingFileReturns404(): void {
         $res = CertificateService::commitCertificate([
             'temp_filename' => 'definitely_non_existent_file.pdf'

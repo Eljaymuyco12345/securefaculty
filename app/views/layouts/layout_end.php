@@ -9,6 +9,7 @@
             <!-- Standard System Footer -->
             <footer class="py-3 px-6 safe-area-bottom bg-white dark:bg-[#0c1830] border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2 flex-shrink-0 transition-colors">
                 <div class="flex items-center gap-2">
+                    <img src="assets/images/isufst_logo.png" alt="ISUFST" class="w-5 h-4 object-contain inline-block">
                     <span class="font-bold text-slate-700 dark:text-slate-200">SecureFaculty</span>
                     <span class="text-slate-300 dark:text-slate-600">•</span>
                     <span>ISUFST CICI Systematic Records Management</span>
