@@ -103,14 +103,14 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </div>
         <div class="flex items-center gap-2 flex-wrap">
             <a href="vault.php"
-               class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all">
+               class="px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all">
                 <i class="fa-solid fa-arrow-left"></i>
                 <span>Back to Vault</span>
             </a>
             <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
-               class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
-                <i class="fa-solid fa-file-pdf text-sm"></i>
-                <span>Download PDF File</span>
+               class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-sm flex items-center gap-2.5 shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+                <i class="fa-solid fa-file-pdf text-base animate-pulse"></i>
+                <span>Download PDF Report</span>
             </a>
         </div>
     </div>
@@ -259,7 +259,10 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 <div class="report-sheet bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 sm:p-9 space-y-6 mt-3 transition-colors">
 
     <!-- Official Institutional Letterhead -->
-    <div class="text-center border-b-2 border-slate-900 dark:border-slate-700 pb-4">
+    <div class="text-center border-b-2 border-slate-900 dark:border-slate-700 pb-4 flex flex-col items-center">
+        <div class="w-20 h-14 mb-2 flex items-center justify-center">
+            <img src="assets/images/isufst_logo.png" alt="ISUFST Official Seal" class="max-w-full max-h-full object-contain filter drop-shadow-sm">
+        </div>
         <p class="text-[10px] font-serif uppercase tracking-widest text-slate-500 dark:text-slate-400">Republic of the Philippines</p>
         <h2 class="text-base font-bold uppercase font-serif text-slate-900 dark:text-white tracking-wide mt-0.5">
             Iloilo State University of Fisheries Science and Technology
@@ -382,6 +385,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </p>
             <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">Data Privacy Act &amp; AACCUP Quality Standard</p>
         </div>
+    </div>
+
+    <!-- Bottom Standout Download PDF Action (Screen Only) -->
+    <div class="pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-3 print:hidden">
+        <span class="text-xs text-slate-500 dark:text-slate-400">Ready to export official ledger with cryptographic verification?</span>
+        <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
+           class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-sm flex items-center gap-2.5 shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+            <i class="fa-solid fa-file-pdf text-base"></i>
+            <span>Download PDF Report</span>
+        </a>
     </div>
 
 </div>

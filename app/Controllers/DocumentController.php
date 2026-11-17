@@ -32,31 +32,49 @@ class DocumentController extends BaseController {
         $action = $isDownload ? 'DOWNLOAD_DOCUMENT' : 'VIEW_DOCUMENT';
         AuditLogger::log($action, "Just-in-Time Decryption executed for certificate #{$id}: '{$cert['title']}'", $id);
 
-        // Map MIME type
         $ext = strtolower(ltrim($cert['file_type'] ?? '', '.'));
-        $mimeMap = [
-            'pdf' => 'application/pdf',
-            'png' => 'image/png',
-            'jpg' => 'image/jpeg',
-            'jpeg' => 'image/jpeg',
-            'webp' => 'image/webp',
-            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ];
-        $mimeType = $mimeMap[$ext] ?? 'application/octet-stream';
 
-        // Force attachment disposition for .docx and binary streams since web browsers cannot render them inline
-        $disposition = ($isDownload || $ext === 'docx' || $mimeType === 'application/octet-stream') ? 'attachment' : 'inline';
+        // Policy: ALL documents viewed or downloaded must be delivered as PDF to prevent tampering & ensure inline preview
+        if ($ext !== 'pdf') {
+            $pythonBin = $this->getPythonBinary();
+            $tempIn = TEMP_DIR . DIRECTORY_SEPARATOR . 'jit_in_' . bin2hex(random_bytes(8)) . '.' . ($ext ?: 'tmp');
+            $tempOut = TEMP_DIR . DIRECTORY_SEPARATOR . 'jit_out_' . bin2hex(random_bytes(8)) . '.pdf';
 
-        // Safe filename sanitization (removes path traversal, control chars, quotes, backslashes, semicolons, and CRLF)
+            try {
+                file_put_contents($tempIn, $decryptedBytes);
+                $cmd = sprintf(
+                    '%s %s --convert-to-pdf %s --out %s 2>&1',
+                    escapeshellcmd($pythonBin),
+                    escapeshellarg(PYTHON_ENGINE_PATH),
+                    escapeshellarg($tempIn),
+                    escapeshellarg($tempOut)
+                );
+                shell_exec($cmd);
+
+                if (file_exists($tempOut) && filesize($tempOut) > 0) {
+                    $decryptedBytes = file_get_contents($tempOut);
+                    $ext = 'pdf';
+                }
+            } finally {
+                if (file_exists($tempIn)) @unlink($tempIn);
+                if (file_exists($tempOut)) @unlink($tempOut);
+            }
+        }
+
+        $mimeType = 'application/pdf';
+        $disposition = $isDownload ? 'attachment' : 'inline';
+
+        // Safe filename sanitization enforced with .pdf extension
         $rawFilename = basename(str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $cert['original_filename'] ?? 'document'));
-        $safeFilename = preg_replace('/[\x00-\x1F\x7F"\';\\\]/', '_', $rawFilename);
+        $safeBase = pathinfo($rawFilename, PATHINFO_FILENAME);
+        $safeFilename = preg_replace('/[\x00-\x1F\x7F"\';\\\]/', '_', $safeBase) . '.pdf';
         $safeFilename = trim($safeFilename, " .");
-        if ($safeFilename === '') {
-            $safeFilename = "certificate_{$id}." . ($ext ?: 'pdf');
+        if ($safeFilename === '' || $safeFilename === '.pdf') {
+            $safeFilename = "certificate_{$id}.pdf";
         }
         $asciiFilename = preg_replace('/[^\x20-\x7E]/', '_', $safeFilename);
-        if ($asciiFilename === '') {
-            $asciiFilename = "certificate_{$id}." . ($ext ?: 'pdf');
+        if ($asciiFilename === '' || $asciiFilename === '.pdf') {
+            $asciiFilename = "certificate_{$id}.pdf";
         }
 
         // Clean any active output buffers to guarantee binary stream integrity

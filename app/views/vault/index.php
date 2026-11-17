@@ -78,8 +78,8 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
         <!-- Direct Link to Accreditation Report & PDF -->
         <a href="export.php?category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?>"
-           class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-file-pdf text-rose-600 dark:text-rose-400"></i>
+           class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-file-pdf text-sm animate-pulse"></i>
             <span>Official Report &amp; PDF</span>
         </a>
 
@@ -248,9 +248,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     </div>
     <div class="flex items-center gap-2">
         <button type="button" onclick="exportSelected()"
-                class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-print"></i>
-            <span>Export Selected (PDF / Print)</span>
+                class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-rose-600/40 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all flex items-center gap-2 cursor-pointer active:scale-95">
+            <i class="fa-solid fa-file-pdf text-sm animate-pulse"></i>
+            <span>Export Selected (PDF)</span>
         </button>
         <button type="button" onclick="confirmBulkDelete()"
                 class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer">
@@ -330,9 +330,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                         </span>
                                     <?php endif; ?>
                                 </div>
-                                <a href="view_document.php?id=<?= $cert['id'] ?>" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-1" title="<?= htmlspecialchars($cert['title']) ?>">
+                                <button type="button"
+                                        onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>)"
+                                        class="text-left hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors line-clamp-1 cursor-pointer"
+                                        title="Preview <?= htmlspecialchars($cert['title']) ?>">
                                     <?= htmlspecialchars($cert['title']) ?>
-                                </a>
+                                </button>
                                 <div class="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono mt-0.5">
                                     <span><?= strtoupper(htmlspecialchars($cert['file_type'])) ?></span>
                                     <span>&bull;</span>
@@ -398,12 +401,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             </td>
                             <td class="p-3 text-right whitespace-nowrap">
                                 <div class="inline-flex items-center gap-1">
-                                    <a href="view_document.php?id=<?= $cert['id'] ?>" target="_blank"
-                                       class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[10px] font-bold inline-flex items-center gap-1 shadow-sm border border-transparent dark:border-slate-700 transition-all"
-                                       title="Decrypt &amp; View">
+                                    <button type="button"
+                                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>)"
+                                            class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[10px] font-bold inline-flex items-center gap-1 shadow-sm border border-transparent dark:border-slate-700 transition-all cursor-pointer"
+                                            title="Preview Document In-App">
                                         <i class="fa-regular fa-eye"></i>
                                         <span>View</span>
-                                    </a>
+                                    </button>
                                     <a href="view_document.php?id=<?= $cert['id'] ?>&download=1"
                                        class="touch-target p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs transition-all"
                                        title="Volatile Download">
@@ -528,11 +532,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
                 <!-- Card Actions matching Figure D.2 -->
                 <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                    <a href="view_document.php?id=<?= $cert['id'] ?>" target="_blank"
-                       class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shadow-sm">
+                    <button type="button"
+                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>)"
+                            class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                            title="Preview Document In-App">
                         <i class="fa-regular fa-eye text-[10px]"></i>
                         <span>Decrypt &amp; View</span>
-                    </a>
+                    </button>
 
                     <div class="flex items-center gap-1.5">
                         <a href="view_document.php?id=<?= $cert['id'] ?>&download=1"
@@ -722,6 +728,157 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         });
     });
     <?php endif; ?>
+
+    // --- In-App PDF Document Preview Controller ---
+    function openDocPreview(id, title, issuer, date, category, certNo) {
+        const dialog = document.getElementById('docPreviewModal');
+        const iframe = document.getElementById('docPreviewIframe');
+        const spinner = document.getElementById('docPreviewSpinner');
+        const titleEl = document.getElementById('docPreviewTitle');
+        const metaEl = document.getElementById('docPreviewMeta');
+        const newTabLink = document.getElementById('docPreviewNewTab');
+        const downloadLink = document.getElementById('docPreviewDownload');
+
+        if (!dialog || !iframe) return;
+
+        if (titleEl) titleEl.textContent = title || 'Document Preview';
+        if (metaEl) {
+            let metaHtml = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">${escapeDocHtml(category || 'Record')}</span>`;
+            if (issuer) {
+                metaHtml += `<span class="flex items-center gap-1"><i class="fa-solid fa-building-columns text-[9px] text-slate-400"></i> ${escapeDocHtml(issuer)}</span>`;
+            }
+            if (date) {
+                metaHtml += `<span class="flex items-center gap-1 font-mono"><i class="fa-regular fa-calendar-check text-[9px] text-emerald-500"></i> ${escapeDocHtml(date)}</span>`;
+            }
+            if (certNo) {
+                metaHtml += `<span class="font-mono text-slate-400 text-[10px]">#${escapeDocHtml(certNo)}</span>`;
+            }
+            metaEl.innerHTML = metaHtml;
+        }
+
+        const docUrl = 'view_document.php?id=' + encodeURIComponent(id);
+        const downloadUrl = 'view_document.php?id=' + encodeURIComponent(id) + '&download=1';
+
+        if (newTabLink) newTabLink.href = docUrl;
+        if (downloadLink) downloadLink.href = downloadUrl;
+
+        if (spinner) spinner.style.display = 'flex';
+        iframe.src = docUrl;
+
+        if (typeof dialog.showModal === 'function') {
+            dialog.showModal();
+        } else {
+            dialog.setAttribute('open', '');
+        }
+        document.documentElement.classList.add('overflow-hidden');
+    }
+
+    function closeDocPreview() {
+        const dialog = document.getElementById('docPreviewModal');
+        const iframe = document.getElementById('docPreviewIframe');
+        if (!dialog) return;
+
+        if (iframe) iframe.src = 'about:blank';
+        if (typeof dialog.close === 'function') {
+            dialog.close();
+        } else {
+            dialog.removeAttribute('open');
+        }
+        document.documentElement.classList.remove('overflow-hidden');
+    }
+
+    function escapeDocHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const dialog = document.getElementById('docPreviewModal');
+        if (dialog) {
+            dialog.addEventListener('click', function(e) {
+                const rect = dialog.getBoundingClientRect();
+                const isInDialog = (
+                    rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+                    rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+                );
+                if (!isInDialog) {
+                    closeDocPreview();
+                }
+            });
+            dialog.addEventListener('cancel', function() {
+                closeDocPreview();
+            });
+        }
+    });
+</script>
+
+<!-- Native Modern Web Document Preview Modal -->
+<style>
+#docPreviewModal {
+    display: none;
+    overscroll-behavior: contain;
+}
+#docPreviewModal[open] {
+    display: flex;
+}
+#docPreviewModal::backdrop {
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+</style>
+
+<dialog id="docPreviewModal" aria-labelledby="docPreviewTitle" class="fixed inset-0 m-auto p-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0c1830] text-slate-800 dark:text-slate-100 shadow-2xl max-w-6xl w-[96vw] h-[92vh] max-h-[95vh] flex-col overflow-hidden outline-none z-50">
+    <!-- Header -->
+    <div class="px-5 py-3.5 bg-slate-50 dark:bg-[#111c36] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 flex-shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 p-1 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <img src="assets/images/isufst_logo.png" alt="ISUFST Official Seal" class="max-w-full max-h-full object-contain">
+            </div>
+            <div class="min-w-0">
+                <h3 id="docPreviewTitle" class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">Document Preview</h3>
+                <div id="docPreviewMeta" class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap mt-0.5">
+                    <!-- Badges populated dynamically via openDocPreview -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <a id="docPreviewNewTab" href="#" target="_blank" rel="noopener noreferrer"
+               class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
+               title="Open in a separate browser tab if needed">
+                <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
+                <span class="hidden sm:inline">Open in Tab</span>
+            </a>
+            <a id="docPreviewDownload" href="#"
+               class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+               title="Download Decrypted PDF Copy">
+                <i class="fa-solid fa-download text-xs"></i>
+                <span>Download PDF</span>
+            </a>
+            <button type="button" onclick="closeDocPreview()"
+                    class="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-base cursor-pointer"
+                    title="Close Preview (Esc)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Viewer Body -->
+    <div class="relative flex-1 w-full h-full min-h-0 bg-slate-900 overflow-hidden">
+        <div id="docPreviewSpinner" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 text-slate-300 z-10 space-y-3">
+            <div class="w-10 h-10 border-4 border-rose-500/20 border-t-rose-500 rounded-full animate-spin"></div>
+            <p class="text-xs font-mono text-slate-300">Decrypting AES-256 payload &amp; rendering PDF...</p>
+        </div>
+        <iframe id="docPreviewIframe" src="" class="w-full h-full border-0 rounded-b-2xl bg-slate-900" title="Secure In-App PDF Preview" onload="const sp = document.getElementById('docPreviewSpinner'); if(sp) sp.style.display='none';"></iframe>
+    </div>
+</dialog>
 </script>
 
 <?php require_once __DIR__ . '/../layouts/layout_end.php'; ?>

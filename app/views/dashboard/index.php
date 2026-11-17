@@ -37,9 +37,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <span>User Management</span>
         </a>
         <a href="export.php"
-           class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-print text-blue-600 dark:text-blue-400"></i>
-            <span>Accreditation Report</span>
+           class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-xs font-bold transition-all shadow-md shadow-rose-600/25 ring-2 ring-rose-400/30 hover:ring-rose-300 flex items-center gap-1.5 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0">
+            <i class="fa-solid fa-file-pdf text-sm"></i>
+            <span>Accreditation PDF Ledger</span>
         </a>
         <button type="button" onclick="resetDashboardFilters()"
                 class="px-3.5 py-1.5 rounded-lg border border-[#0d2342] dark:border-slate-700 bg-[#0d2342] dark:bg-slate-800 text-xs font-bold text-white hover:bg-[#14335e] dark:hover:bg-slate-700 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">

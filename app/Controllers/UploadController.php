@@ -283,7 +283,31 @@ class UploadController extends BaseController {
             CertificateModel::incrementQuota();
         }
 
-        AuditLogger::log('OCR_EXTRACT', "Conversion Gate & OCR processed asset: {$originalName} ({$extension})");
+        // Enforce Policy: Staged assets are converted to locked PDF format
+        $stagedFilename = $tempFilename;
+        $stagedFilePath = $tempFilePath;
+        $effectiveType = $extension;
+
+        if (!empty($result['converted_pdf'])) {
+            $convertedCandidate = TEMP_DIR . DIRECTORY_SEPARATOR . basename($result['converted_pdf']);
+            if (file_exists($convertedCandidate) && filesize($convertedCandidate) > 0) {
+                if ($convertedCandidate !== $tempFilePath && file_exists($tempFilePath)) {
+                    @unlink($tempFilePath);
+                }
+                $stagedFilename = basename($result['converted_pdf']);
+                $stagedFilePath = $convertedCandidate;
+                $effectiveType = 'pdf';
+            }
+        }
+
+        $cleanPdfName = pathinfo($originalName, PATHINFO_FILENAME) . '.pdf';
+        $finalOriginalName = ($effectiveType === 'pdf') ? $cleanPdfName : $originalName;
+        $finalFileSize = file_exists($stagedFilePath) ? filesize($stagedFilePath) : $fileSize;
+        $finalFileHash = file_exists($stagedFilePath) ? hash_file('sha256', $stagedFilePath) : $fileHash;
+
+        $existingRecord = CertificateModel::findByHash($finalFileHash);
+
+        AuditLogger::log('OCR_EXTRACT', "Conversion Gate & OCR processed asset: {$finalOriginalName} ({$effectiveType})");
 
         $duplicateWarning = null;
         if ($existingRecord !== null) {
@@ -306,11 +330,11 @@ class UploadController extends BaseController {
 
         $this->jsonResponse([
             'status' => 'success',
-            'temp_filename' => $tempFilename,
-            'original_name' => $originalName,
-            'file_type' => $extension,
-            'file_size' => filesize($tempFilePath),
-            'file_hash' => $fileHash,
+            'temp_filename' => $stagedFilename,
+            'original_name' => $finalOriginalName,
+            'file_type' => $effectiveType,
+            'file_size' => $finalFileSize,
+            'file_hash' => $finalFileHash,
             'is_duplicate' => ($existingRecord !== null),
             'duplicate_info' => $existingRecord ? "Exact copy exists in vault: '{$existingRecord['title']}' for {$existingRecord['faculty_name']}" : null,
             'duplicate_warning' => $duplicateWarning,

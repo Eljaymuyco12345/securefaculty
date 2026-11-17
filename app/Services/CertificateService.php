@@ -83,7 +83,7 @@ class CertificateService {
         // Clean up temporary plaintext staged file and intermediate derivatives (Zero plaintext persistence)
         @unlink($tempFilePath);
         $baseTempName = pathinfo($tempFilePath, PATHINFO_FILENAME);
-        foreach (['_opt.jpg', '_page1.png', '_opt.png', '_compiled.pdf'] as $deriv) {
+        foreach (['_opt.jpg', '_page1.png', '_opt.png', '_compiled.pdf', '_converted.pdf'] as $deriv) {
             $derivPath = TEMP_DIR . DIRECTORY_SEPARATOR . $baseTempName . $deriv;
             if (file_exists($derivPath)) {
                 @unlink($derivPath);
@@ -106,6 +106,11 @@ class CertificateService {
         $category = mb_substr(trim($input['category'] ?? 'Seminar'), 0, 100);
         $certNumber = !empty($input['cert_number']) ? mb_substr(trim($input['cert_number']), 0, 100) : null;
         $originalFilename = mb_substr(basename($input['original_name'] ?? 'certificate.pdf'), 0, 255);
+        $fileType = strtolower(pathinfo($originalFilename, PATHINFO_EXTENSION));
+        if ($fileType !== 'pdf' && str_ends_with(strtolower($tempFilename), '.pdf')) {
+            $originalFilename = pathinfo($originalFilename, PATHINFO_FILENAME) . '.pdf';
+            $fileType = 'pdf';
+        }
 
         $certData = [
             'faculty_id' => $assignedFacultyId,
@@ -115,7 +120,7 @@ class CertificateService {
             'category' => $category,
             'file_path' => $vaultFilename,
             'original_filename' => $originalFilename,
-            'file_type' => strtolower(pathinfo($originalFilename, PATHINFO_EXTENSION)),
+            'file_type' => $fileType ?: 'pdf',
             'file_size' => filesize($vaultFilePath),
             'ocr_raw_text' => $input['raw_text'] ?? '',
             'ocr_confidence' => floatval($input['confidence'] ?? 0.95),

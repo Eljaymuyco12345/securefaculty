@@ -126,8 +126,8 @@ $msg = $msg ?? null;
     <!-- Left Navy Accent Panel matching Figure 4.2 -->
     <aside class="w-16 sm:w-28 md:w-36 lg:w-44 bg-[#0d2342] dark:bg-[#060e1d] select-none flex flex-col justify-between items-center py-6 border-r border-[#08182f] dark:border-slate-900 flex-shrink-0">
         <div class="flex flex-col items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-white text-lg shadow-inner">
-                <i class="fa-solid fa-lock text-blue-300"></i>
+            <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shadow-md flex-shrink-0">
+                <img src="assets/images/isufst_logo.png" alt="ISUFST Logo" class="max-w-full max-h-full object-contain">
             </div>
             <span class="text-[11px] font-bold tracking-wider text-slate-300 uppercase text-center hidden sm:block">ISUFST<br><span class="text-blue-400 font-normal">CICI PORTAL</span></span>
         </div>
@@ -159,15 +159,21 @@ $msg = $msg ?? null;
             <!-- The Card -->
             <div class="bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200/90 dark:border-slate-800 card-shadow p-6 sm:p-9 relative">
 
-                <!-- Header: Padlock + Title -->
+                <!-- Header: ISUFST Seal + SecureFaculty Title -->
                 <div class="text-center mb-6">
-                    <div class="inline-flex items-center justify-center gap-2 mb-2">
-                        <i class="fa-solid fa-lock text-blue-600 dark:text-blue-400 text-lg"></i>
+                    <div class="flex justify-center mb-2.5">
+                        <div class="w-16 h-12 bg-white dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-center">
+                            <img src="assets/images/isufst_logo.png" alt="ISUFST Official Seal" class="max-w-full max-h-full object-contain">
+                        </div>
+                    </div>
+                    <div class="inline-flex items-center justify-center gap-2 mb-1">
+                        <i class="fa-solid fa-lock text-blue-600 dark:text-blue-400 text-base"></i>
                         <span class="text-xl font-bold text-slate-800 dark:text-white tracking-tight">SecureFaculty</span>
                     </div>
-                    <h2 class="text-sm font-extrabold text-slate-900 dark:text-slate-100 tracking-wider uppercase">
+                    <h2 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 tracking-wider uppercase">
                         ONE-GATE LOGIN PORTAL
                     </h2>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">ISUFST College of Informatics &amp; Computing Innovations</p>
                 </div>
 
                 <!-- Notifications -->

@@ -217,6 +217,68 @@ class TestConversionGate(unittest.TestCase):
         )
         self.assertGreater(score_real_title, score_fallback_title)
 
+    def test_convert_docx_to_pdf(self):
+        import docx
+        import tempfile
+        doc = docx.Document()
+        doc.add_heading("Institutional Award Test", 1)
+        doc.add_paragraph("Presented to Faculty for outstanding contribution.")
+        with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as f:
+            docx_path = f.name
+        pdf_path = docx_path + ".pdf"
+        try:
+            doc.save(docx_path)
+            res = conversion_gate.convert_docx_to_pdf(docx_path, pdf_path)
+            self.assertTrue(res)
+            self.assertTrue(os.path.exists(pdf_path))
+            self.assertGreater(os.path.getsize(pdf_path), 500)
+            with open(pdf_path, 'rb') as pf:
+                header = pf.read(5)
+                self.assertEqual(header, b'%PDF-')
+        finally:
+            if os.path.exists(docx_path): os.remove(docx_path)
+            if os.path.exists(pdf_path): os.remove(pdf_path)
+
+    def test_convert_image_to_pdf(self):
+        from PIL import Image
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+            img_path = f.name
+        pdf_path = img_path + ".pdf"
+        try:
+            im = Image.new('RGB', (400, 300), color=(120, 140, 180))
+            im.save(img_path)
+            res = conversion_gate.convert_image_to_pdf(img_path, pdf_path)
+            self.assertTrue(res)
+            self.assertTrue(os.path.exists(pdf_path))
+            with open(pdf_path, 'rb') as pf:
+                self.assertEqual(pf.read(5), b'%PDF-')
+        finally:
+            if os.path.exists(img_path): os.remove(img_path)
+            if os.path.exists(pdf_path): os.remove(pdf_path)
+
+    def test_process_document_docx_produces_converted_pdf(self):
+        import docx
+        import tempfile
+        doc = docx.Document()
+        doc.add_heading("Certificate of Attendance", 0)
+        doc.add_paragraph("Issued on 2026-11-15 by Commission on Higher Education.")
+        with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as f:
+            docx_path = f.name
+        try:
+            doc.save(docx_path)
+            res = conversion_gate.process_document(docx_path)
+            self.assertEqual(res["status"], "success")
+            self.assertEqual(res["target_file_type"], "pdf")
+            self.assertTrue(res["is_converted"])
+            self.assertTrue(res["converted_pdf"].endswith(".pdf"))
+            conv_pdf_path = os.path.splitext(docx_path)[0] + "_converted.pdf"
+            self.assertTrue(os.path.exists(conv_pdf_path))
+            if os.path.exists(conv_pdf_path):
+                os.remove(conv_pdf_path)
+        finally:
+            if os.path.exists(docx_path): os.remove(docx_path)
+
 
 if __name__ == '__main__':
     unittest.main()

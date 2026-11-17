@@ -41,64 +41,8 @@ class ExportController extends BaseController {
             }
         }
 
-        // CSV Export Handler
-        if ($format === 'csv') {
-            $filename = "CICI_Accreditation_Ledger_" . ($category !== 'All' ? preg_replace('/[^a-zA-Z0-9]/', '_', $category) . "_" : "") . date('Ymd_His') . ".csv";
-            header('Content-Type: text/csv; charset=utf-8');
-            header('Content-Disposition: attachment; filename="' . $filename . '"');
-
-            $output = fopen('php://output', 'w');
-            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-
-            fputcsv($output, [
-                'ID',
-                'Faculty Member',
-                'Co-Authors',
-                'Academic Rank',
-                'Employee ID',
-                'Document Title',
-                'Certificate / Reference No.',
-                'Category',
-                'Issuing Authority',
-                'Date Issued (Certificate)',
-                'File Type',
-                'Security Status',
-                'Date Ingested'
-            ]);
-
-            $sanitizeCell = function($val) {
-                if (is_string($val) && strlen($val) > 0 && in_array($val[0], ['=', '+', '-', '@', "\t", "\r"])) {
-                    return "'" . $val;
-                }
-                return $val;
-            };
-
-            foreach ($records as $r) {
-                $row = [
-                    $r['id'],
-                    $r['faculty_name'] ?? $currentUser['full_name'],
-                    !empty($r['co_authors']) ? $r['co_authors'] : 'None',
-                    $r['academic_rank'] ?? 'CICI Faculty',
-                    $r['employee_id'] ?? 'N/A',
-                    $r['title'],
-                    $r['cert_number'] ?? 'N/A',
-                    $r['category'],
-                    $r['issuer'],
-                    $r['date_issued'],
-                    strtoupper($r['file_type']),
-                    'AES-256 Vault Encrypted',
-                    $r['created_at']
-                ];
-                fputcsv($output, array_map($sanitizeCell, $row));
-            }
-
-            AuditLogger::log('EXPORT_REPORT', "Exported CSV accreditation report (" . count($records) . " records)");
-            fclose($output);
-            exit;
-        }
-
-        // Dedicated PDF Document Export Handler
-        if ($format === 'pdf') {
+        // Dedicated PDF Document Export Handler (Policy: all exports are immutable PDF)
+        if ($format === 'pdf' || $format === 'csv') {
             $dateScope = 'All Validated Records';
             if ($dateFrom || $dateTo) {
                 $dateScope = ($dateFrom ?: 'Beginning') . ' to ' . ($dateTo ?: 'Current');

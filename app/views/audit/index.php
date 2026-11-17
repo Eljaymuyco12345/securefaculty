@@ -110,10 +110,10 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                        class="w-full pl-7 pr-3 py-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
             </div>
 
-            <a href="audit_logs.php?format=csv<?= $actionFilter ? '&action=' . urlencode($actionFilter) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?>"
-               class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
-                <i class="fa-solid fa-file-export text-xs"></i>
-                <span>Export Audit CSV</span>
+            <a href="audit_logs.php?format=pdf<?= $actionFilter ? '&action=' . urlencode($actionFilter) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?>"
+               class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+                <i class="fa-solid fa-file-pdf text-sm animate-pulse"></i>
+                <span>Export Audit PDF</span>
             </a>
         </div>
     </div>
