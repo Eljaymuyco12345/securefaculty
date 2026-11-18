@@ -41,10 +41,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <i class="fa-solid fa-file-pdf text-sm"></i>
             <span>Accreditation PDF Ledger</span>
         </a>
-        <button type="button" onclick="resetDashboardFilters()"
-                class="px-4 py-2 rounded-lg border border-[#0d2342] dark:border-slate-700 bg-[#0d2342] dark:bg-slate-800 text-sm font-bold text-white hover:bg-[#14335e] dark:hover:bg-slate-700 transition-all shadow-sm flex items-center gap-2 cursor-pointer">
-            <i class="fa-solid fa-rotate-left text-sm"></i>
-            <span>Reset Dashboard</span>
+        <button type="button" onclick="refreshDashboard()"
+                class="px-4 py-2 rounded-lg border border-[#0d2342] dark:border-slate-700 bg-[#0d2342] dark:bg-slate-800 text-sm font-bold text-white hover:bg-[#14335e] dark:hover:bg-slate-700 transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                title="Refresh Dashboard">
+            <i class="fa-solid fa-arrows-rotate text-sm"></i>
+            <span>Refresh</span>
         </button>
     </div>
 </div>
@@ -496,8 +497,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         }
     }
 
-    function resetDashboardFilters() {
+    function refreshDashboard() {
         window.location.href = 'dashboard.php';
+    }
+
+    function resetDashboardFilters() {
+        refreshDashboard();
     }
 
     function showQuotaSecureDetails() {
