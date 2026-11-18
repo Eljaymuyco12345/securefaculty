@@ -193,8 +193,10 @@ class CertificateDAO implements CertificateDAOInterface {
         ];
 
         if ($category && $category !== 'All') {
-            $sql .= " AND c.category = :category";
-            $params[':category'] = $category;
+            $normCat = CategoryService::normalize($category);
+            $sql .= " AND (c.category = :category OR c.category = :category_alias)";
+            $params[':category'] = $normCat;
+            $params[':category_alias'] = $category;
         }
 
         if ($search && trim($search) !== '') {
@@ -270,8 +272,10 @@ class CertificateDAO implements CertificateDAOInterface {
         }
 
         if ($category && $category !== 'All') {
-            $sql .= " AND c.category = :category";
-            $params[':category'] = $category;
+            $normCat = CategoryService::normalize($category);
+            $sql .= " AND (c.category = :category OR c.category = :category_alias)";
+            $params[':category'] = $normCat;
+            $params[':category_alias'] = $category;
         }
 
         if ($search && trim($search) !== '') {

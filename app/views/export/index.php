@@ -149,10 +149,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <select name="category"
                             class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-blue-500">
                         <?php
-                        $cats = ['All', 'Research Publication', 'Instructional Material', 'Seminar', 'Training', 'Workshop', 'Award', 'Academic Milestone'];
+                        $cats = array_merge(['All'], CategoryService::getKeys());
                         foreach ($cats as $c):
+                            $disp = $c === 'All' ? 'All Categories' : CategoryService::getLabel($c);
                         ?>
-                            <option value="<?= htmlspecialchars($c) ?>" <?= $category === $c ? 'selected' : '' ?>><?= htmlspecialchars($c) ?></option>
+                            <option value="<?= htmlspecialchars($c) ?>" <?= $category === $c ? 'selected' : '' ?>><?= htmlspecialchars($disp) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>

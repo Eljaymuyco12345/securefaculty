@@ -273,120 +273,125 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </div>
         </div>
 
-        <!-- ADVANCED SEARCH WIDGET matching Figure 4.3 -->
-        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm text-sm space-y-3 transition-colors">
-            <div class="flex items-center justify-between">
-                <h3 class="text-sm font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
-                    ADVANCED SEARCH
-                </h3>
-                <button type="button" onclick="clearAdvancedFilters()" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-                    Clear Tags
+        <!-- ADVANCED SEARCH WIDGET (User-Friendly Filter Assistant) -->
+        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm text-sm space-y-3.5 transition-colors">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                            Ledger Filter Assistant
+                        </h3>
+                        <p class="text-[10px] text-slate-400">Filter table records in real-time</p>
+                    </div>
+                </div>
+                <button type="button" onclick="clearAdvancedFilters()" title="Reset all search filters"
+                        class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer">
+                    <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                    <span>Reset</span>
                 </button>
             </div>
 
-            <!-- Faculty Name Interactive Combobox (#17 Combobox) -->
-            <?php
-                $comboboxFacultyOptions = [];
-                foreach ($displayRows as $r) {
-                    $fn = trim($r['faculty_display'] ?? '');
-                    if ($fn !== '' && !in_array($fn, $comboboxFacultyOptions, true)) {
-                        $comboboxFacultyOptions[] = $fn;
-                    }
-                }
-            ?>
-            <div class="relative" id="advFacultyComboboxWrapper">
-                <label for="advFacultyName" class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Faculty Name (Combobox)</label>
-                <div class="relative">
-                    <input type="text" id="advFacultyName"
-                        role="combobox"
-                        aria-autocomplete="list"
-                        aria-expanded="false"
-                        aria-controls="advFacultyListbox"
-                        autocomplete="off"
-                        placeholder="Search or select faculty..."
-                        onfocus="openFacultyCombobox()"
-                        oninput="filterFacultyCombobox(this.value); applyDashboardLiveFilter();"
-                        onkeydown="handleFacultyComboboxKey(event)"
-                        class="w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500">
-                    <button type="button" tabindex="-1" onclick="toggleFacultyCombobox()" aria-label="Toggle faculty options"
-                            class="absolute inset-y-0 right-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                        <i class="fa-solid fa-chevron-down text-xs"></i>
-                    </button>
-                </div>
-                <ul id="advFacultyListbox" role="listbox"
-                    class="hidden origin-top-right-menu absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-40 py-1 text-sm divide-y divide-slate-100 dark:divide-slate-800/60">
-                    <?php foreach ($comboboxFacultyOptions as $idx => $facOpt): ?>
-                        <li role="option" id="fac-opt-<?= $idx ?>" data-value="<?= htmlspecialchars($facOpt) ?>"
-                            onclick="selectFacultyComboboxOption(this.dataset.value)"
-                            class="combobox-option px-3 py-2 cursor-pointer text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-between transition-colors text-sm">
-                            <span class="truncate"><?= htmlspecialchars($facOpt) ?></span>
-                            <i class="fa-solid fa-check text-xs text-blue-600 dark:text-blue-400 hidden option-check"></i>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-
-            <!-- Date Range & Action -->
+            <!-- Filter Step 1: Faculty Member / Actor -->
             <div>
-                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Date Range & Action</label>
-                <div class="flex items-center gap-2">
-                    <input type="date" id="advDate" value="2026-05-07"
-                        class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
-                    <select id="advActionSelect" class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 font-medium">
-                        <option value="">Audit Action</option>
-                        <option value="APPROVED">Approve</option>
-                        <option value="REJECTED">Reject</option>
-                        <option value="REPORT">Report</option>
-                    </select>
+                <label for="advFacultySelect" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-tie text-indigo-500 text-xs"></i>
+                    <span>1. Faculty Member / Actor:</span>
+                </label>
+                <select id="advFacultySelect" onchange="applyDashboardLiveFilter()"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
+                    <option value="">-- All Faculty Members &amp; System Actors --</option>
+                    <?php
+                        $uniqueFaculties = [];
+                        foreach ($displayRows as $r) {
+                            $fn = trim($r['faculty_display'] ?? '');
+                            if ($fn !== '' && !in_array($fn, $uniqueFaculties, true)) {
+                                $uniqueFaculties[] = $fn;
+                            }
+                        }
+                        foreach ($uniqueFaculties as $fac):
+                    ?>
+                        <option value="<?= htmlspecialchars($fac) ?>"><?= htmlspecialchars($fac) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Filter Step 2: Event Type / Action -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt text-amber-500 text-xs"></i>
+                    <span>2. Transaction Event Type:</span>
+                </label>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <button type="button" onclick="toggleActionTag(this, '')" data-act=""
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400">
+                        <i class="fa-solid fa-list-check text-[10px]"></i>
+                        <span class="truncate">All Events</span>
+                    </button>
+                    <button type="button" onclick="toggleActionTag(this, 'LOGIN')" data-act="LOGIN"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-key text-[10px] text-emerald-500"></i>
+                        <span class="truncate">Logins</span>
+                    </button>
+                    <button type="button" onclick="toggleActionTag(this, 'VIEW')" data-act="VIEW"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-eye text-[10px] text-blue-500"></i>
+                        <span class="truncate">Document Views</span>
+                    </button>
+                    <button type="button" onclick="toggleActionTag(this, 'DOWNLOAD')" data-act="DOWNLOAD"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-download text-[10px] text-indigo-500"></i>
+                        <span class="truncate">Downloads</span>
+                    </button>
+                    <button type="button" onclick="toggleActionTag(this, 'OCR')" data-act="OCR"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-cloud-arrow-up text-[10px] text-amber-500"></i>
+                        <span class="truncate">OCR Ingests</span>
+                    </button>
+                    <button type="button" onclick="toggleActionTag(this, 'EXPORT')" data-act="EXPORT"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-file-pdf text-[10px] text-rose-500"></i>
+                        <span class="truncate">PDF Reports</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Two-column tag pills matching Figure 4.3 -->
-            <div class="grid grid-cols-2 gap-x-2.5 gap-y-1.5">
-                <div class="space-y-1">
-                    <button type="button" onclick="toggleTag(this, 'cat')" data-val="Research"
-                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
-                        Research Publication
+            <!-- Filter Step 3: Academic Category Focus -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-layer-group text-blue-500 text-xs"></i>
+                    <span>3. Academic Category Focus:</span>
+                </label>
+                <div class="flex flex-wrap gap-1.5">
+                    <button type="button" onclick="toggleCategoryPill(this, '')" data-cat=""
+                            class="cat-pill px-2.5 py-1 rounded-md text-xs font-semibold border transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400">
+                        All
                     </button>
-                    <button type="button" onclick="toggleTag(this, 'cat')" data-val="Service"
-                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
-                        Service
-                    </button>
-                    <button type="button" onclick="toggleTag(this, 'cat')" data-val="Training"
-                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
-                        Training
-                    </button>
-                    <button type="button" onclick="toggleTag(this, 'cat')" data-val="Education"
-                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
-                        Education
-                    </button>
-                </div>
-                <div class="space-y-1">
-                    <button type="button" onclick="toggleTag(this, 'act')" data-val="Approve"
-                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
-                        Approve
-                    </button>
-                    <button type="button" onclick="toggleTag(this, 'act')" data-val="Reject"
-                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
-                        Reject
-                    </button>
-                    <button type="button" onclick="toggleTag(this, 'act')" data-val="Create"
-                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
-                        Create
-                    </button>
-                    <button type="button" onclick="toggleTag(this, 'act')" data-val="Delete"
-                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
-                        Delete
-                    </button>
+                    <?php foreach (CategoryService::CATEGORIES as $ckey => $cinfo): ?>
+                        <button type="button" onclick="toggleCategoryPill(this, '<?= htmlspecialchars($ckey) ?>')" data-cat="<?= htmlspecialchars($ckey) ?>"
+                                class="cat-pill px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center gap-1">
+                            <i class="<?= $cinfo['icon'] ?> text-[10px]"></i>
+                            <span><?= htmlspecialchars($cinfo['short_label']) ?></span>
+                        </button>
+                    <?php endforeach; ?>
                 </div>
             </div>
 
-            <!-- Search Button -->
-            <button type="button" onclick="executeAdvancedSearch()"
-                    class="w-full py-2 bg-[#1e58a8] hover:bg-[#18488a] text-white rounded-lg font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                <span>Execute Filtered Search</span>
-            </button>
+            <!-- Active Status Feedback Banner -->
+            <div class="p-2.5 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/50 flex items-center justify-between text-xs">
+                <span class="text-slate-600 dark:text-slate-300 font-medium">
+                    Showing: <strong id="activeFilterSummary" class="text-blue-700 dark:text-blue-300">All Transactions</strong>
+                </span>
+                <span id="rowCountDisplay" class="font-mono font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
+                    <?= count($displayRows) ?> records
+                </span>
+            </div>
+
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 italic">
+                <i class="fa-solid fa-circle-info mr-1"></i> The table on the left updates automatically as you click any filter above.
+            </p>
         </div>
 
         <!-- CONVERSION GATE ACTIVITY matching Figure 4.3 -->
@@ -414,91 +419,88 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     let selectedCategoryTag = '';
     let selectedActionTag = '';
 
-    const defaultAdvTagClass = "adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+    function toggleActionTag(btn, action) {
+        selectedActionTag = action;
+        document.querySelectorAll('.action-pill').forEach(b => {
+            b.className = 'action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700';
+        });
+        btn.className = 'action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400';
+        applyDashboardLiveFilter();
+    }
 
-    function toggleTag(btn, type) {
-        if (type === 'cat') {
-            document.querySelectorAll('.adv-tag[data-val="Research"], .adv-tag[data-val="Service"], .adv-tag[data-val="Training"], .adv-tag[data-val="Education"]').forEach(b => {
-                b.className = defaultAdvTagClass;
-            });
-            if (selectedCategoryTag === btn.dataset.val) {
-                selectedCategoryTag = '';
-            } else {
-                selectedCategoryTag = btn.dataset.val;
-                btn.className = "adv-tag w-full text-left px-2 py-1 rounded bg-blue-100 dark:bg-blue-950/70 text-blue-800 dark:text-blue-200 font-bold text-[10px] border border-blue-300 dark:border-blue-700 transition-colors ring-1 ring-blue-400 dark:ring-blue-500";
-            }
-        } else {
-            document.querySelectorAll('.adv-tag[data-val="Approve"], .adv-tag[data-val="Reject"], .adv-tag[data-val="Create"], .adv-tag[data-val="Delete"]').forEach(b => {
-                b.className = defaultAdvTagClass;
-            });
-            if (selectedActionTag === btn.dataset.val) {
-                selectedActionTag = '';
-            } else {
-                selectedActionTag = btn.dataset.val;
-                btn.className = "adv-tag w-full text-left px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-200 font-bold text-[10px] border border-emerald-300 dark:border-emerald-700 transition-colors ring-1 ring-emerald-400 dark:ring-emerald-500";
-            }
-        }
+    function toggleCategoryPill(btn, cat) {
+        selectedCategoryTag = cat;
+        document.querySelectorAll('.cat-pill').forEach(b => {
+            b.className = 'cat-pill px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center gap-1';
+        });
+        btn.className = 'cat-pill px-2.5 py-1 rounded-md text-xs font-semibold border transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400 flex items-center gap-1';
         applyDashboardLiveFilter();
     }
 
     function clearAdvancedFilters() {
         selectedCategoryTag = '';
         selectedActionTag = '';
-        document.getElementById('advFacultyName').value = '';
-        document.getElementById('advActionSelect').value = '';
-        document.querySelectorAll('.adv-tag').forEach(b => {
-            b.className = defaultAdvTagClass;
-        });
-        applyDashboardLiveFilter();
-    }
+        const facSelect = document.getElementById('advFacultySelect');
+        if (facSelect) facSelect.value = '';
+        const statusSelect = document.getElementById('recordStatusSelect');
+        if (statusSelect) statusSelect.value = 'ALL';
+        const searchInput = document.getElementById('dashboardSearchInput');
+        if (searchInput) searchInput.value = '';
 
-    function executeAdvancedSearch() {
-        const advName = document.getElementById('advFacultyName').value.trim();
-        const advAct = document.getElementById('advActionSelect').value;
-        applyDashboardLiveFilter();
-        showSystemAlert({
-            title: 'Filters Applied',
-            message: `Filtered records by: ${advName || selectedCategoryTag || selectedActionTag || advAct || 'All criteria'}. Review the updated audit ledger.`,
-            type: 'info',
-            buttonText: 'View Table'
+        document.querySelectorAll('.action-pill').forEach((b, idx) => {
+            if (idx === 0) {
+                b.className = 'action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400';
+            } else {
+                b.className = 'action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700';
+            }
         });
+
+        document.querySelectorAll('.cat-pill').forEach((b, idx) => {
+            if (idx === 0) {
+                b.className = 'cat-pill px-2.5 py-1 rounded-md text-xs font-semibold border transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400 flex items-center gap-1';
+            } else {
+                b.className = 'cat-pill px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center gap-1';
+            }
+        });
+
+        applyDashboardLiveFilter();
     }
 
     function applyDashboardLiveFilter() {
-        const query = (document.getElementById('dashboardSearchInput').value || '').toLowerCase();
-        const status = document.getElementById('recordStatusSelect').value;
-        const advName = (document.getElementById('advFacultyName')?.value || '').toLowerCase();
-        const advAction = document.getElementById('advActionSelect')?.value || '';
+        const query = (document.getElementById('dashboardSearchInput')?.value || '').toLowerCase();
+        const status = document.getElementById('recordStatusSelect')?.value || 'ALL';
+        const advFaculty = (document.getElementById('advFacultySelect')?.value || '').toLowerCase();
 
         const rows = document.querySelectorAll('#dashboardTableBody .table-row-item');
         let visibleCount = 0;
 
         rows.forEach(row => {
-            const rowText = row.dataset.text || '';
-            const action = row.dataset.action || '';
+            const rowText = (row.dataset.text || '').toLowerCase();
+            const action = (row.dataset.action || '').toUpperCase();
 
             let match = true;
 
             // Search query filter
             if (query && !rowText.includes(query)) match = false;
-            if (advName && !rowText.includes(advName)) match = false;
+
+            // Faculty filter
+            if (advFaculty && !rowText.includes(advFaculty)) match = false;
 
             // Dropdown Status filter
             if (status !== 'ALL') {
                 if (status === 'APPROVED' && !action.includes('APPROV')) match = false;
                 if (status === 'REJECTED' && !action.includes('REJECT')) match = false;
-                if (status === 'REPORT' && !action.includes('REPORT')) match = false;
+                if (status === 'REPORT' && !action.includes('REPORT') && !action.includes('EXPORT')) match = false;
             }
 
-            // Tag filters
-            if (selectedCategoryTag && !rowText.includes(selectedCategoryTag.toLowerCase())) {
-                match = false;
-            }
+            // Action tag filter
             if (selectedActionTag) {
-                if (!action.toLowerCase().includes(selectedActionTag.toLowerCase())) match = false;
+                if (!action.includes(selectedActionTag.toUpperCase())) match = false;
             }
-            if (advAction) {
-                if (!action.includes(advAction)) match = false;
+
+            // Category tag filter
+            if (selectedCategoryTag) {
+                if (!rowText.includes(selectedCategoryTag.toLowerCase())) match = false;
             }
 
             if (match) {
@@ -509,13 +511,27 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             }
         });
 
-        // Update count & notice
-        document.getElementById('rowCountDisplay').textContent = `${visibleCount} records`;
+        // Update counts and summaries
+        const rowCountBadge = document.getElementById('rowCountDisplay');
+        if (rowCountBadge) rowCountBadge.textContent = `${visibleCount} records`;
+
+        const activeSummary = document.getElementById('activeFilterSummary');
+        if (activeSummary) {
+            const parts = [];
+            if (advFaculty) parts.push(advFaculty);
+            if (selectedActionTag) parts.push(selectedActionTag);
+            if (selectedCategoryTag) parts.push(selectedCategoryTag);
+            if (query) parts.push(`"${query}"`);
+            activeSummary.textContent = parts.length > 0 ? parts.join(' • ') : 'All Transactions';
+        }
+
         const notice = document.getElementById('noMatchingRowsNotice');
-        if (visibleCount === 0) {
-            notice.classList.remove('hidden');
-        } else {
-            notice.classList.add('hidden');
+        if (notice) {
+            if (visibleCount === 0) {
+                notice.classList.remove('hidden');
+            } else {
+                notice.classList.add('hidden');
+            }
         }
     }
 

@@ -96,13 +96,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <?php
         $tabs = [
             'All' => 'All Categories',
-            'Instructional Material' => 'Modules & IMs',
-            'Research Publication' => 'Research',
-            'Seminar' => 'Seminars',
-            'Training' => 'Trainings',
-            'Workshop' => 'Workshops',
-            'Award' => 'Awards',
-            'Academic Milestone' => 'Milestones'
+            'Research Publication' => 'Research Publication',
+            'Instructional Material' => 'Instructional Material / Course Module',
+            'Seminar' => 'Seminar / Webinar',
+            'Training' => 'Training / Bootcamp',
+            'Workshop' => 'Workshop',
+            'Award' => 'Award / Recognition',
+            'Academic Milestone' => 'Academic Milestone / Appointment'
         ];
         foreach ($tabs as $key => $label):
             $isActive = ($category === $key);
@@ -389,8 +389,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 <?= htmlspecialchars($cert['issuer']) ?>
                             </td>
                             <td class="p-3 whitespace-nowrap">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                    <?= htmlspecialchars($cert['category']) ?>
+                                <span class="px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1.5 <?= CategoryService::getBadgeClass($cert['category'] ?? '') ?>">
+                                    <i class="<?= CategoryService::getIcon($cert['category'] ?? '') ?> text-[10px]"></i>
+                                    <span><?= htmlspecialchars(CategoryService::getShortLabel($cert['category'] ?? '')) ?></span>
                                 </span>
                             </td>
                             <td class="p-3 text-center whitespace-nowrap">
@@ -440,8 +441,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <div class="flex items-start justify-between gap-2 mb-2">
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <input type="checkbox" name="record_select" value="<?= $cert['id'] ?>" onchange="updateSelectionBar()" class="record-checkbox rounded border-slate-300 dark:border-slate-600 dark:bg-slate-800 text-blue-600 accent-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                <?= htmlspecialchars($cert['category']) ?>
+                            <span class="px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1.5 <?= CategoryService::getBadgeClass($cert['category'] ?? '') ?>">
+                                <i class="<?= CategoryService::getIcon($cert['category'] ?? '') ?> text-[10px]"></i>
+                                <span><?= htmlspecialchars(CategoryService::getShortLabel($cert['category'] ?? '')) ?></span>
                             </span>
                             <?php if ($isCoAuthor): ?>
                                 <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 flex items-center gap-1">
