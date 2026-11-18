@@ -61,8 +61,17 @@ $msg = $msg ?? null;
             accent-color: oklch(0.68 0.17 250);
         }
         html {
-            font-size: 16px;
+            font-size: 17.5px;
             zoom: 1.07;
+        }
+        .text-\[8px\], .text-\[9px\] {
+            font-size: 11px !important;
+        }
+        .text-\[10px\] {
+            font-size: 12px !important;
+        }
+        .text-\[11px\] {
+            font-size: 12.5px !important;
         }
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;

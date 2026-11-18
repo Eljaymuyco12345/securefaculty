@@ -7,14 +7,14 @@
             </main>
 
             <!-- Standard System Footer -->
-            <footer class="py-3 px-6 safe-area-bottom bg-white dark:bg-[#0c1830] border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2 flex-shrink-0 transition-colors">
-                <div class="flex items-center gap-2">
-                    <img src="assets/images/isufst_logo.png" alt="ISUFST" class="w-5 h-4 object-contain inline-block">
-                    <span class="font-bold text-slate-700 dark:text-slate-200">SecureFaculty</span>
+            <footer class="py-3.5 px-6 safe-area-bottom bg-white dark:bg-[#0c1830] border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-sm text-slate-500 dark:text-slate-400 gap-2 flex-shrink-0 transition-colors">
+                <div class="flex items-center gap-2.5">
+                    <img src="assets/images/isufst_logo.png" alt="ISUFST" class="w-6 h-5 object-contain inline-block">
+                    <span class="font-extrabold text-slate-800 dark:text-slate-200">SecureFaculty</span>
                     <span class="text-slate-300 dark:text-slate-600">•</span>
-                    <span>ISUFST CICI Systematic Records Management</span>
+                    <span class="font-medium">ISUFST CICI Systematic Records Management</span>
                 </div>
-                <div class="flex items-center gap-3 text-[11px] text-slate-400 dark:text-slate-500">
+                <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
                     <span>RA 10173 (Data Privacy Act) Compliant</span>
                     <span class="text-slate-300 dark:text-slate-600">•</span>
                     <span>AES-256 Encrypted Vault</span>

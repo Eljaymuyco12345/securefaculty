@@ -21,36 +21,36 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 <!-- Title Banner matching Figure 4.3 -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div>
-        <h1 class="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Dean's Dashboard</h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Centralized Administrative Oversight & Real-Time Cloud Quota Monitor</p>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Dean's Dashboard</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Centralized Administrative Oversight & Real-Time Cloud Quota Monitor</p>
     </div>
-    <div class="flex flex-wrap items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2.5">
         <a href="backup.php"
            title="Plan B: Generate and download an instant database snapshot for disaster recovery"
-           class="px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+           class="px-3.5 py-2 rounded-lg border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-sm font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer">
             <i class="fa-solid fa-database text-emerald-600 dark:text-emerald-400"></i>
             <span>Plan B DB Backup</span>
         </a>
         <a href="users.php"
-           class="px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+           class="px-3.5 py-2 rounded-lg border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-sm font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer">
             <i class="fa-solid fa-users-gear"></i>
             <span>User Management</span>
         </a>
         <a href="export.php"
-           class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-xs font-bold transition-all shadow-md shadow-rose-600/25 ring-2 ring-rose-400/30 hover:ring-rose-300 flex items-center gap-1.5 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0">
+           class="px-4 py-2 rounded-lg bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-sm font-bold transition-all shadow-md shadow-rose-600/25 ring-2 ring-rose-400/30 hover:ring-rose-300 flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0">
             <i class="fa-solid fa-file-pdf text-sm"></i>
             <span>Accreditation PDF Ledger</span>
         </a>
         <button type="button" onclick="resetDashboardFilters()"
-                class="px-3.5 py-1.5 rounded-lg border border-[#0d2342] dark:border-slate-700 bg-[#0d2342] dark:bg-slate-800 text-xs font-bold text-white hover:bg-[#14335e] dark:hover:bg-slate-700 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-rotate-left text-xs"></i>
+                class="px-4 py-2 rounded-lg border border-[#0d2342] dark:border-slate-700 bg-[#0d2342] dark:bg-slate-800 text-sm font-bold text-white hover:bg-[#14335e] dark:hover:bg-slate-700 transition-all shadow-sm flex items-center gap-2 cursor-pointer">
+            <i class="fa-solid fa-rotate-left text-sm"></i>
             <span>Reset Dashboard</span>
         </button>
     </div>
 </div>
 
 <?php if (isset($_GET['error'])): ?>
-<div class="mt-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs flex items-center justify-between shadow-sm">
+<div class="mt-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-sm flex items-center justify-between shadow-sm">
     <div class="flex items-center gap-2.5">
         <i class="fa-solid fa-circle-exclamation text-rose-600 dark:text-rose-400 text-base"></i>
         <div>
@@ -58,43 +58,43 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <span><?= htmlspecialchars($_GET['error'], ENT_QUOTES, 'UTF-8') ?></span>
         </div>
     </div>
-    <a href="dashboard.php" class="text-rose-600 dark:text-rose-400 hover:underline font-bold text-[11px] px-2 py-1 rounded border border-rose-300 dark:border-rose-700 bg-white dark:bg-rose-900/40">Dismiss</a>
+    <a href="dashboard.php" class="text-rose-600 dark:text-rose-400 hover:underline font-bold text-xs px-2.5 py-1 rounded border border-rose-300 dark:border-rose-700 bg-white dark:bg-rose-900/40">Dismiss</a>
 </div>
 <?php endif; ?>
 
 <!-- Permanent Institutional Department Metrics Banner -->
 <div id="institutionalOverviewPanel">
-    <div class="bg-gradient-to-r from-[#0d2342] to-[#1e447b] dark:from-[#09152a] dark:to-[#132c54] text-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-transparent dark:border-slate-800">
-        <div class="flex items-center justify-between pb-2.5 border-b border-white/10">
+    <div class="bg-gradient-to-r from-[#0d2342] to-[#1e447b] dark:from-[#09152a] dark:to-[#132c54] text-white rounded-xl p-4 sm:p-5 shadow-sm border border-transparent dark:border-slate-800">
+        <div class="flex items-center justify-between pb-3 border-b border-white/10">
             <div>
-                <h3 class="text-xs sm:text-sm font-bold tracking-tight">ISUFST CICI Institutional Repository Telemetry</h3>
-                <p class="text-[10px] sm:text-[11px] text-blue-200 mt-0.5">Accreditation Readiness Overview & Storage Allocation</p>
+                <h3 class="text-sm sm:text-base font-extrabold tracking-tight">ISUFST CICI Institutional Repository Telemetry</h3>
+                <p class="text-xs text-blue-200 mt-0.5">Accreditation Readiness Overview & Storage Allocation</p>
             </div>
-            <span class="inline-flex items-center gap-1.5 text-[10px] bg-white/10 text-blue-200 px-2.5 py-0.5 rounded-full font-mono border border-white/10">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Live Repository Status</span>
+            <span class="inline-flex items-center gap-2 text-xs bg-white/10 text-blue-200 px-3 py-1 rounded-full font-mono border border-white/10">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="font-semibold">Live Repository Status</span>
             </span>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 text-xs">
-            <div class="stagger-item bg-white/10 rounded-lg p-2.5" style="--stagger-i: 0">
-                <span class="text-blue-200 text-[9px] uppercase font-bold tracking-wider block">Active Faculty</span>
-                <strong class="text-base sm:text-lg font-black tabular-nums block mt-0.5"><?= $metrics['total_faculty'] ?> Members</strong>
-                <span class="text-[9px] text-emerald-300 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-check"></i> 100% RBAC Covered</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3.5 text-sm">
+            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 0">
+                <span class="text-blue-200 text-[11px] uppercase font-bold tracking-wider block">Active Faculty</span>
+                <strong class="text-lg sm:text-xl font-black tabular-nums block mt-0.5"><?= $metrics['total_faculty'] ?> Members</strong>
+                <span class="text-xs text-emerald-300 flex items-center gap-1.5 mt-1 font-medium"><i class="fa-solid fa-check"></i> 100% RBAC Covered</span>
             </div>
-            <div class="stagger-item bg-white/10 rounded-lg p-2.5" style="--stagger-i: 1">
-                <span class="text-blue-200 text-[9px] uppercase font-bold tracking-wider block">Archived Assets</span>
-                <strong class="text-base sm:text-lg font-black tabular-nums block mt-0.5"><?= $metrics['total_records'] ?> Records</strong>
-                <span class="text-[9px] text-blue-300 mt-0.5 block">AES-256 Encrypted</span>
+            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 1">
+                <span class="text-blue-200 text-[11px] uppercase font-bold tracking-wider block">Archived Assets</span>
+                <strong class="text-lg sm:text-xl font-black tabular-nums block mt-0.5"><?= $metrics['total_records'] ?> Records</strong>
+                <span class="text-xs text-blue-300 mt-1 block font-medium">AES-256 Encrypted</span>
             </div>
-            <div class="stagger-item bg-white/10 rounded-lg p-2.5" style="--stagger-i: 2">
-                <span class="text-blue-200 text-[9px] uppercase font-bold tracking-wider block">Encrypted Storage</span>
-                <strong class="text-base sm:text-lg font-black tabular-nums block mt-0.5"><?= $metrics['vault_size_mb'] ?> MB</strong>
-                <span class="text-[9px] text-blue-300 mt-0.5 block">Volatile RAM Decryption</span>
+            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 2">
+                <span class="text-blue-200 text-[11px] uppercase font-bold tracking-wider block">Encrypted Storage</span>
+                <strong class="text-lg sm:text-xl font-black tabular-nums block mt-0.5"><?= $metrics['vault_size_mb'] ?> MB</strong>
+                <span class="text-xs text-blue-300 mt-1 block font-medium">Volatile RAM Decryption</span>
             </div>
-            <div class="stagger-item bg-white/10 rounded-lg p-2.5" style="--stagger-i: 3">
-                <span class="text-blue-200 text-[9px] uppercase font-bold tracking-wider block">OCR Cloud Quota</span>
-                <strong class="text-base sm:text-lg font-black tabular-nums block mt-0.5"><?= number_format($quota['remaining']) ?></strong>
-                <span class="text-[9px] text-emerald-300 tabular-nums mt-0.5 block"><?= $quota['percentage'] ?>% Used / 25,000</span>
+            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 3">
+                <span class="text-blue-200 text-[11px] uppercase font-bold tracking-wider block">OCR Cloud Quota</span>
+                <strong class="text-lg sm:text-xl font-black tabular-nums block mt-0.5"><?= number_format($quota['remaining']) ?></strong>
+                <span class="text-xs text-emerald-300 tabular-nums mt-1 block font-medium"><?= $quota['percentage'] ?>% Used / 25,000</span>
             </div>
         </div>
     </div>
@@ -107,27 +107,27 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <div class="xl:col-span-8 bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden transition-colors">
 
         <!-- Sub-header matching Figure 4.3 -->
-        <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
-            <h2 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+        <div class="p-3.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-sm font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                 <span>REAL-TIME SYSTEM QUOTA MONITOR</span>
-                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 uppercase">Live Sync</span>
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 uppercase">Live Sync</span>
             </h2>
-            <span class="inline-flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 Data Sovereignty: Original Records Remain On-Premise
             </span>
         </div>
 
         <!-- Search & Filter Controls matching Figure 4.3 -->
-        <div class="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 flex flex-wrap items-center gap-2 text-xs">
-            <div class="flex-1 min-w-[180px] relative">
-                <i class="fa-solid fa-magnifying-glass text-[10px] text-slate-400 absolute left-2.5 top-2.5"></i>
+        <div class="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 flex flex-wrap items-center gap-2.5 text-sm">
+            <div class="flex-1 min-w-[200px] relative">
+                <i class="fa-solid fa-magnifying-glass text-xs text-slate-400 absolute left-3 top-3"></i>
                 <input type="text" id="dashboardSearchInput" onkeyup="applyDashboardLiveFilter()"
                        placeholder="Filter by keyword, actor, record, or IP..."
-                       class="w-full pl-7 pr-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+                       class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
             </div>
             <select id="recordStatusSelect" onchange="applyDashboardLiveFilter()"
-                    class="py-1.5 px-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-700 dark:text-slate-200 cursor-pointer focus:outline-none focus:border-blue-500">
+                    class="py-2 px-3.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 cursor-pointer focus:outline-none focus:border-blue-500 font-medium">
                 <option value="ALL">All Records</option>
                 <option value="APPROVED">Approved Actions</option>
                 <option value="REJECTED">Rejected Actions</option>
@@ -137,20 +137,20 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
         <!-- Data Table matching Figure 4.3 (5 columns, NO Status) -->
         <div class="overflow-x-auto flex-1">
-            <table class="w-full text-left text-xs border-collapse" id="dashboardTable">
+            <table class="w-full text-left text-sm border-collapse" id="dashboardTable">
                 <thead>
-                    <tr class="bg-slate-100/80 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 font-bold text-[11px] border-b border-slate-200 dark:border-slate-800">
-                        <th class="py-2.5 px-3 whitespace-nowrap cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" onclick="sortTableByTimestamp()">
+                    <tr class="bg-slate-100/80 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 font-extrabold text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                        <th class="py-3 px-3.5 whitespace-nowrap cursor-pointer hover:text-blue-600 dark:hover:text-blue-400" onclick="sortTableByTimestamp()">
                             Timestamp
-                            <i class="fa-solid fa-sort text-[8px] text-slate-400 ml-0.5"></i>
+                            <i class="fa-solid fa-sort text-[10px] text-slate-400 ml-1"></i>
                         </th>
-                        <th class="py-2.5 px-3">User ID</th>
-                        <th class="py-2.5 px-3">Action Taken</th>
-                        <th class="py-2.5 px-3">Affected Faculty Record</th>
-                        <th class="py-2.5 px-3">Source IP Address</th>
+                        <th class="py-3 px-3.5">User ID</th>
+                        <th class="py-3 px-3.5">Action Taken</th>
+                        <th class="py-3 px-3.5">Affected Faculty Record</th>
+                        <th class="py-3 px-3.5">Source IP Address</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-[11px]" id="dashboardTableBody">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm" id="dashboardTableBody">
                     <?php foreach ($displayRows as $row): ?>
                         <?php
                             $uid = ($row['role'] ?? 'faculty') === 'dean'
@@ -164,18 +164,18 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors table-row-item"
                             data-action="<?= strtoupper($actionRaw) ?>"
                             data-text="<?= strtolower($uid . ' ' . $actionLabel . ' ' . $faculty . ' ' . ($row['ip_address'] ?? '')) ?>">
-                            <td class="py-2 px-3 text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap"><?= htmlspecialchars($row['created_at']) ?></td>
-                            <td class="py-2 px-3 font-bold text-slate-900 dark:text-slate-100"><?= htmlspecialchars($uid) ?></td>
-                            <td class="py-2 px-3 text-slate-800 dark:text-slate-200 font-medium"><?= htmlspecialchars($actionLabel) ?></td>
-                            <td class="py-2 px-3 text-slate-700 dark:text-slate-300"><?= htmlspecialchars($faculty) ?></td>
-                            <td class="py-2 px-3 text-slate-500 dark:text-slate-400 font-mono"><?= htmlspecialchars($row['ip_address']) ?></td>
+                            <td class="py-2.5 px-3.5 text-slate-600 dark:text-slate-400 font-mono text-xs whitespace-nowrap"><?= htmlspecialchars($row['created_at']) ?></td>
+                            <td class="py-2.5 px-3.5 font-bold text-slate-900 dark:text-slate-100"><?= htmlspecialchars($uid) ?></td>
+                            <td class="py-2.5 px-3.5 text-slate-800 dark:text-slate-200 font-semibold"><?= htmlspecialchars($actionLabel) ?></td>
+                            <td class="py-2.5 px-3.5 text-slate-700 dark:text-slate-300 font-medium"><?= htmlspecialchars($faculty) ?></td>
+                            <td class="py-2.5 px-3.5 text-slate-500 dark:text-slate-400 font-mono text-xs"><?= htmlspecialchars($row['ip_address']) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
             <!-- Empty state for search filters -->
-            <div id="noMatchingRowsNotice" class="hidden p-8 text-center text-slate-400 dark:text-slate-500 text-xs">
-                <i class="fa-regular fa-folder-open text-2xl block mb-2 text-slate-300 dark:text-slate-600"></i>
+            <div id="noMatchingRowsNotice" class="hidden p-8 text-center text-slate-400 dark:text-slate-500 text-sm">
+                <i class="fa-regular fa-folder-open text-3xl block mb-2 text-slate-300 dark:text-slate-600"></i>
                 No audit transactions match the specified filter criteria.
             </div>
         </div>
@@ -227,15 +227,15 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <div class="xl:col-span-4 space-y-4">
 
         <!-- QUOTA MONITOR WIDGET matching Figure 4.3 -->
-        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 shadow-sm relative overflow-hidden transition-colors">
-            <h3 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-2.5">
+        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden transition-colors">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-3">
                 QUOTA MONITOR
             </h3>
 
             <!-- Gauge + Stats side by side matching Figure 4.3 -->
-            <div class="flex items-center gap-3.5">
+            <div class="flex items-center gap-4">
                 <!-- Circular Gauge -->
-                <div class="relative w-20 h-20 flex-shrink-0">
+                <div class="relative w-24 h-24 flex-shrink-0">
                     <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                         <path class="text-slate-100 dark:text-slate-800/80" stroke-width="3.5" stroke="currentColor" fill="none"
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -243,43 +243,43 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     </svg>
                     <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="text-base font-black text-slate-900 dark:text-slate-100"><?= $quota['percentage'] ?>%</span>
-                        <span class="text-[7px] text-slate-400 dark:text-slate-500 font-semibold uppercase">API Usage</span>
+                        <span class="text-lg font-black text-slate-900 dark:text-slate-100"><?= $quota['percentage'] ?>%</span>
+                        <span class="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase">API Usage</span>
                     </div>
                 </div>
 
                 <!-- Right-side stats text matching Figure 4.3 -->
                 <div class="text-left space-y-1">
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-snug font-medium">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-snug font-medium">
                         Real-Time Sync<br>with Cloud Engine<br>Quota Status
                     </p>
-                    <p class="text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                    <p class="text-xs font-bold text-slate-800 dark:text-slate-200">
                         API Quota Remaining:
                     </p>
-                    <p class="text-xs font-black text-[#1e58a8] dark:text-blue-400">
+                    <p class="text-sm font-black text-[#1e58a8] dark:text-blue-400">
                         <?= number_format($quota['remaining']) ?> / <?= number_format($quota['monthly_limit']) ?>
-                        <i class="fa-solid fa-arrow-left text-[8px] text-slate-400 ml-0.5"></i>
+                        <i class="fa-solid fa-arrow-left text-[10px] text-slate-400 ml-1"></i>
                     </p>
                 </div>
             </div>
 
             <!-- Green Secure Button -->
-            <div class="mt-2.5">
+            <div class="mt-3">
                 <button type="button" onclick="showQuotaSecureDetails()"
-                        class="w-full py-1.5 px-3 rounded-full bg-[#1da055] hover:bg-[#188c49] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-check text-[11px]"></i>
+                        class="w-full py-2 px-3 rounded-full bg-[#1da055] hover:bg-[#188c49] text-white font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-check text-xs"></i>
                     <span>Quota Secure (Click to Inspect)</span>
                 </button>
             </div>
         </div>
 
         <!-- ADVANCED SEARCH WIDGET matching Figure 4.3 -->
-        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 shadow-sm text-xs space-y-2.5 transition-colors">
+        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm text-sm space-y-3 transition-colors">
             <div class="flex items-center justify-between">
-                <h3 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                <h3 class="text-sm font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                     ADVANCED SEARCH
                 </h3>
-                <button type="button" onclick="clearAdvancedFilters()" class="text-[10px] text-blue-600 dark:text-blue-400 hover:underline">
+                <button type="button" onclick="clearAdvancedFilters()" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
                     Clear Tags
                 </button>
             </div>
@@ -295,7 +295,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 }
             ?>
             <div class="relative" id="advFacultyComboboxWrapper">
-                <label for="advFacultyName" class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-0.5">Faculty Name (Combobox)</label>
+                <label for="advFacultyName" class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Faculty Name (Combobox)</label>
                 <div class="relative">
                     <input type="text" id="advFacultyName"
                         role="combobox"
@@ -307,20 +307,20 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         onfocus="openFacultyCombobox()"
                         oninput="filterFacultyCombobox(this.value); applyDashboardLiveFilter();"
                         onkeydown="handleFacultyComboboxKey(event)"
-                        class="w-full pl-2.5 pr-7 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                        class="w-full pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500">
                     <button type="button" tabindex="-1" onclick="toggleFacultyCombobox()" aria-label="Toggle faculty options"
-                            class="absolute inset-y-0 right-0 px-2 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                        <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                            class="absolute inset-y-0 right-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
                     </button>
                 </div>
                 <ul id="advFacultyListbox" role="listbox"
-                    class="hidden origin-top-right-menu absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-40 py-1 text-xs divide-y divide-slate-100 dark:divide-slate-800/60">
+                    class="hidden origin-top-right-menu absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-40 py-1 text-sm divide-y divide-slate-100 dark:divide-slate-800/60">
                     <?php foreach ($comboboxFacultyOptions as $idx => $facOpt): ?>
                         <li role="option" id="fac-opt-<?= $idx ?>" data-value="<?= htmlspecialchars($facOpt) ?>"
                             onclick="selectFacultyComboboxOption(this.dataset.value)"
-                            class="combobox-option px-2.5 py-1.5 cursor-pointer text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-between transition-colors">
+                            class="combobox-option px-3 py-2 cursor-pointer text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-between transition-colors text-sm">
                             <span class="truncate"><?= htmlspecialchars($facOpt) ?></span>
-                            <i class="fa-solid fa-check text-[9px] text-blue-600 dark:text-blue-400 hidden option-check"></i>
+                            <i class="fa-solid fa-check text-xs text-blue-600 dark:text-blue-400 hidden option-check"></i>
                         </li>
                     <?php endforeach; ?>
                 </ul>
@@ -328,11 +328,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
             <!-- Date Range & Action -->
             <div>
-                <label class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-0.5">Date Range & Action</label>
+                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Date Range & Action</label>
                 <div class="flex items-center gap-2">
                     <input type="date" id="advDate" value="2026-05-07"
-                        class="flex-1 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
-                    <select id="advActionSelect" class="px-2 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500">
+                        class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                    <select id="advActionSelect" class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:border-blue-500 font-medium">
                         <option value="">Audit Action</option>
                         <option value="APPROVED">Approve</option>
                         <option value="REJECTED">Reject</option>
@@ -342,40 +342,40 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </div>
 
             <!-- Two-column tag pills matching Figure 4.3 -->
-            <div class="grid grid-cols-2 gap-x-2 gap-y-1">
+            <div class="grid grid-cols-2 gap-x-2.5 gap-y-1.5">
                 <div class="space-y-1">
                     <button type="button" onclick="toggleTag(this, 'cat')" data-val="Research"
-                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
                         Research Publication
                     </button>
                     <button type="button" onclick="toggleTag(this, 'cat')" data-val="Service"
-                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
                         Service
                     </button>
                     <button type="button" onclick="toggleTag(this, 'cat')" data-val="Training"
-                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
                         Training
                     </button>
                     <button type="button" onclick="toggleTag(this, 'cat')" data-val="Education"
-                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
                         Education
                     </button>
                 </div>
                 <div class="space-y-1">
                     <button type="button" onclick="toggleTag(this, 'act')" data-val="Approve"
-                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
                         Approve
                     </button>
                     <button type="button" onclick="toggleTag(this, 'act')" data-val="Reject"
-                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
                         Reject
                     </button>
                     <button type="button" onclick="toggleTag(this, 'act')" data-val="Create"
-                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
                         Create
                     </button>
                     <button type="button" onclick="toggleTag(this, 'act')" data-val="Delete"
-                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium">
                         Delete
                     </button>
                 </div>
@@ -383,25 +383,25 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
             <!-- Search Button -->
             <button type="button" onclick="executeAdvancedSearch()"
-                    class="w-full py-1.5 bg-[#1e58a8] hover:bg-[#18488a] text-white rounded-lg font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    class="w-full py-2 bg-[#1e58a8] hover:bg-[#18488a] text-white rounded-lg font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 <span>Execute Filtered Search</span>
             </button>
         </div>
 
         <!-- CONVERSION GATE ACTIVITY matching Figure 4.3 -->
-        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-3 shadow-sm transition-colors">
-            <div class="flex items-center justify-between text-xs">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                        <i class="fa-solid fa-bolt text-sm"></i>
+        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 shadow-sm transition-colors">
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-base"></i>
                     </div>
                     <div>
-                        <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100">Conversion Gate Activity</h4>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-400"><?= $conversionCount ?> file(s) currently staged</p>
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Conversion Gate Activity</h4>
+                        <p class="text-xs text-slate-400 dark:text-slate-400"><?= $conversionCount ?> file(s) currently staged</p>
                     </div>
                 </div>
-                <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">Optimal</span>
+                <span class="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-200 dark:border-emerald-800">Optimal</span>
             </div>
         </div>
 
