@@ -25,14 +25,24 @@ class DashboardController extends BaseController {
         if (strlen($actionFilter) > 50) {
             $actionFilter = substr($actionFilter, 0, 50);
         }
+        $facultyId = !empty($_GET['faculty_id']) ? (int)$_GET['faculty_id'] : null;
+        if ($facultyId !== null && $facultyId <= 0) {
+            $facultyId = null;
+        }
+        $category = trim($_GET['category'] ?? '');
+        if (strlen($category) > 100) {
+            $category = substr($category, 0, 100);
+        }
         $page = max(1, min(1000, (int)($_GET['page'] ?? 1)));
         $perPage = 10;
 
-        $logData = AuditLogger::getPaginatedLogs($search, $actionFilter, $page, $perPage);
+        $logData = AuditLogger::getPaginatedLogs($search, $actionFilter, $page, $perPage, $facultyId, $category);
         $displayRows = $logData['rows'];
         $totalRows = $logData['totalRows'];
         $totalPages = $logData['totalPages'];
         $page = $logData['currentPage'];
+
+        $facultyList = UserModel::getFacultyList();
 
         $this->renderView('dashboard/index.php', [
             'currentUser' => $currentUser,
@@ -44,6 +54,9 @@ class DashboardController extends BaseController {
             'page' => $page,
             'search' => $search,
             'actionFilter' => $actionFilter,
+            'facultyId' => $facultyId,
+            'category' => $category,
+            'facultyList' => $facultyList,
             'activeNav' => 'dashboard',
             'pageTitle' => "Dean's Centralized Administrative Dashboard"
         ]);

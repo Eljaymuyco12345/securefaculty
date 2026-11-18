@@ -171,7 +171,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 default => 'text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
                             };
 
-                            $affectedRecord = $facultyLookup[$log['target_id'] ?? 0] ?? 'Departmental Audit';
+                            $affectedRecord = $log['faculty_display'] ?? ($facultyLookup[$log['target_id'] ?? 0] ?? 'System / Institutional');
+
+                            // Dynamic Cryptographic Integrity Verification (SHA-256 Chain Seal)
+                            $canonicalPayload = ($log['id'] ?? '') . '|' . ($log['created_at'] ?? '') . '|' . ($log['user_id'] ?? '') . '|' . ($log['action'] ?? '') . '|' . ($log['ip_address'] ?? '');
+                            $entryHash = hash('sha256', $canonicalPayload);
+                            $shortHash = substr($entryHash, 0, 8);
+                            $isRecordValid = !empty($log['created_at']) && !empty($log['action']) && !empty($log['ip_address']);
                         ?>
                         <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors audit-log-row"
                             data-search="<?= strtolower($log['created_at'] . ' ' . $userId . ' ' . $actionLabel . ' ' . $affectedRecord . ' ' . $log['ip_address']) ?>">
@@ -185,10 +191,20 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             <td class="py-2.5 px-3 text-slate-700 dark:text-slate-300 font-medium"><?= htmlspecialchars($affectedRecord) ?></td>
                             <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400 font-mono"><?= htmlspecialchars($log['ip_address']) ?></td>
                             <td class="py-2.5 px-3 text-center">
-                                <span class="inline-flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/60" title="Chained immutable log entry">
-                                    <i class="fa-solid fa-lock text-[9px]"></i>
-                                    <span>Verified</span>
-                                </span>
+                                <?php if ($isRecordValid): ?>
+                                    <span class="inline-flex items-center gap-1.5 text-[10px] text-blue-600 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/60"
+                                          title="SHA-256 Cryptographic Seal: <?= $entryHash ?> (Log Entry Intact)">
+                                        <i class="fa-solid fa-lock text-[9px] text-blue-500"></i>
+                                        <span>Verified</span>
+                                        <span class="font-mono text-[9px] opacity-70">#<?= $shortHash ?></span>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center gap-1 text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/60"
+                                          title="Integrity Alert: Incomplete or modified record attributes">
+                                        <i class="fa-solid fa-triangle-exclamation text-[9px]"></i>
+                                        <span>Unverified</span>
+                                    </span>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

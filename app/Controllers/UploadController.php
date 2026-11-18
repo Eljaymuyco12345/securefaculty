@@ -487,7 +487,7 @@ class UploadController extends BaseController {
             $this->jsonResponse(['status' => 'error', 'message' => 'Database commit failure: ' . $e->getMessage()], 500);
         }
 
-        AuditLogger::log('COMMIT_VAULT_RECORD', "Approved and AES-256 encrypted certificate #{$certId}: '{$certData['title']}'", $certId);
+        AuditLogger::log('COMMIT_VAULT_RECORD', "Approved and AES-256 encrypted certificate #{$certId}: '{$certData['title']}'", (int)($assignedFacultyId ?: $certId));
 
         $this->jsonResponse([
             'status' => 'success',

@@ -118,22 +118,28 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </span>
         </div>
 
-        <!-- Search & Filter Controls matching Figure 4.3 -->
-        <div class="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 flex flex-wrap items-center gap-2.5 text-sm">
+        <!-- Search & Filter Controls: Full Database Server-Side Search -->
+        <form id="dashboardSearchForm" method="GET" action="dashboard.php" class="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 flex flex-wrap items-center gap-2.5 text-sm">
+            <input type="hidden" name="action" value="<?= htmlspecialchars($actionFilter) ?>">
+            <input type="hidden" name="faculty_id" value="<?= htmlspecialchars((string)($facultyId ?? '')) ?>">
+            <input type="hidden" name="category" value="<?= htmlspecialchars($category ?? '') ?>">
             <div class="flex-1 min-w-[200px] relative">
                 <i class="fa-solid fa-magnifying-glass text-xs text-slate-400 absolute left-3 top-3"></i>
-                <input type="text" id="dashboardSearchInput" onkeyup="applyDashboardLiveFilter()"
-                       placeholder="Filter by keyword, actor, record, or IP..."
-                       class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+                <input type="text" name="search" id="dashboardSearchInput" value="<?= htmlspecialchars($search) ?>"
+                       placeholder="Filter across entire database by keyword, faculty, record, or IP..."
+                       class="w-full pl-8 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
+                <?php if (!empty($search)): ?>
+                    <a href="dashboard.php?action=<?= urlencode($actionFilter) ?>&faculty_id=<?= urlencode((string)($facultyId ?? '')) ?>&category=<?= urlencode($category ?? '') ?>"
+                       class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Clear keyword search">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </a>
+                <?php endif; ?>
             </div>
-            <select id="recordStatusSelect" onchange="applyDashboardLiveFilter()"
-                    class="py-2 px-3.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 cursor-pointer focus:outline-none focus:border-blue-500 font-medium">
-                <option value="ALL">All Records</option>
-                <option value="APPROVED">Approved Actions</option>
-                <option value="REJECTED">Rejected Actions</option>
-                <option value="REPORT">Audit Reports</option>
-            </select>
-        </div>
+            <button type="submit" class="px-3.5 py-2 bg-[#0d2342] dark:bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-[#14335e] dark:hover:bg-blue-500 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm">
+                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                <span>Search</span>
+            </button>
+        </form>
 
         <!-- Data Table matching Figure 4.3 (5 columns, NO Status) -->
         <div class="overflow-x-auto flex-1">
@@ -151,48 +157,64 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm" id="dashboardTableBody">
-                    <?php foreach ($displayRows as $row): ?>
-                        <?php
-                            $uid = ($row['role'] ?? 'faculty') === 'dean'
-                                ? 'ISUFST001'
-                                : 'ISUFST' . str_pad($row['user_id'] ?? 2, 3, '0', STR_PAD_LEFT);
-
-                            $actionRaw = $row['action'] ?? '';
-                            $actionLabel = ucwords(strtolower(str_replace('_', ' ', $actionRaw)));
-                            $faculty = $row['faculty_display'] ?? 'CICI Faculty';
-                        ?>
-                        <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors table-row-item"
-                            data-action="<?= strtoupper($actionRaw) ?>"
-                            data-text="<?= strtolower($uid . ' ' . $actionLabel . ' ' . $faculty . ' ' . ($row['ip_address'] ?? '')) ?>">
-                            <td class="py-2.5 px-3.5 text-slate-600 dark:text-slate-400 font-mono text-xs whitespace-nowrap"><?= htmlspecialchars($row['created_at']) ?></td>
-                            <td class="py-2.5 px-3.5 font-bold text-slate-900 dark:text-slate-100"><?= htmlspecialchars($uid) ?></td>
-                            <td class="py-2.5 px-3.5 text-slate-800 dark:text-slate-200 font-semibold"><?= htmlspecialchars($actionLabel) ?></td>
-                            <td class="py-2.5 px-3.5 text-slate-700 dark:text-slate-300 font-medium"><?= htmlspecialchars($faculty) ?></td>
-                            <td class="py-2.5 px-3.5 text-slate-500 dark:text-slate-400 font-mono text-xs"><?= htmlspecialchars($row['ip_address']) ?></td>
+                    <?php if (empty($displayRows)): ?>
+                        <tr>
+                            <td colspan="5" class="py-12 text-center text-slate-400 dark:text-slate-500">
+                                <i class="fa-regular fa-folder-open text-3xl block mb-2 text-slate-300 dark:text-slate-600"></i>
+                                <span>No audit transactions match the specified filter criteria across the database.</span>
+                                <div class="mt-3">
+                                    <a href="dashboard.php" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline">
+                                        <i class="fa-solid fa-rotate-left"></i>
+                                        <span>Reset Filters</span>
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
-                    <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php foreach ($displayRows as $row): ?>
+                            <?php
+                                $uid = ($row['role'] ?? 'faculty') === 'dean'
+                                    ? 'ISUFST001'
+                                    : 'ISUFST' . str_pad($row['user_id'] ?? 2, 3, '0', STR_PAD_LEFT);
+
+                                $actionRaw = $row['action'] ?? '';
+                                $actionLabel = ucwords(strtolower(str_replace('_', ' ', $actionRaw)));
+                                $faculty = $row['faculty_display'] ?? 'System / Institutional';
+                            ?>
+                            <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors table-row-item"
+                                data-action="<?= strtoupper($actionRaw) ?>"
+                                data-text="<?= strtolower($uid . ' ' . $actionLabel . ' ' . $faculty . ' ' . ($row['ip_address'] ?? '')) ?>">
+                                <td class="py-2.5 px-3.5 text-slate-600 dark:text-slate-400 font-mono text-xs whitespace-nowrap"><?= htmlspecialchars($row['created_at']) ?></td>
+                                <td class="py-2.5 px-3.5 font-bold text-slate-900 dark:text-slate-100"><?= htmlspecialchars($uid) ?></td>
+                                <td class="py-2.5 px-3.5 text-slate-800 dark:text-slate-200 font-semibold"><?= htmlspecialchars($actionLabel) ?></td>
+                                <td class="py-2.5 px-3.5 text-slate-700 dark:text-slate-300 font-medium"><?= htmlspecialchars($faculty) ?></td>
+                                <td class="py-2.5 px-3.5 text-slate-500 dark:text-slate-400 font-mono text-xs"><?= htmlspecialchars($row['ip_address']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
-            <!-- Empty state for search filters -->
-            <div id="noMatchingRowsNotice" class="hidden p-8 text-center text-slate-400 dark:text-slate-500 text-sm">
-                <i class="fa-regular fa-folder-open text-3xl block mb-2 text-slate-300 dark:text-slate-600"></i>
-                No audit transactions match the specified filter criteria.
-            </div>
         </div>
 
         <!-- Table Footer matching Figure 4.3 -->
         <div class="p-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-500 dark:text-slate-400">
             <div>
-                <span class="font-semibold text-slate-700 dark:text-slate-200" id="rowCountDisplay"><?= $totalRows ?> records</span>
+                <span class="font-semibold text-slate-700 dark:text-slate-200" id="rowCountDisplay"><?= number_format($totalRows) ?> records</span>
                 <span class="ml-1">Traceable Accountability: RA 10173 and DPA Compliance</span>
+                <?php if ($totalPages > 1): ?>
+                    <span class="ml-1 text-slate-400">(Page <?= $page ?> of <?= $totalPages ?>)</span>
+                <?php endif; ?>
             </div>
 
             <!-- Pagination matching Figure 4.3 -->
             <div class="flex items-center gap-0.5 font-mono">
                 <?php
                     $actionParam = !empty($actionFilter) ? '&action=' . urlencode($actionFilter) : '';
-                    $searchParam = $search ? '&search=' . urlencode($search) : '';
-                    $pageParam = $searchParam . $actionParam;
+                    $searchParam = $search !== '' ? '&search=' . urlencode($search) : '';
+                    $facParam = $facultyId ? '&faculty_id=' . urlencode((string)$facultyId) : '';
+                    $catParam = !empty($category) ? '&category=' . urlencode($category) : '';
+                    $pageParam = $searchParam . $actionParam . $facParam . $catParam;
+
                     $startPage = max(1, min($page - 1, max(1, $totalPages - 3)));
                     $endPage = min($totalPages, max(1, $startPage + 3));
                     if ($endPage - $startPage < 3 && $startPage > 1) {
@@ -284,14 +306,14 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         <h3 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                             Ledger Filter Assistant
                         </h3>
-                        <p class="text-[10px] text-slate-400">Filter table records in real-time</p>
+                        <p class="text-[10px] text-slate-400">Search &amp; filter entire audit history across all pages</p>
                     </div>
                 </div>
-                <button type="button" onclick="clearAdvancedFilters()" title="Reset all search filters"
-                        class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer">
+                <a href="dashboard.php" title="Reset all search filters"
+                   class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer">
                     <i class="fa-solid fa-rotate-left text-[10px]"></i>
                     <span>Reset</span>
-                </button>
+                </a>
             </div>
 
             <!-- Filter Step 1: Faculty Member / Actor -->
@@ -300,20 +322,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <i class="fa-solid fa-user-tie text-indigo-500 text-xs"></i>
                     <span>1. Faculty Member / Actor:</span>
                 </label>
-                <select id="advFacultySelect" onchange="applyDashboardLiveFilter()"
+                <select id="advFacultySelect" onchange="submitDashboardFilter({faculty_id: this.value})"
                         class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
                     <option value="">-- All Faculty Members &amp; System Actors --</option>
-                    <?php
-                        $uniqueFaculties = [];
-                        foreach ($displayRows as $r) {
-                            $fn = trim($r['faculty_display'] ?? '');
-                            if ($fn !== '' && !in_array($fn, $uniqueFaculties, true)) {
-                                $uniqueFaculties[] = $fn;
-                            }
-                        }
-                        foreach ($uniqueFaculties as $fac):
-                    ?>
-                        <option value="<?= htmlspecialchars($fac) ?>"><?= htmlspecialchars($fac) ?></option>
+                    <?php foreach ($facultyList as $fac): ?>
+                        <option value="<?= $fac['id'] ?>" <?= ($facultyId === (int)$fac['id']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($fac['full_name']) ?> (<?= htmlspecialchars($fac['role'] ?? 'faculty') ?>)
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -325,33 +340,33 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <span>2. Transaction Event Type:</span>
                 </label>
                 <div class="grid grid-cols-2 gap-1.5">
-                    <button type="button" onclick="toggleActionTag(this, '')" data-act=""
-                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400">
+                    <button type="button" onclick="submitDashboardFilter({action: ''})"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all <?= empty($actionFilter) ? 'bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">
                         <i class="fa-solid fa-list-check text-[10px]"></i>
                         <span class="truncate">All Events</span>
                     </button>
-                    <button type="button" onclick="toggleActionTag(this, 'LOGIN')" data-act="LOGIN"
-                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <button type="button" onclick="submitDashboardFilter({action: 'LOGIN'})"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all <?= ($actionFilter === 'LOGIN') ? 'bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">
                         <i class="fa-solid fa-key text-[10px] text-emerald-500"></i>
                         <span class="truncate">Logins</span>
                     </button>
-                    <button type="button" onclick="toggleActionTag(this, 'VIEW')" data-act="VIEW"
-                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <button type="button" onclick="submitDashboardFilter({action: 'VIEW_DOCUMENT'})"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all <?= ($actionFilter === 'VIEW_DOCUMENT') ? 'bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">
                         <i class="fa-solid fa-eye text-[10px] text-blue-500"></i>
                         <span class="truncate">Document Views</span>
                     </button>
-                    <button type="button" onclick="toggleActionTag(this, 'DOWNLOAD')" data-act="DOWNLOAD"
-                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <button type="button" onclick="submitDashboardFilter({action: 'DOWNLOAD_DOCUMENT'})"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all <?= ($actionFilter === 'DOWNLOAD_DOCUMENT') ? 'bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">
                         <i class="fa-solid fa-download text-[10px] text-indigo-500"></i>
                         <span class="truncate">Downloads</span>
                     </button>
-                    <button type="button" onclick="toggleActionTag(this, 'OCR')" data-act="OCR"
-                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <button type="button" onclick="submitDashboardFilter({action: 'OCR_EXTRACT'})"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all <?= ($actionFilter === 'OCR_EXTRACT') ? 'bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">
                         <i class="fa-solid fa-cloud-arrow-up text-[10px] text-amber-500"></i>
                         <span class="truncate">OCR Ingests</span>
                     </button>
-                    <button type="button" onclick="toggleActionTag(this, 'EXPORT')" data-act="EXPORT"
-                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <button type="button" onclick="submitDashboardFilter({action: 'EXPORT_REPORT'})"
+                            class="action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all <?= ($actionFilter === 'EXPORT_REPORT') ? 'bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">
                         <i class="fa-solid fa-file-pdf text-[10px] text-rose-500"></i>
                         <span class="truncate">PDF Reports</span>
                     </button>
@@ -365,13 +380,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <span>3. Academic Category Focus:</span>
                 </label>
                 <div class="flex flex-wrap gap-1.5">
-                    <button type="button" onclick="toggleCategoryPill(this, '')" data-cat=""
-                            class="cat-pill px-2.5 py-1 rounded-md text-xs font-semibold border transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400">
+                    <button type="button" onclick="submitDashboardFilter({category: ''})"
+                            class="cat-pill px-2.5 py-1 rounded-md text-xs font-semibold border transition-all <?= empty($category) ? 'bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">
                         All
                     </button>
                     <?php foreach (CategoryService::CATEGORIES as $ckey => $cinfo): ?>
-                        <button type="button" onclick="toggleCategoryPill(this, '<?= htmlspecialchars($ckey) ?>')" data-cat="<?= htmlspecialchars($ckey) ?>"
-                                class="cat-pill px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center gap-1">
+                        <button type="button" onclick="submitDashboardFilter({category: '<?= htmlspecialchars($ckey) ?>'})"
+                                class="cat-pill px-2.5 py-1 rounded-md text-xs font-medium border transition-all flex items-center gap-1 <?= ($category === $ckey) ? 'bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400 font-semibold' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">
                             <i class="<?= $cinfo['icon'] ?> text-[10px]"></i>
                             <span><?= htmlspecialchars($cinfo['short_label']) ?></span>
                         </button>
@@ -380,17 +395,41 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </div>
 
             <!-- Active Status Feedback Banner -->
+            <?php
+                $filterTitle = 'All Transactions';
+                if (!empty($actionFilter)) {
+                    $filterTitle = match($actionFilter) {
+                        'LOGIN' => 'Logins',
+                        'VIEW_DOCUMENT' => 'Views',
+                        'DOWNLOAD_DOCUMENT' => 'Downloads',
+                        'OCR_EXTRACT' => 'OCR Ingests',
+                        'EXPORT_REPORT' => 'PDF Reports',
+                        default => htmlspecialchars($actionFilter)
+                    };
+                }
+                if (!empty($category)) {
+                    $filterTitle .= ' • ' . (CategoryService::CATEGORIES[$category]['short_label'] ?? htmlspecialchars($category));
+                }
+                if ($facultyId) {
+                    foreach ($facultyList as $f) {
+                        if ((int)$f['id'] === $facultyId) {
+                            $filterTitle .= ' • ' . htmlspecialchars($f['full_name']);
+                            break;
+                        }
+                    }
+                }
+            ?>
             <div class="p-2.5 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/50 flex items-center justify-between text-xs">
                 <span class="text-slate-600 dark:text-slate-300 font-medium">
-                    Showing: <strong id="activeFilterSummary" class="text-blue-700 dark:text-blue-300">All Transactions</strong>
+                    Active: <strong id="activeFilterSummary" class="text-blue-700 dark:text-blue-300"><?= $filterTitle ?></strong>
                 </span>
                 <span id="rowCountDisplay" class="font-mono font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
-                    <?= count($displayRows) ?> records
+                    <?= number_format($totalRows) ?> in database
                 </span>
             </div>
 
             <p class="text-[11px] text-slate-400 dark:text-slate-500 italic">
-                <i class="fa-solid fa-circle-info mr-1"></i> The table on the left updates automatically as you click any filter above.
+                <i class="fa-solid fa-circle-info mr-1"></i> Filtering queries all historical transactions across the entire university database.
             </p>
         </div>
 
@@ -416,123 +455,31 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <!-- Interactive Dashboard Scripts -->
 <script>
-    let selectedCategoryTag = '';
-    let selectedActionTag = '';
+    const currentFilterParams = {
+        search: <?= json_encode($search) ?>,
+        action: <?= json_encode($actionFilter) ?>,
+        faculty_id: <?= json_encode((string)($facultyId ?? '')) ?>,
+        category: <?= json_encode($category ?? '') ?>
+    };
 
-    function toggleActionTag(btn, action) {
-        selectedActionTag = action;
-        document.querySelectorAll('.action-pill').forEach(b => {
-            b.className = 'action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700';
-        });
-        btn.className = 'action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400';
-        applyDashboardLiveFilter();
-    }
-
-    function toggleCategoryPill(btn, cat) {
-        selectedCategoryTag = cat;
-        document.querySelectorAll('.cat-pill').forEach(b => {
-            b.className = 'cat-pill px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center gap-1';
-        });
-        btn.className = 'cat-pill px-2.5 py-1 rounded-md text-xs font-semibold border transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400 flex items-center gap-1';
-        applyDashboardLiveFilter();
-    }
-
-    function clearAdvancedFilters() {
-        selectedCategoryTag = '';
-        selectedActionTag = '';
-        const facSelect = document.getElementById('advFacultySelect');
-        if (facSelect) facSelect.value = '';
-        const statusSelect = document.getElementById('recordStatusSelect');
-        if (statusSelect) statusSelect.value = 'ALL';
+    function submitDashboardFilter(overrides) {
+        overrides = overrides || {};
         const searchInput = document.getElementById('dashboardSearchInput');
-        if (searchInput) searchInput.value = '';
+        const facSelect = document.getElementById('advFacultySelect');
 
-        document.querySelectorAll('.action-pill').forEach((b, idx) => {
-            if (idx === 0) {
-                b.className = 'action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400';
-            } else {
-                b.className = 'action-pill w-full text-left px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-all bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700';
-            }
-        });
+        const search = (overrides.search !== undefined) ? overrides.search : (searchInput ? searchInput.value.trim() : currentFilterParams.search);
+        const action = (overrides.action !== undefined) ? overrides.action : currentFilterParams.action;
+        const facultyId = (overrides.faculty_id !== undefined) ? overrides.faculty_id : (facSelect ? facSelect.value : currentFilterParams.faculty_id);
+        const category = (overrides.category !== undefined) ? overrides.category : currentFilterParams.category;
 
-        document.querySelectorAll('.cat-pill').forEach((b, idx) => {
-            if (idx === 0) {
-                b.className = 'cat-pill px-2.5 py-1 rounded-md text-xs font-semibold border transition-all bg-blue-100 dark:bg-blue-950/70 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400 flex items-center gap-1';
-            } else {
-                b.className = 'cat-pill px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center gap-1';
-            }
-        });
+        const params = new URLSearchParams();
+        params.set('page', '1');
+        if (search) params.set('search', search);
+        if (action) params.set('action', action);
+        if (facultyId) params.set('faculty_id', facultyId);
+        if (category) params.set('category', category);
 
-        applyDashboardLiveFilter();
-    }
-
-    function applyDashboardLiveFilter() {
-        const query = (document.getElementById('dashboardSearchInput')?.value || '').toLowerCase();
-        const status = document.getElementById('recordStatusSelect')?.value || 'ALL';
-        const advFaculty = (document.getElementById('advFacultySelect')?.value || '').toLowerCase();
-
-        const rows = document.querySelectorAll('#dashboardTableBody .table-row-item');
-        let visibleCount = 0;
-
-        rows.forEach(row => {
-            const rowText = (row.dataset.text || '').toLowerCase();
-            const action = (row.dataset.action || '').toUpperCase();
-
-            let match = true;
-
-            // Search query filter
-            if (query && !rowText.includes(query)) match = false;
-
-            // Faculty filter
-            if (advFaculty && !rowText.includes(advFaculty)) match = false;
-
-            // Dropdown Status filter
-            if (status !== 'ALL') {
-                if (status === 'APPROVED' && !action.includes('APPROV')) match = false;
-                if (status === 'REJECTED' && !action.includes('REJECT')) match = false;
-                if (status === 'REPORT' && !action.includes('REPORT') && !action.includes('EXPORT')) match = false;
-            }
-
-            // Action tag filter
-            if (selectedActionTag) {
-                if (!action.includes(selectedActionTag.toUpperCase())) match = false;
-            }
-
-            // Category tag filter
-            if (selectedCategoryTag) {
-                if (!rowText.includes(selectedCategoryTag.toLowerCase())) match = false;
-            }
-
-            if (match) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        // Update counts and summaries
-        const rowCountBadge = document.getElementById('rowCountDisplay');
-        if (rowCountBadge) rowCountBadge.textContent = `${visibleCount} records`;
-
-        const activeSummary = document.getElementById('activeFilterSummary');
-        if (activeSummary) {
-            const parts = [];
-            if (advFaculty) parts.push(advFaculty);
-            if (selectedActionTag) parts.push(selectedActionTag);
-            if (selectedCategoryTag) parts.push(selectedCategoryTag);
-            if (query) parts.push(`"${query}"`);
-            activeSummary.textContent = parts.length > 0 ? parts.join(' • ') : 'All Transactions';
-        }
-
-        const notice = document.getElementById('noMatchingRowsNotice');
-        if (notice) {
-            if (visibleCount === 0) {
-                notice.classList.remove('hidden');
-            } else {
-                notice.classList.add('hidden');
-            }
-        }
+        window.location.href = 'dashboard.php?' + params.toString();
     }
 
     function toggleInstitutionalOverview() {
@@ -575,104 +522,6 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             executeSort();
         }
     }
-
-    // #17 Interactive Combobox Controller for Faculty Filter
-    let activeComboboxIndex = -1;
-
-    function openFacultyCombobox() {
-        const listbox = document.getElementById('advFacultyListbox');
-        const input = document.getElementById('advFacultyName');
-        if (!listbox || !input) return;
-        listbox.classList.remove('hidden');
-        input.setAttribute('aria-expanded', 'true');
-        filterFacultyCombobox(input.value);
-    }
-
-    function closeFacultyCombobox() {
-        const listbox = document.getElementById('advFacultyListbox');
-        const input = document.getElementById('advFacultyName');
-        if (!listbox || !input) return;
-        listbox.classList.add('hidden');
-        input.setAttribute('aria-expanded', 'false');
-        activeComboboxIndex = -1;
-    }
-
-    function toggleFacultyCombobox() {
-        const listbox = document.getElementById('advFacultyListbox');
-        if (!listbox) return;
-        if (listbox.classList.contains('hidden')) {
-            openFacultyCombobox();
-            document.getElementById('advFacultyName')?.focus();
-        } else {
-            closeFacultyCombobox();
-        }
-    }
-
-    function filterFacultyCombobox(val) {
-        const listbox = document.getElementById('advFacultyListbox');
-        if (!listbox) return;
-        const q = (val || '').toLowerCase().trim();
-        const opts = Array.from(listbox.querySelectorAll('.combobox-option'));
-        let anyVisible = false;
-        opts.forEach(opt => {
-            const text = (opt.dataset.value || '').toLowerCase();
-            const isMatch = !q || text.includes(q);
-            opt.style.display = isMatch ? '' : 'none';
-            const check = opt.querySelector('.option-check');
-            if (check) {
-                check.classList.toggle('hidden', text !== q || !q);
-            }
-            if (isMatch) anyVisible = true;
-        });
-        activeComboboxIndex = -1;
-        listbox.classList.toggle('hidden', !anyVisible);
-    }
-
-    function selectFacultyComboboxOption(val) {
-        const input = document.getElementById('advFacultyName');
-        if (!input) return;
-        input.value = val;
-        closeFacultyCombobox();
-        applyDashboardLiveFilter();
-    }
-
-    function handleFacultyComboboxKey(e) {
-        const listbox = document.getElementById('advFacultyListbox');
-        if (!listbox) return;
-        const visibleOpts = Array.from(listbox.querySelectorAll('.combobox-option')).filter(o => o.style.display !== 'none');
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            if (listbox.classList.contains('hidden')) openFacultyCombobox();
-            activeComboboxIndex = Math.min(activeComboboxIndex + 1, visibleOpts.length - 1);
-            highlightComboboxOption(visibleOpts);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            activeComboboxIndex = Math.max(activeComboboxIndex - 1, 0);
-            highlightComboboxOption(visibleOpts);
-        } else if (e.key === 'Enter' && activeComboboxIndex >= 0 && visibleOpts[activeComboboxIndex]) {
-            e.preventDefault();
-            selectFacultyComboboxOption(visibleOpts[activeComboboxIndex].dataset.value);
-        } else if (e.key === 'Escape') {
-            closeFacultyCombobox();
-        }
-    }
-
-    function highlightComboboxOption(visibleOpts) {
-        visibleOpts.forEach((opt, i) => {
-            if (i === activeComboboxIndex) {
-                opt.classList.add('bg-blue-50', 'dark:bg-blue-950/60', 'font-bold');
-                opt.scrollIntoView({ block: 'nearest' });
-            } else {
-                opt.classList.remove('bg-blue-50', 'dark:bg-blue-950/60', 'font-bold');
-            }
-        });
-    }
-
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('#advFacultyComboboxWrapper')) {
-            closeFacultyCombobox();
-        }
-    });
 </script>
 
 <?php require_once __DIR__ . '/../layouts/layout_end.php'; ?>

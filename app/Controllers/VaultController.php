@@ -95,7 +95,7 @@ class VaultController extends BaseController {
                         AuditLogger::log('DISASSOCIATE_COAUTHOR', "Faculty '{$currentUser['full_name']}' removed co-authorship association from certificate #{$deleteId}", $deleteId);
                         $this->redirect('vault.php?msg=coauthor_removed');
                     } else {
-                        AuditLogger::log('DELETE_DOCUMENT', "Deleted certificate record #{$deleteId} and purged encrypted payload", $deleteId);
+                        AuditLogger::log('DELETE_DOCUMENT', "Deleted certificate record #{$deleteId} and purged encrypted payload", (int)($cert['faculty_id'] ?? $currentUser['id']));
                         $this->redirect('vault.php?msg=deleted');
                     }
                 } else {

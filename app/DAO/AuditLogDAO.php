@@ -38,29 +38,64 @@ class AuditLogDAO implements AuditLogDAOInterface {
         return $stmt->fetchAll();
     }
 
-    public static function getPaginatedLogs(?string $search = null, ?string $actionFilter = null, int $page = 1, int $perPage = 10): array {
+    public static function getPaginatedLogs(?string $search = null, ?string $actionFilter = null, int $page = 1, int $perPage = 10, ?int $facultyId = null, ?string $category = null): array {
         $pdo = Database::getConnection();
-        
-        $countQuery = "
-            SELECT COUNT(*)
+
+        $fromAndJoin = "
             FROM audit_logs a
+            LEFT JOIN users u_target ON a.target_id = u_target.id
+            LEFT JOIN certificates c ON a.target_id = c.id
+            LEFT JOIN users u_cert ON c.faculty_id = u_cert.id
+            LEFT JOIN users u_actor ON a.user_id = u_actor.id
             WHERE 1=1
         ";
+
         $params = [];
+        $whereClauses = "";
+
         if ($search && trim($search) !== '') {
             $trimmedSearch = mb_substr(trim($search), 0, 100);
-            $countQuery .= " AND (a.details LIKE :s1 OR a.username LIKE :s2 OR a.ip_address LIKE :s3 OR a.action LIKE :s4)";
+            $whereClauses .= " AND (a.details LIKE :s1 OR a.username LIKE :s2 OR a.ip_address LIKE :s3 OR a.action LIKE :s4 OR u_target.full_name LIKE :s5 OR u_cert.full_name LIKE :s6 OR u_actor.full_name LIKE :s7)";
             $term = "%" . $trimmedSearch . "%";
             $params[':s1'] = $term;
             $params[':s2'] = $term;
             $params[':s3'] = $term;
             $params[':s4'] = $term;
-        }
-        if ($actionFilter && trim($actionFilter) !== '') {
-            $countQuery .= " AND a.action = :act";
-            $params[':act'] = mb_substr(trim($actionFilter), 0, 50);
+            $params[':s5'] = $term;
+            $params[':s6'] = $term;
+            $params[':s7'] = $term;
         }
 
+        if ($actionFilter && trim($actionFilter) !== '' && $actionFilter !== 'ALL') {
+            $act = trim($actionFilter);
+            if ($act === 'LOGIN') {
+                $whereClauses .= " AND (a.action LIKE 'LOGIN%' OR a.action = 'LOGOUT')";
+            } elseif ($act === 'OCR_EXTRACT') {
+                $whereClauses .= " AND (a.action LIKE 'OCR%' OR a.action = 'BATCH_UPLOAD')";
+            } elseif ($act === 'EXPORT_REPORT') {
+                $whereClauses .= " AND a.action LIKE '%EXPORT%'";
+            } elseif ($act === 'APPROVED') {
+                $whereClauses .= " AND a.action IN ('LOGIN_SUCCESS', 'COMMIT_VAULT_RECORD', 'VIEW_DOCUMENT', 'DOWNLOAD_DOCUMENT')";
+            } elseif ($act === 'REJECTED') {
+                $whereClauses .= " AND a.action IN ('LOGIN_FAILED', 'UNAUTHORIZED_ACCESS_ATTEMPT', 'LOGIN_BLOCKED', 'CSRF_VIOLATION_BLOCKED', 'BACKUP_FAILED')";
+            } else {
+                $whereClauses .= " AND a.action = :act";
+                $params[':act'] = mb_substr($act, 0, 50);
+            }
+        }
+
+        if ($facultyId !== null && $facultyId > 0) {
+            $whereClauses .= " AND (a.target_id = :fac_id OR c.faculty_id = :fac_id OR (a.target_id IS NULL AND a.user_id = :fac_id))";
+            $params[':fac_id'] = $facultyId;
+        }
+
+        if ($category && trim($category) !== '' && $category !== 'All') {
+            $whereClauses .= " AND (c.category LIKE :cat OR a.details LIKE :cat_term)";
+            $params[':cat'] = '%' . trim($category) . '%';
+            $params[':cat_term'] = '%' . trim($category) . '%';
+        }
+
+        $countQuery = "SELECT COUNT(*) " . $fromAndJoin . $whereClauses;
         $countStmt = $pdo->prepare($countQuery);
         $countStmt->execute($params);
         $totalRows = (int)$countStmt->fetchColumn();
@@ -69,19 +104,21 @@ class AuditLogDAO implements AuditLogDAOInterface {
         $page = max(1, min($page, $totalPages));
         $offset = ($page - 1) * $perPage;
 
-        $logQuery = "
-            SELECT a.*, COALESCE(u.full_name, 'Departmental Audit') as faculty_display
-            FROM audit_logs a
-            LEFT JOIN users u ON a.target_id = u.id
-            WHERE 1=1
+        $selectFields = "
+            SELECT a.*,
+            COALESCE(
+                u_target.full_name,
+                u_cert.full_name,
+                CASE 
+                    WHEN a.action IN ('OCR_EXTRACT', 'BATCH_UPLOAD') THEN u_actor.full_name
+                    WHEN a.action IN ('DATABASE_BACKUP_CREATED', 'BACKUP_FAILED') THEN 'System Service'
+                    WHEN a.action LIKE '%EXPORT%' THEN 'Accreditation Ledger'
+                    ELSE 'System / Institutional'
+                END
+            ) AS faculty_display
         ";
-        if ($search && trim($search) !== '') {
-            $logQuery .= " AND (a.details LIKE :s1 OR a.username LIKE :s2 OR a.ip_address LIKE :s3 OR a.action LIKE :s4)";
-        }
-        if ($actionFilter && trim($actionFilter) !== '') {
-            $logQuery .= " AND a.action = :act";
-        }
-        $logQuery .= " ORDER BY a.created_at DESC LIMIT :limit OFFSET :offset";
+
+        $logQuery = $selectFields . $fromAndJoin . $whereClauses . " ORDER BY a.created_at DESC, a.id DESC LIMIT :limit OFFSET :offset";
 
         $stmt = $pdo->prepare($logQuery);
         foreach ($params as $k => $v) {
@@ -100,28 +137,74 @@ class AuditLogDAO implements AuditLogDAOInterface {
         ];
     }
 
-    public static function getExportLogs(?string $search = null, ?string $actionFilter = null): array {
+    public static function getExportLogs(?string $search = null, ?string $actionFilter = null, ?int $facultyId = null, ?string $category = null): array {
         $pdo = Database::getConnection();
-        $query = "
-            SELECT a.*, COALESCE(u.full_name, 'Departmental Audit') as faculty_display
+
+        $fromAndJoin = "
             FROM audit_logs a
-            LEFT JOIN users u ON a.target_id = u.id
+            LEFT JOIN users u_target ON a.target_id = u_target.id
+            LEFT JOIN certificates c ON a.target_id = c.id
+            LEFT JOIN users u_cert ON c.faculty_id = u_cert.id
+            LEFT JOIN users u_actor ON a.user_id = u_actor.id
             WHERE 1=1
         ";
+
         $params = [];
+        $whereClauses = "";
+
         if ($search && trim($search) !== '') {
-            $query .= " AND (a.details LIKE :s1 OR a.username LIKE :s2 OR a.ip_address LIKE :s3 OR a.action LIKE :s4)";
-            $term = "%" . trim($search) . "%";
+            $trimmedSearch = mb_substr(trim($search), 0, 100);
+            $whereClauses .= " AND (a.details LIKE :s1 OR a.username LIKE :s2 OR a.ip_address LIKE :s3 OR a.action LIKE :s4 OR u_target.full_name LIKE :s5 OR u_cert.full_name LIKE :s6 OR u_actor.full_name LIKE :s7)";
+            $term = "%" . $trimmedSearch . "%";
             $params[':s1'] = $term;
             $params[':s2'] = $term;
             $params[':s3'] = $term;
             $params[':s4'] = $term;
+            $params[':s5'] = $term;
+            $params[':s6'] = $term;
+            $params[':s7'] = $term;
         }
-        if ($actionFilter && trim($actionFilter) !== '') {
-            $query .= " AND a.action = :act";
-            $params[':act'] = trim($actionFilter);
+
+        if ($actionFilter && trim($actionFilter) !== '' && $actionFilter !== 'ALL') {
+            $act = trim($actionFilter);
+            if ($act === 'LOGIN') {
+                $whereClauses .= " AND (a.action LIKE 'LOGIN%' OR a.action = 'LOGOUT')";
+            } elseif ($act === 'OCR_EXTRACT') {
+                $whereClauses .= " AND (a.action LIKE 'OCR%' OR a.action = 'BATCH_UPLOAD')";
+            } elseif ($act === 'EXPORT_REPORT') {
+                $whereClauses .= " AND a.action LIKE '%EXPORT%'";
+            } else {
+                $whereClauses .= " AND a.action = :act";
+                $params[':act'] = mb_substr($act, 0, 50);
+            }
         }
-        $query .= " ORDER BY a.created_at DESC";
+
+        if ($facultyId !== null && $facultyId > 0) {
+            $whereClauses .= " AND (a.target_id = :fac_id OR c.faculty_id = :fac_id OR (a.target_id IS NULL AND a.user_id = :fac_id))";
+            $params[':fac_id'] = $facultyId;
+        }
+
+        if ($category && trim($category) !== '' && $category !== 'All') {
+            $whereClauses .= " AND (c.category LIKE :cat OR a.details LIKE :cat_term)";
+            $params[':cat'] = '%' . trim($category) . '%';
+            $params[':cat_term'] = '%' . trim($category) . '%';
+        }
+
+        $selectFields = "
+            SELECT a.*,
+            COALESCE(
+                u_target.full_name,
+                u_cert.full_name,
+                CASE 
+                    WHEN a.action IN ('OCR_EXTRACT', 'BATCH_UPLOAD') THEN u_actor.full_name
+                    WHEN a.action IN ('DATABASE_BACKUP_CREATED', 'BACKUP_FAILED') THEN 'System Service'
+                    WHEN a.action LIKE '%EXPORT%' THEN 'Accreditation Ledger'
+                    ELSE 'System / Institutional'
+                END
+            ) AS faculty_display
+        ";
+
+        $query = $selectFields . $fromAndJoin . $whereClauses . " ORDER BY a.created_at DESC, a.id DESC";
 
         $stmt = $pdo->prepare($query);
         $stmt->execute($params);

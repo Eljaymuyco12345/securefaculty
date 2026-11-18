@@ -138,7 +138,7 @@ class CertificateService {
             return ['success' => false, 'code' => 500, 'message' => 'Database commit failure: ' . $e->getMessage()];
         }
 
-        AuditLogger::log('COMMIT_VAULT_RECORD', "Approved and AES-256 encrypted certificate #{$certId}: '{$certData['title']}'", $certId);
+        AuditLogger::log('COMMIT_VAULT_RECORD', "Approved and AES-256 encrypted certificate #{$certId}: '{$certData['title']}'", (int)($assignedFacultyId ?: $certId));
 
         return [
             'success' => true,
