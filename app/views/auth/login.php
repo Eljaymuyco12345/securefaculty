@@ -26,6 +26,8 @@ $msg = $msg ?? null;
             } else {
                 document.documentElement.classList.remove('dark');
             }
+            var zoom = localStorage.getItem('securefaculty_zoom') || '1.06';
+            document.documentElement.style.zoom = zoom;
         })();
     </script>
     <!-- Tailwind CSS CDN with class-based dark mode -->
@@ -53,6 +55,9 @@ $msg = $msg ?? null;
         html.dark {
             color-scheme: dark;
             accent-color: oklch(0.68 0.17 250);
+        }
+        html {
+            zoom: 1.06;
         }
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;

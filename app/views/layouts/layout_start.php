@@ -26,7 +26,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Inline synchronous theme initializer to eliminate FOUC (Flash of Unstyled Content) -->
+    <!-- Inline synchronous theme & zoom initializer to eliminate FOUC -->
     <script>
         window.CSRF_TOKEN = <?= json_encode(Auth::getCsrfToken()) ?>;
         (function() {
@@ -37,6 +37,8 @@ $searchAction = basename($_SERVER['PHP_SELF']);
             } else {
                 document.documentElement.classList.remove('dark');
             }
+            var savedZoom = localStorage.getItem('securefaculty_zoom') || '1.06';
+            document.documentElement.style.zoom = savedZoom;
         })();
     </script>
     <!-- Tailwind CSS CDN -->
@@ -78,6 +80,14 @@ $searchAction = basename($_SERVER['PHP_SELF']);
             scrollbar-color: #475569 #0f172a;
             --oklch-surface-elevated: color-mix(in oklab, oklch(0.22 0.04 255), black 15%);
             --oklch-border-contrast: color-mix(in oklab, oklch(0.42 0.05 255), white 18%);
+        }
+        html {
+            zoom: 1.06; /* Default ergonomic zoom (+6% scale) to eliminate 'distant screen' fatigue */
+        }
+        @media print {
+            html {
+                zoom: 1 !important; /* Retain authentic 1:1 scale on physical paper exports */
+            }
         }
         ::selection {
             background-color: oklch(0.58 0.19 255 / 0.22);
@@ -405,11 +415,11 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                         <span><?= $isDean ? 'Department Vault' : 'Personal Vault' ?></span>
                     </a>
 
-                    <!-- Smart Pipeline -->
+                    <!-- Upload & Scan -->
                     <a href="upload.php"
                        class="<?= $activeNav === 'pipeline' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 transition-all">
                         <i class="fa-solid fa-cloud-arrow-up w-4 text-center"></i>
-                        <span>Smart Pipeline</span>
+                        <span>Upload &amp; Scan</span>
                     </a>
 
                     <!-- Records / Accreditation -->

@@ -23,7 +23,7 @@ class UploadController extends BaseController {
             'isDean' => $isDean,
             'facultyList' => $facultyList,
             'activeNav' => 'pipeline',
-            'pageTitle' => 'Smart Pipeline - H-I-T-L Validation Loop'
+            'pageTitle' => 'Upload & Scan - Certificate Ingestion'
         ]);
     }
 

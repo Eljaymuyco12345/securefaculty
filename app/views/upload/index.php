@@ -2,7 +2,7 @@
 $isDean = $isDean ?? false;
 $facultyList = $facultyList ?? [];
 $activeNav = $activeNav ?? 'pipeline';
-$pageTitle = $pageTitle ?? 'Smart Pipeline - H-I-T-L Validation Loop';
+$pageTitle = $pageTitle ?? 'Upload & Scan - Certificate Ingestion';
 require_once __DIR__ . '/../layouts/layout_start.php';
 ?>
 
@@ -34,9 +34,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pb-2 border-b border-slate-100 dark:border-slate-800/60">
         <div>
             <h2 class="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 tracking-wider uppercase inline-block bg-slate-100 dark:bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                SMART PIPELINE - METADATA EXTRACTION LOOP (H-I-T-L Validation)
+                UPLOAD &amp; SCAN - METADATA EXTRACTION LOOP (H-I-T-L Validation)
             </h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Multi-stage pipeline: Ingestion &rarr; Rasterization &rarr; OCR Extraction &rarr; H-I-T-L Verification &rarr; AES-256 Vault</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Multi-stage workflow: Ingestion &rarr; Rasterization &rarr; OCR Extraction &rarr; H-I-T-L Verification &rarr; AES-256 Vault</p>
         </div>
         <button type="button" onclick="openProgressModal()"
             class="px-3 py-1.5 rounded-lg border border-blue-300 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">

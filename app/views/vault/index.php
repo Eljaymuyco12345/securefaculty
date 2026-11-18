@@ -269,7 +269,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <div>
             <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">No cryptographic records found</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-                <?= $search || $dateFrom || $dateTo || $issuedYear ? 'No records match the selected Issued Date range or keyword.' : 'Ingest your seminars, publications, or certificates via the Smart Pipeline to securely archive them.' ?>
+                <?= $search || $dateFrom || $dateTo || $issuedYear ? 'No records match the selected Issued Date range or keyword.' : 'Ingest your seminars, publications, or certificates via Upload & Scan to securely archive them.' ?>
             </p>
         </div>
         <div class="pt-2 flex items-center justify-center gap-2">

@@ -76,6 +76,32 @@
                     </div>
                 </div>
 
+                <!-- Screen Zoom / Display Scale Setting -->
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80">
+                    <span class="font-semibold text-slate-700 dark:text-slate-200 block mb-1.5 flex items-center justify-between">
+                        <span>Display Scale &amp; Screen Zoom:</span>
+                        <span id="currentZoomBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold">106% (Enlarged)</span>
+                    </span>
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <button type="button" onclick="setSystemZoom('1.0')" id="zoomBtn_100"
+                                class="py-2 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex flex-col items-center justify-center transition-all cursor-pointer">
+                            <span class="font-bold">100%</span>
+                            <span class="text-[9px] text-slate-400">Compact</span>
+                        </button>
+                        <button type="button" onclick="setSystemZoom('1.06')" id="zoomBtn_106"
+                                class="py-2 px-2 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold flex flex-col items-center justify-center transition-all shadow-sm cursor-pointer">
+                            <span class="font-bold">106%</span>
+                            <span class="text-[9px] text-blue-600 dark:text-blue-400 font-semibold">Comfortable</span>
+                        </button>
+                        <button type="button" onclick="setSystemZoom('1.12')" id="zoomBtn_112"
+                                class="py-2 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex flex-col items-center justify-center transition-all cursor-pointer">
+                            <span class="font-bold">112%</span>
+                            <span class="text-[9px] text-slate-400">Presentation</span>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5">Enlarges UI cards, typography, and buttons closer for optimal readability across laptops and projectors.</p>
+                </div>
+
                 <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80">
                     <span class="font-semibold text-slate-700 dark:text-slate-200 block">Database Engine:</span>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5"><?= DB_DRIVER === 'sqlite' ? 'SQLite Active (<code class="text-blue-600 dark:text-blue-400 font-mono">securefaculty.sqlite</code>)' : 'MySQL Production Engine (' . htmlspecialchars(DB_NAME) . ')' ?>. Dual-compatible architecture.</p>
@@ -472,6 +498,41 @@
             const isDark = document.documentElement.classList.contains('dark');
             setTheme(isDark ? 'light' : 'dark');
         }
+
+        // Global System Zoom Controller (+6% Ergonomic Default Scale)
+        function setSystemZoom(scale) {
+            document.documentElement.style.zoom = scale;
+            localStorage.setItem('securefaculty_zoom', scale);
+            updateZoomButtons(scale);
+        }
+
+        function updateZoomButtons(scale) {
+            const s = String(scale || localStorage.getItem('securefaculty_zoom') || '1.06');
+            const badge = document.getElementById('currentZoomBadge');
+            if (badge) {
+                if (s === '1.0' || s === '1') badge.textContent = '100% (Compact)';
+                else if (s === '1.06') badge.textContent = '106% (Comfortable)';
+                else if (s === '1.12') badge.textContent = '112% (Presentation)';
+                else badge.textContent = Math.round(parseFloat(s) * 100) + '%';
+            }
+            ['100', '106', '112'].forEach(val => {
+                const btn = document.getElementById('zoomBtn_' + val);
+                if (!btn) return;
+                const target = val === '100' ? '1.0' : (val === '106' ? '1.06' : '1.12');
+                const isSelected = (s === target) || (val === '100' && (s === '1' || s === '1.0'));
+                if (isSelected) {
+                    btn.className = 'py-2 px-2 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold flex flex-col items-center justify-center transition-all shadow-sm cursor-pointer';
+                } else {
+                    btn.className = 'py-2 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex flex-col items-center justify-center transition-all cursor-pointer';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedZoom = localStorage.getItem('securefaculty_zoom') || '1.06';
+            document.documentElement.style.zoom = savedZoom;
+            updateZoomButtons(savedZoom);
+        });
 
         function setTheme(theme) {
             const meta = document.querySelector('meta[name="color-scheme"]');
