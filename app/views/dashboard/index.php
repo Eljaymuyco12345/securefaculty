@@ -64,37 +64,37 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
 <!-- Permanent Institutional Department Metrics Banner -->
 <div id="institutionalOverviewPanel">
-    <div class="bg-gradient-to-r from-[#0d2342] to-[#1e447b] dark:from-[#09152a] dark:to-[#132c54] text-white rounded-2xl p-5 shadow-md border border-transparent dark:border-slate-800">
-        <div class="flex items-center justify-between pb-3 border-b border-white/10">
+    <div class="bg-gradient-to-r from-[#0d2342] to-[#1e447b] dark:from-[#09152a] dark:to-[#132c54] text-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-transparent dark:border-slate-800">
+        <div class="flex items-center justify-between pb-2.5 border-b border-white/10">
             <div>
-                <h3 class="text-sm font-bold tracking-tight">ISUFST CICI Institutional Repository Telemetry</h3>
-                <p class="text-[11px] text-blue-200 mt-0.5">Accreditation Readiness Overview & Storage Allocation</p>
+                <h3 class="text-xs sm:text-sm font-bold tracking-tight">ISUFST CICI Institutional Repository Telemetry</h3>
+                <p class="text-[10px] sm:text-[11px] text-blue-200 mt-0.5">Accreditation Readiness Overview & Storage Allocation</p>
             </div>
-            <span class="inline-flex items-center gap-1.5 text-[11px] bg-white/10 text-blue-200 px-3 py-1 rounded-full font-mono border border-white/10">
+            <span class="inline-flex items-center gap-1.5 text-[10px] bg-white/10 text-blue-200 px-2.5 py-0.5 rounded-full font-mono border border-white/10">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span>Live Repository Status</span>
             </span>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 text-xs">
-            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 0">
-                <span class="text-blue-200 text-[10px] uppercase font-bold tracking-wider block">Active Faculty</span>
-                <strong class="text-xl font-black tabular-nums block mt-0.5"><?= $metrics['total_faculty'] ?> Members</strong>
-                <span class="text-[10px] text-emerald-300 flex items-center gap-1 mt-1"><i class="fa-solid fa-check"></i> 100% RBAC Covered</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 text-xs">
+            <div class="stagger-item bg-white/10 rounded-lg p-2.5" style="--stagger-i: 0">
+                <span class="text-blue-200 text-[9px] uppercase font-bold tracking-wider block">Active Faculty</span>
+                <strong class="text-base sm:text-lg font-black tabular-nums block mt-0.5"><?= $metrics['total_faculty'] ?> Members</strong>
+                <span class="text-[9px] text-emerald-300 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-check"></i> 100% RBAC Covered</span>
             </div>
-            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 1">
-                <span class="text-blue-200 text-[10px] uppercase font-bold tracking-wider block">Archived Assets</span>
-                <strong class="text-xl font-black tabular-nums block mt-0.5"><?= $metrics['total_records'] ?> Records</strong>
-                <span class="text-[10px] text-blue-300 mt-1 block">AES-256 Encrypted</span>
+            <div class="stagger-item bg-white/10 rounded-lg p-2.5" style="--stagger-i: 1">
+                <span class="text-blue-200 text-[9px] uppercase font-bold tracking-wider block">Archived Assets</span>
+                <strong class="text-base sm:text-lg font-black tabular-nums block mt-0.5"><?= $metrics['total_records'] ?> Records</strong>
+                <span class="text-[9px] text-blue-300 mt-0.5 block">AES-256 Encrypted</span>
             </div>
-            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 2">
-                <span class="text-blue-200 text-[10px] uppercase font-bold tracking-wider block">Encrypted Storage</span>
-                <strong class="text-xl font-black tabular-nums block mt-0.5"><?= $metrics['vault_size_mb'] ?> MB</strong>
-                <span class="text-[10px] text-blue-300 mt-1 block">Volatile RAM Decryption</span>
+            <div class="stagger-item bg-white/10 rounded-lg p-2.5" style="--stagger-i: 2">
+                <span class="text-blue-200 text-[9px] uppercase font-bold tracking-wider block">Encrypted Storage</span>
+                <strong class="text-base sm:text-lg font-black tabular-nums block mt-0.5"><?= $metrics['vault_size_mb'] ?> MB</strong>
+                <span class="text-[9px] text-blue-300 mt-0.5 block">Volatile RAM Decryption</span>
             </div>
-            <div class="stagger-item bg-white/10 rounded-xl p-3" style="--stagger-i: 3">
-                <span class="text-blue-200 text-[10px] uppercase font-bold tracking-wider block">OCR Cloud Quota</span>
-                <strong class="text-xl font-black tabular-nums block mt-0.5"><?= number_format($quota['remaining']) ?></strong>
-                <span class="text-[10px] text-emerald-300 tabular-nums mt-1 block"><?= $quota['percentage'] ?>% Used / 25,000</span>
+            <div class="stagger-item bg-white/10 rounded-lg p-2.5" style="--stagger-i: 3">
+                <span class="text-blue-200 text-[9px] uppercase font-bold tracking-wider block">OCR Cloud Quota</span>
+                <strong class="text-base sm:text-lg font-black tabular-nums block mt-0.5"><?= number_format($quota['remaining']) ?></strong>
+                <span class="text-[9px] text-emerald-300 tabular-nums mt-0.5 block"><?= $quota['percentage'] ?>% Used / 25,000</span>
             </div>
         </div>
     </div>
@@ -227,15 +227,15 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <div class="xl:col-span-4 space-y-4">
 
         <!-- QUOTA MONITOR WIDGET matching Figure 4.3 -->
-        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden transition-colors">
-            <h3 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-3">
+        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 shadow-sm relative overflow-hidden transition-colors">
+            <h3 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-2.5">
                 QUOTA MONITOR
             </h3>
 
             <!-- Gauge + Stats side by side matching Figure 4.3 -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3.5">
                 <!-- Circular Gauge -->
-                <div class="relative w-28 h-28 flex-shrink-0">
+                <div class="relative w-20 h-20 flex-shrink-0">
                     <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                         <path class="text-slate-100 dark:text-slate-800/80" stroke-width="3.5" stroke="currentColor" fill="none"
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -243,17 +243,17 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     </svg>
                     <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="text-xl font-black text-slate-900 dark:text-slate-100"><?= $quota['percentage'] ?>%</span>
-                        <span class="text-[8px] text-slate-400 dark:text-slate-500 font-semibold uppercase">API Usage</span>
+                        <span class="text-base font-black text-slate-900 dark:text-slate-100"><?= $quota['percentage'] ?>%</span>
+                        <span class="text-[7px] text-slate-400 dark:text-slate-500 font-semibold uppercase">API Usage</span>
                     </div>
                 </div>
 
                 <!-- Right-side stats text matching Figure 4.3 -->
-                <div class="text-left space-y-1.5">
+                <div class="text-left space-y-1">
                     <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-snug font-medium">
                         Real-Time Sync<br>with Cloud Engine<br>Quota Status
                     </p>
-                    <p class="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <p class="text-[11px] font-bold text-slate-800 dark:text-slate-200">
                         API Quota Remaining:
                     </p>
                     <p class="text-xs font-black text-[#1e58a8] dark:text-blue-400">
@@ -264,9 +264,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </div>
 
             <!-- Green Secure Button -->
-            <div class="mt-3">
+            <div class="mt-2.5">
                 <button type="button" onclick="showQuotaSecureDetails()"
-                        class="w-full py-2 px-3 rounded-full bg-[#1da055] hover:bg-[#188c49] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                        class="w-full py-1.5 px-3 rounded-full bg-[#1da055] hover:bg-[#188c49] text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                     <i class="fa-solid fa-check text-[11px]"></i>
                     <span>Quota Secure (Click to Inspect)</span>
                 </button>
@@ -274,7 +274,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </div>
 
         <!-- ADVANCED SEARCH WIDGET matching Figure 4.3 -->
-        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm text-xs space-y-3 transition-colors">
+        <div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 shadow-sm text-xs space-y-2.5 transition-colors">
             <div class="flex items-center justify-between">
                 <h3 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                     ADVANCED SEARCH
@@ -295,7 +295,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 }
             ?>
             <div class="relative" id="advFacultyComboboxWrapper">
-                <label for="advFacultyName" class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Faculty Name (Combobox)</label>
+                <label for="advFacultyName" class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-0.5">Faculty Name (Combobox)</label>
                 <div class="relative">
                     <input type="text" id="advFacultyName"
                         role="combobox"
@@ -328,7 +328,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
             <!-- Date Range & Action -->
             <div>
-                <label class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">Date Range & Action</label>
+                <label class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-0.5">Date Range & Action</label>
                 <div class="flex items-center gap-2">
                     <input type="date" id="advDate" value="2026-05-07"
                         class="flex-1 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
@@ -342,40 +342,40 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </div>
 
             <!-- Two-column tag pills matching Figure 4.3 -->
-            <div class="grid grid-cols-2 gap-x-3 gap-y-1">
+            <div class="grid grid-cols-2 gap-x-2 gap-y-1">
                 <div class="space-y-1">
                     <button type="button" onclick="toggleTag(this, 'cat')" data-val="Research"
-                            class="adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         Research Publication
                     </button>
                     <button type="button" onclick="toggleTag(this, 'cat')" data-val="Service"
-                            class="adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         Service
                     </button>
                     <button type="button" onclick="toggleTag(this, 'cat')" data-val="Training"
-                            class="adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         Training
                     </button>
                     <button type="button" onclick="toggleTag(this, 'cat')" data-val="Education"
-                            class="adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         Education
                     </button>
                 </div>
                 <div class="space-y-1">
                     <button type="button" onclick="toggleTag(this, 'act')" data-val="Approve"
-                            class="adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         Approve
                     </button>
                     <button type="button" onclick="toggleTag(this, 'act')" data-val="Reject"
-                            class="adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         Reject
                     </button>
                     <button type="button" onclick="toggleTag(this, 'act')" data-val="Create"
-                            class="adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         Create
                     </button>
                     <button type="button" onclick="toggleTag(this, 'act')" data-val="Delete"
-                            class="adv-tag w-full text-left px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            class="adv-tag w-full text-left px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         Delete
                     </button>
                 </div>
@@ -383,7 +383,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
             <!-- Search Button -->
             <button type="button" onclick="executeAdvancedSearch()"
-                    class="w-full py-2 bg-[#1e58a8] hover:bg-[#18488a] text-white rounded-lg font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                    class="w-full py-1.5 bg-[#1e58a8] hover:bg-[#18488a] text-white rounded-lg font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-magnifying-glass text-xs"></i>
                 <span>Execute Filtered Search</span>
             </button>

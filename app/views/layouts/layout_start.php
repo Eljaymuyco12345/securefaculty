@@ -37,7 +37,11 @@ $searchAction = basename($_SERVER['PHP_SELF']);
             } else {
                 document.documentElement.classList.remove('dark');
             }
-            var savedZoom = localStorage.getItem('securefaculty_zoom') || '1.12';
+            var savedZoom = localStorage.getItem('securefaculty_zoom');
+            if (!savedZoom || savedZoom === '1.12') {
+                savedZoom = '1.07';
+                localStorage.setItem('securefaculty_zoom', '1.07');
+            }
             document.documentElement.style.zoom = savedZoom;
         })();
     </script>
@@ -82,10 +86,12 @@ $searchAction = basename($_SERVER['PHP_SELF']);
             --oklch-border-contrast: color-mix(in oklab, oklch(0.42 0.05 255), white 18%);
         }
         html {
-            zoom: 1.12; /* Default ergonomic zoom (+12% scale) for comfortable readability across desktop displays */
+            font-size: 16px; /* Calibrated typography for crisp readability across laptops */
+            zoom: 1.07; /* Standard 107% ergonomic zoom */
         }
         @media print {
             html {
+                font-size: 16px !important;
                 zoom: 1 !important; /* Retain authentic 1:1 scale on physical paper exports */
             }
         }
@@ -321,7 +327,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
         }
     </style>
 </head>
-<body class="bg-[#f0f4f8] dark:bg-[#081225] text-slate-800 dark:text-slate-100 h-screen overflow-hidden flex flex-col font-sans antialiased">
+<body class="bg-[#f0f4f8] dark:bg-[#081225] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans antialiased">
 
     <!-- Real-Time Network & Offline Status Banner (Item 11 Option A) -->
     <div id="system-offline-banner" class="hidden fixed top-0 inset-x-0 z-[100] px-4 py-2 text-xs font-semibold shadow-md flex items-center justify-between transition-all duration-300">
@@ -338,14 +344,14 @@ $searchAction = basename($_SERVER['PHP_SELF']);
     <div id="sidebar-backdrop" onclick="toggleSidebar(false)"
          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
 
-    <div class="flex-1 flex overflow-hidden relative min-h-0">
+    <div class="flex-1 flex relative">
 
-        <!-- Unified Left Navy Sidebar (Fixed to Viewport & Never Extends on Long Content) -->
+        <!-- Unified Left Navy Sidebar (Fixed to Viewport & Fits All Displays) -->
         <aside id="main-sidebar"
-               class="fixed inset-y-0 left-0 z-50 w-64 lg:sticky lg:top-0 lg:left-0 lg:w-56 h-screen max-h-screen sidebar-navy safe-area-sidebar select-none text-slate-300 flex flex-col justify-between flex-shrink-0 border-r border-[#08182f] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
+               class="fixed inset-y-0 left-0 z-40 w-56 sidebar-navy safe-area-sidebar select-none text-slate-300 flex flex-col justify-between flex-shrink-0 border-r border-[#08182f] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
             <div class="flex-1 min-h-0 flex flex-col overflow-y-auto">
                 <!-- Brand / Logo matching Figure 4.3 with Official ISUFST Seal -->
-                <div class="h-14 px-4 flex items-center justify-between border-b border-[#14335e]">
+                <div class="h-12 px-3.5 flex items-center justify-between border-b border-[#14335e] flex-shrink-0">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-lg bg-white p-0.5 flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden">
                             <img src="assets/images/isufst_logo.png" alt="ISUFST Logo" class="max-w-full max-h-full object-contain">
@@ -362,8 +368,8 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                 </div>
 
                 <!-- Role Badge Indicator -->
-                <div class="px-3 pt-3 pb-1">
-                    <div class="px-2.5 py-1.5 rounded-lg bg-[#14335e]/70 border border-[#1e447b] flex items-center justify-between text-[11px]">
+                <div class="px-3 pt-2 pb-1 flex-shrink-0">
+                    <div class="px-2 py-1 rounded-lg bg-[#14335e]/70 border border-[#1e447b] flex items-center justify-between text-[11px]">
                         <span class="text-slate-300 flex items-center gap-1.5 truncate">
                             <span class="w-2 h-2 rounded-full <?= $isDean ? 'bg-indigo-400' : 'bg-emerald-400' ?>"></span>
                             <strong class="text-white truncate"><?= $isDean ? 'Dean Officer' : 'Faculty Member' ?></strong>
@@ -375,68 +381,68 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                 </div>
 
                 <!-- Navigation Links -->
-                <nav class="py-2 px-2 space-y-1 text-xs">
+                <nav class="py-1 px-2 space-y-0.5 text-xs">
 
                     <?php if ($isDean): ?>
-                        <div class="px-2.5 pt-2 pb-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div class="px-2.5 pt-1.5 pb-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                             Dean Administration
                         </div>
 
                         <!-- Dashboard -->
                         <a href="dashboard.php"
-                           class="<?= $activeNav === 'dashboard' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 transition-all">
+                           class="<?= $activeNav === 'dashboard' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-slate-300 transition-all">
                             <i class="fa-solid fa-chart-pie w-4 text-center"></i>
                             <span>Dean's Dashboard</span>
                         </a>
 
                         <!-- User Management -->
                         <a href="users.php"
-                           class="<?= $activeNav === 'users' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 transition-all">
+                           class="<?= $activeNav === 'users' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-slate-300 transition-all">
                             <i class="fa-solid fa-users-gear w-4 text-center"></i>
                             <span>User Management</span>
                         </a>
 
                         <!-- Audit Ledger -->
                         <a href="audit_logs.php"
-                           class="<?= $activeNav === 'audit' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 transition-all">
+                           class="<?= $activeNav === 'audit' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-slate-300 transition-all">
                             <i class="fa-solid fa-clipboard-check w-4 text-center"></i>
                             <span>Compliance Audit</span>
                         </a>
                     <?php endif; ?>
 
-                    <div class="px-2.5 pt-2 pb-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                    <div class="px-2.5 pt-1.5 pb-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                         Document Repository
                     </div>
 
                     <!-- Personal Digital Vault -->
                     <a href="vault.php"
-                       class="<?= $activeNav === 'certificates' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 transition-all">
+                       class="<?= $activeNav === 'certificates' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-slate-300 transition-all">
                         <i class="fa-solid fa-certificate w-4 text-center"></i>
                         <span><?= $isDean ? 'Department Vault' : 'Personal Vault' ?></span>
                     </a>
 
                     <!-- Upload & Scan -->
                     <a href="upload.php"
-                       class="<?= $activeNav === 'pipeline' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 transition-all">
+                       class="<?= $activeNav === 'pipeline' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-slate-300 transition-all">
                         <i class="fa-solid fa-cloud-arrow-up w-4 text-center"></i>
                         <span>Upload &amp; Scan</span>
                     </a>
 
                     <!-- Records / Accreditation -->
                     <a href="export.php"
-                       class="<?= $activeNav === 'records' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 transition-all">
+                       class="<?= $activeNav === 'records' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-slate-300 transition-all">
                         <i class="fa-solid fa-folder-open w-4 text-center"></i>
                         <span>Accreditation Records</span>
                     </a>
 
                     <?php if (!$isDean): ?>
-                        <div class="px-2.5 pt-3 pb-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div class="px-2.5 pt-1.5 pb-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                             Administrative Suite
                         </div>
 
                         <!-- Locked Dean Items with Informative Tooltip Modal -->
                         <button type="button" onclick="showDeanRestrictedModal('Dean Dashboard')"
-                                class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#14335e]/50 transition-all text-xs text-left">
+                                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#14335e]/50 transition-all text-xs text-left">
                             <span class="flex items-center gap-2.5">
                                 <i class="fa-solid fa-chart-pie w-4 text-center"></i>
                                 <span>Dean's Dashboard</span>
@@ -445,7 +451,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                         </button>
 
                         <button type="button" onclick="showDeanRestrictedModal('User Management')"
-                                class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#14335e]/50 transition-all text-xs text-left">
+                                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#14335e]/50 transition-all text-xs text-left">
                             <span class="flex items-center gap-2.5">
                                 <i class="fa-solid fa-users-gear w-4 text-center"></i>
                                 <span>User Management</span>
@@ -454,7 +460,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                         </button>
 
                         <button type="button" onclick="showDeanRestrictedModal('Compliance Audit Ledger')"
-                                class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#14335e]/50 transition-all text-xs text-left">
+                                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#14335e]/50 transition-all text-xs text-left">
                             <span class="flex items-center gap-2.5">
                                 <i class="fa-solid fa-clipboard-check w-4 text-center"></i>
                                 <span>Compliance Audit</span>
@@ -463,13 +469,13 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                         </button>
                     <?php endif; ?>
 
-                    <div class="px-2.5 pt-3 pb-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                    <div class="px-2.5 pt-1.5 pb-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                         System Configuration
                     </div>
 
                     <!-- Settings -->
                     <a href="javascript:void(0)" onclick="openSettingsModal()"
-                       class="<?= $activeNav === 'settings' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-300 transition-all">
+                       class="<?= $activeNav === 'settings' ? 'sidebar-active' : 'sidebar-hover' ?> flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-slate-300 transition-all">
                         <i class="fa-solid fa-gear w-4 text-center"></i>
                         <span>System Settings</span>
                     </a>
@@ -477,7 +483,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
             </div>
 
             <!-- Bottom User Card & Sign Out matching Figure 4.3 -->
-            <div class="p-3 border-t border-[#14335e] space-y-2 flex-shrink-0">
+            <div class="p-2.5 border-t border-[#14335e] flex-shrink-0">
                 <a href="logout.php"
                    class="flex items-center justify-between px-3 py-2 rounded-lg bg-[#14335e]/60 hover:bg-[#14335e] text-xs text-slate-300 hover:text-white transition-all">
                     <span class="flex items-center gap-2">
@@ -490,7 +496,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
         </aside>
 
         <!-- Right Main Workspace -->
-        <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
+        <div class="flex-1 flex flex-col min-w-0 lg:pl-56">
 
             <!-- Unified Top Header Bar matching Figure 4.3 -->
             <header class="h-14 bg-white dark:bg-[#0c1830] border-b border-slate-200 dark:border-slate-800/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm flex-shrink-0 transition-colors">
