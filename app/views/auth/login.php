@@ -26,7 +26,7 @@ $msg = $msg ?? null;
             } else {
                 document.documentElement.classList.remove('dark');
             }
-            var zoom = localStorage.getItem('securefaculty_zoom') || '1.06';
+            var zoom = localStorage.getItem('securefaculty_zoom') || '1.12';
             document.documentElement.style.zoom = zoom;
         })();
     </script>
@@ -57,7 +57,7 @@ $msg = $msg ?? null;
             accent-color: oklch(0.68 0.17 250);
         }
         html {
-            zoom: 1.06;
+            zoom: 1.12;
         }
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;

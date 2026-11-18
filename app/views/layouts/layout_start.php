@@ -37,7 +37,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
             } else {
                 document.documentElement.classList.remove('dark');
             }
-            var savedZoom = localStorage.getItem('securefaculty_zoom') || '1.06';
+            var savedZoom = localStorage.getItem('securefaculty_zoom') || '1.12';
             document.documentElement.style.zoom = savedZoom;
         })();
     </script>
@@ -82,7 +82,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
             --oklch-border-contrast: color-mix(in oklab, oklch(0.42 0.05 255), white 18%);
         }
         html {
-            zoom: 1.06; /* Default ergonomic zoom (+6% scale) to eliminate 'distant screen' fatigue */
+            zoom: 1.12; /* Default ergonomic zoom (+12% scale) for comfortable readability across desktop displays */
         }
         @media print {
             html {
@@ -321,7 +321,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
         }
     </style>
 </head>
-<body class="bg-[#f0f4f8] dark:bg-[#081225] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+<body class="bg-[#f0f4f8] dark:bg-[#081225] text-slate-800 dark:text-slate-100 h-screen overflow-hidden flex flex-col font-sans antialiased">
 
     <!-- Real-Time Network & Offline Status Banner (Item 11 Option A) -->
     <div id="system-offline-banner" class="hidden fixed top-0 inset-x-0 z-[100] px-4 py-2 text-xs font-semibold shadow-md flex items-center justify-between transition-all duration-300">
@@ -338,12 +338,12 @@ $searchAction = basename($_SERVER['PHP_SELF']);
     <div id="sidebar-backdrop" onclick="toggleSidebar(false)"
          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
 
-    <div class="flex-1 flex overflow-hidden relative">
+    <div class="flex-1 flex overflow-hidden relative min-h-0">
 
-        <!-- Unified Left Navy Sidebar (Fixed & Consistent across ALL pages) -->
+        <!-- Unified Left Navy Sidebar (Fixed to Viewport & Never Extends on Long Content) -->
         <aside id="main-sidebar"
-               class="fixed inset-y-0 left-0 z-50 w-64 lg:static lg:w-56 sidebar-navy safe-area-sidebar select-none text-slate-300 flex flex-col justify-between flex-shrink-0 border-r border-[#08182f] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
-            <div>
+               class="fixed inset-y-0 left-0 z-50 w-64 lg:sticky lg:top-0 lg:left-0 lg:w-56 h-screen max-h-screen sidebar-navy safe-area-sidebar select-none text-slate-300 flex flex-col justify-between flex-shrink-0 border-r border-[#08182f] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
+            <div class="flex-1 min-h-0 flex flex-col overflow-y-auto">
                 <!-- Brand / Logo matching Figure 4.3 with Official ISUFST Seal -->
                 <div class="h-14 px-4 flex items-center justify-between border-b border-[#14335e]">
                     <div class="flex items-center gap-2.5">
@@ -477,7 +477,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
             </div>
 
             <!-- Bottom User Card & Sign Out matching Figure 4.3 -->
-            <div class="p-3 border-t border-[#14335e] space-y-2">
+            <div class="p-3 border-t border-[#14335e] space-y-2 flex-shrink-0">
                 <a href="logout.php"
                    class="flex items-center justify-between px-3 py-2 rounded-lg bg-[#14335e]/60 hover:bg-[#14335e] text-xs text-slate-300 hover:text-white transition-all">
                     <span class="flex items-center gap-2">
@@ -490,7 +490,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
         </aside>
 
         <!-- Right Main Workspace -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <div class="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
 
             <!-- Unified Top Header Bar matching Figure 4.3 -->
             <header class="h-14 bg-white dark:bg-[#0c1830] border-b border-slate-200 dark:border-slate-800/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm flex-shrink-0 transition-colors">

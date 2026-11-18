@@ -80,7 +80,7 @@
                 <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80">
                     <span class="font-semibold text-slate-700 dark:text-slate-200 block mb-1.5 flex items-center justify-between">
                         <span>Display Scale &amp; Screen Zoom:</span>
-                        <span id="currentZoomBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold">106% (Enlarged)</span>
+                        <span id="currentZoomBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold">112% (Ergonomic)</span>
                     </span>
                     <div class="grid grid-cols-3 gap-2 text-xs">
                         <button type="button" onclick="setSystemZoom('1.0')" id="zoomBtn_100"
@@ -89,14 +89,14 @@
                             <span class="text-[9px] text-slate-400">Compact</span>
                         </button>
                         <button type="button" onclick="setSystemZoom('1.06')" id="zoomBtn_106"
-                                class="py-2 px-2 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold flex flex-col items-center justify-center transition-all shadow-sm cursor-pointer">
+                                class="py-2 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex flex-col items-center justify-center transition-all cursor-pointer">
                             <span class="font-bold">106%</span>
-                            <span class="text-[9px] text-blue-600 dark:text-blue-400 font-semibold">Comfortable</span>
+                            <span class="text-[9px] text-slate-400">Medium</span>
                         </button>
                         <button type="button" onclick="setSystemZoom('1.12')" id="zoomBtn_112"
-                                class="py-2 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex flex-col items-center justify-center transition-all cursor-pointer">
+                                class="py-2 px-2 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold flex flex-col items-center justify-center transition-all shadow-sm cursor-pointer">
                             <span class="font-bold">112%</span>
-                            <span class="text-[9px] text-slate-400">Presentation</span>
+                            <span class="text-[9px] text-blue-600 dark:text-blue-400 font-semibold">Ergonomic</span>
                         </button>
                     </div>
                     <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5">Enlarges UI cards, typography, and buttons closer for optimal readability across laptops and projectors.</p>
@@ -507,12 +507,12 @@
         }
 
         function updateZoomButtons(scale) {
-            const s = String(scale || localStorage.getItem('securefaculty_zoom') || '1.06');
+            const s = String(scale || localStorage.getItem('securefaculty_zoom') || '1.12');
             const badge = document.getElementById('currentZoomBadge');
             if (badge) {
                 if (s === '1.0' || s === '1') badge.textContent = '100% (Compact)';
-                else if (s === '1.06') badge.textContent = '106% (Comfortable)';
-                else if (s === '1.12') badge.textContent = '112% (Presentation)';
+                else if (s === '1.06') badge.textContent = '106% (Medium)';
+                else if (s === '1.12') badge.textContent = '112% (Ergonomic)';
                 else badge.textContent = Math.round(parseFloat(s) * 100) + '%';
             }
             ['100', '106', '112'].forEach(val => {
@@ -529,7 +529,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const savedZoom = localStorage.getItem('securefaculty_zoom') || '1.06';
+            const savedZoom = localStorage.getItem('securefaculty_zoom') || '1.12';
             document.documentElement.style.zoom = savedZoom;
             updateZoomButtons(savedZoom);
         });
