@@ -164,8 +164,8 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 <span>No audit transactions match the specified filter criteria across the database.</span>
                                 <div class="mt-3">
                                     <a href="dashboard.php" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline">
-                                        <i class="fa-solid fa-rotate-left"></i>
-                                        <span>Reset Filters</span>
+                                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                                        <span>Refresh Ledger</span>
                                     </a>
                                 </div>
                             </td>
@@ -309,10 +309,10 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         <p class="text-[10px] text-slate-400">Search &amp; filter entire audit history across all pages</p>
                     </div>
                 </div>
-                <a href="dashboard.php" title="Reset all search filters"
-                   class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer">
-                    <i class="fa-solid fa-rotate-left text-[10px]"></i>
-                    <span>Reset</span>
+                <a href="dashboard.php" title="Refresh ledger and clear active filters"
+                   class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-arrows-rotate text-[11px]"></i>
+                    <span>Refresh</span>
                 </a>
             </div>
 

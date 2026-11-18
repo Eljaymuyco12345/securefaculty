@@ -58,6 +58,13 @@ class CategoryService {
             'short_label' => 'Academic Milestone',
             'icon' => 'fa-solid fa-award',
             'badge_bg' => 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800'
+        ],
+        'Other' => [
+            'key' => 'Other',
+            'label' => 'Other Academic Documents',
+            'short_label' => 'Other',
+            'icon' => 'fa-solid fa-file-circle-question',
+            'badge_bg' => 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
         ]
     ];
 
@@ -66,6 +73,9 @@ class CategoryService {
      */
     public static function normalize(string $category): string {
         $c = strtolower(trim($category));
+        if (str_starts_with($c, 'other')) {
+            return 'Other';
+        }
         $aliasMap = [
             'research' => 'Research Publication',
             'research publication' => 'Research Publication',

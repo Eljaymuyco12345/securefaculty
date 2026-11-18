@@ -291,7 +291,7 @@ Upload a file above to extract metadata.</div>
 
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Category:</label>
-                    <select id="field_category"
+                    <select id="field_category" onchange="handleHitlCategoryChange(this.value)"
                         class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
                         <option value="Research Publication" selected>Research Publication</option>
                         <option value="Instructional Material">Instructional Material / Course Module</option>
@@ -300,7 +300,16 @@ Upload a file above to extract metadata.</div>
                         <option value="Workshop">Workshop</option>
                         <option value="Award">Award / Recognition</option>
                         <option value="Academic Milestone">Academic Milestone / Appointment</option>
+                        <option value="Other">Other</option>
                     </select>
+                </div>
+
+                <div id="other_category_container" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Specify Document Type / Notes:</label>
+                    <input type="text" id="field_category_other"
+                        placeholder="e.g. Guest Speaker Plaque, Board Resolution..."
+                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500">
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Categorized under "Other" with your custom specification.</p>
                 </div>
 
                 <div>
@@ -666,6 +675,36 @@ Upload a file above to extract metadata.</div>
         if (box) box.classList.add('hidden');
         if (telemetryState.currentStage <= 2) {
             resetPipelineToDefault();
+        }
+    }
+
+    function handleHitlCategoryChange(val) {
+        const container = document.getElementById('other_category_container');
+        if (!container) return;
+        if (val === 'Other') {
+            container.classList.remove('hidden');
+            document.getElementById('field_category_other')?.focus();
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+
+    function setHitlCategoryValue(val) {
+        const catSelect = document.getElementById('field_category');
+        const otherContainer = document.getElementById('other_category_container');
+        const otherInput = document.getElementById('field_category_other');
+        if (!catSelect) return;
+
+        if (val && val.toLowerCase().startsWith('other')) {
+            catSelect.value = 'Other';
+            if (otherContainer) otherContainer.classList.remove('hidden');
+            if (otherInput) {
+                otherInput.value = val.includes(':') ? val.split(':').slice(1).join(':').trim() : '';
+            }
+        } else {
+            catSelect.value = val || 'Seminar';
+            if (otherContainer) otherContainer.classList.add('hidden');
+            if (otherInput) otherInput.value = '';
         }
     }
 
@@ -1083,7 +1122,7 @@ Upload a file above to extract metadata.</div>
             document.getElementById('field_cert_number').value = consoleObj.CertNo;
             document.getElementById('field_date').value = consoleObj.Date;
             document.getElementById('field_issuer').value = consoleObj.Issuer;
-            document.getElementById('field_category').value = consoleObj.Type;
+            setHitlCategoryValue(consoleObj.Type);
             setDateDetectionStatus(consoleObj.Date);
 
             document.getElementById('duplicate-warning-box').classList.add('hidden');
@@ -1248,7 +1287,7 @@ Upload a file above to extract metadata.</div>
             document.getElementById('field_title').value = data.metadata.title;
             document.getElementById('field_date').value = data.metadata.date_issued || '';
             document.getElementById('field_issuer').value = data.metadata.issuer;
-            document.getElementById('field_category').value = data.metadata.category;
+            setHitlCategoryValue(data.metadata.category);
             document.getElementById('field_cert_number').value = data.metadata.cert_number || '';
             setDateDetectionStatus(data.metadata.date_issued);
 
@@ -1453,7 +1492,7 @@ Upload a file above to extract metadata.</div>
         document.getElementById('field_cert_number').value = item.metadata?.cert_number || '';
         document.getElementById('field_date').value = item.metadata?.date_issued || '';
         document.getElementById('field_issuer').value = item.metadata?.issuer || '';
-        document.getElementById('field_category').value = item.metadata?.category || 'Seminar';
+        setHitlCategoryValue(item.metadata?.category);
         setDateDetectionStatus(item.metadata?.date_issued);
 
         // Update confidence badge for selected batch item
@@ -1606,6 +1645,12 @@ Upload a file above to extract metadata.</div>
         }
 
         const tempFile = document.getElementById('temp_filename').value;
+        let effectiveCategory = document.getElementById('field_category').value;
+        if (effectiveCategory === 'Other') {
+            const otherCustom = (document.getElementById('field_category_other')?.value || '').trim();
+            effectiveCategory = otherCustom ? ('Other: ' + otherCustom) : 'Other';
+        }
+
         const payload = {
             temp_filename: tempFile || 'sample.docx',
             original_name: document.getElementById('original_name').value || 'Certificate_Sample.docx',
@@ -1617,7 +1662,7 @@ Upload a file above to extract metadata.</div>
             cert_number: certNumber,
             date_issued: dateIssued,
             issuer: issuer,
-            category: document.getElementById('field_category').value,
+            category: effectiveCategory,
             force_duplicate: forceDup,
             csrf_token: window.CSRF_TOKEN || ''
         };

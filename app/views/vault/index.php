@@ -608,10 +608,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         if (ids.length === 0) return;
 
         showSystemConfirm({
-            title: 'Confirm Bulk Cryptographic Deletion',
-            message: `Are you sure you wish to permanently remove ${ids.length} selected certificate record(s) from your ledger? Primary author files will have their encrypted payloads purged from disk, while co-authored files will disassociate your authorship without affecting other co-authors. All actions are immutably logged in the audit ledger.`,
+            title: 'Delete Selected Documents?',
+            message: `Are you sure you want to delete <strong>${ids.length} selected document(s)</strong> from the vault?`,
             type: 'danger',
-            confirmText: `Yes, Delete ${ids.length} Records`,
+            confirmText: `Delete ${ids.length} Documents`,
+            cancelText: 'Cancel',
             onConfirm: function() {
                 const form = document.createElement('form');
                 form.method = 'POST';
@@ -640,20 +641,22 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     function confirmDelete(id, title, isCoAuthor = false, leadAuthor = '') {
         if (isCoAuthor) {
             showSystemConfirm({
-                title: 'Remove Co-Authored Document',
-                message: `You are listed as a co-author on <strong>"${title}"</strong>.<br><br>Removing this record will <strong>remove it from your personal vault</strong>. The original uploaded document and cryptographic archive owned by lead author <strong>${leadAuthor || 'the uploader'}</strong> will <strong>NOT</strong> be deleted.`,
+                title: 'Remove from Vault?',
+                message: `Remove <strong>"${title}"</strong> from your personal vault? The original file will remain in the lead author's vault.`,
                 type: 'warning',
-                confirmText: 'Yes, Remove from My Vault',
+                confirmText: 'Remove from Vault',
+                cancelText: 'Cancel',
                 onConfirm: function() {
                     executeDeletePost(id);
                 }
             });
         } else {
             showSystemConfirm({
-                title: 'Confirm Cryptographic Removal',
-                message: `Are you sure you wish to permanently remove "${title}" from the encrypted repository? This action purges the AES-256 ciphertext from disk and is logged in the compliance audit ledger.`,
+                title: 'Delete Document?',
+                message: `Are you sure you want to permanently delete <strong>"${title}"</strong>? This will remove the file from the vault.`,
                 type: 'danger',
-                confirmText: 'Yes, Permanently Delete',
+                confirmText: 'Delete Document',
+                cancelText: 'Cancel',
                 onConfirm: function() {
                     executeDeletePost(id);
                 }
