@@ -206,16 +206,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             </td>
                             <td class="py-2.5 px-3 text-slate-700 dark:text-slate-300 font-medium"><?= htmlspecialchars($affectedRecord) ?></td>
                             <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400 font-mono"><?= !empty($log['ip_address']) ? htmlspecialchars($log['ip_address']) : '<span class="text-rose-500 italic text-[10px]">Unrecorded / Void</span>' ?></td>
-                            <td class="py-2.5 px-3 text-center">
+                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
                                 <?php if ($isRecordValid): ?>
-                                    <span class="inline-flex items-center gap-1.5 text-[10px] text-blue-600 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/60"
+                                    <span class="inline-flex items-center gap-1.5 text-[10px] text-blue-600 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/60 whitespace-nowrap"
                                           title="SHA-256 Cryptographic Seal: <?= $entryHash ?> (Log Entry Intact)">
                                         <i class="fa-solid fa-lock text-[9px] text-blue-500"></i>
                                         <span>Verified</span>
                                         <span class="font-mono text-[9px] opacity-70">#<?= $shortHash ?></span>
                                     </span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center gap-1.5 text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/60 ring-1 ring-rose-500/20 shadow-sm"
+                                    <span class="inline-flex items-center gap-1.5 text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/60 ring-1 ring-rose-500/20 shadow-sm whitespace-nowrap"
                                           title="Integrity Alert: Cryptographic seal broken or unverified record attributes">
                                         <i class="fa-solid fa-triangle-exclamation text-[9px] text-rose-500"></i>
                                         <span>Unverified</span>
@@ -241,7 +241,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <div class="flex items-center gap-1 font-mono text-[10px]">
             <?php if ($page > 1): ?>
                 <a href="audit_logs.php?page=<?= $page - 1 ?><?= $actionFilter ? '&action=' . urlencode($actionFilter) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?>"
-                   class="px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer">&lt;</a>
+                   class="min-w-[32px] sm:min-w-[28px] min-h-[36px] sm:min-h-[28px] px-2 py-1 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer">&lt;</a>
             <?php endif; ?>
 
             <?php
@@ -251,12 +251,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             ?>
             <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                 <a href="audit_logs.php?page=<?= $i ?><?= $actionFilter ? '&action=' . urlencode($actionFilter) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?>"
-                   class="px-1.5 py-0.5 rounded <?= $i === $page ? 'bg-[#0d2342] text-white font-bold' : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200' ?> cursor-pointer"><?= $i ?></a>
+                   class="min-w-[32px] sm:min-w-[28px] min-h-[36px] sm:min-h-[28px] px-2 py-1 flex items-center justify-center rounded <?= $i === $page ? 'bg-[#0d2342] text-white font-bold' : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200' ?> cursor-pointer"><?= $i ?></a>
             <?php endfor; ?>
 
             <?php if ($page < $totalPages): ?>
                 <a href="audit_logs.php?page=<?= $page + 1 ?><?= $actionFilter ? '&action=' . urlencode($actionFilter) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?>"
-                   class="px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer">&gt;</a>
+                   class="min-w-[32px] sm:min-w-[28px] min-h-[36px] sm:min-h-[28px] px-2 py-1 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 cursor-pointer">&gt;</a>
             <?php endif; ?>
         </div>
         <?php endif; ?>

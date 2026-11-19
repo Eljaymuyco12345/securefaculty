@@ -383,7 +383,7 @@ Upload a file above to extract metadata.</div>
     </div>
 
     <!-- Batch ZIP Review Work Area (Revealed when a ZIP archive is ingested) -->
-    <div id="batch-work-area" class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-300 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-4 hidden">
+    <div id="batch-work-area" class="min-w-0 max-w-full overflow-hidden bg-white dark:bg-[#111c36] rounded-xl border border-slate-300 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-4 hidden">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
             <div>
                 <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">

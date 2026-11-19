@@ -186,7 +186,7 @@
     </div>
 
     <!-- 4. Floating System Guide & Tutorial Assistant (FAB) -->
-    <div id="system-tutorial-fab" class="fixed bottom-6 right-6 z-40 print:hidden">
+    <div id="system-tutorial-fab" class="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 print:hidden">
         <button type="button" onclick="openSystemTutorial()"
                 title="Open SecureFaculty System Guide & Interactive Tutorial"
                 class="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-[#0d2342] via-[#14335e] to-[#1e447b] dark:from-blue-600 dark:via-blue-500 dark:to-indigo-600 text-white shadow-2xl hover:shadow-blue-500/30 border-2 border-white/20 hover:border-white/50 hover:scale-105 active:scale-95 transition-all cursor-pointer">
@@ -221,7 +221,7 @@
             </div>
 
             <!-- Tab Navigation Bar -->
-            <div class="px-4 pt-3 pb-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 overflow-x-auto flex gap-2 flex-shrink-0">
+            <div class="px-4 pt-3 pb-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 overflow-x-auto flex gap-2 flex-shrink-0 touch-pan-x scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600" style="scrollbar-width: thin; -webkit-overflow-scrolling: touch;">
                 <button type="button" onclick="switchTutorialTab('overview')" data-tab="overview"
                         class="tut-tab-btn whitespace-nowrap px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold bg-[#0d2342] dark:bg-blue-600 text-white shadow-sm flex items-center gap-2 transition-all">
                     <i class="fa-solid fa-compass"></i>
@@ -587,7 +587,16 @@
                     csrf_token: window.CSRF_TOKEN || ''
                 })
             })
-            .then(r => r.json())
+            .then(async r => {
+                const data = await r.json().catch(() => ({}));
+                if (r.status === 403) {
+                    throw new Error(data.message || 'Session or CSRF security token has expired. Please refresh the page or sign in again.');
+                }
+                if (!r.ok) {
+                    throw new Error(data.message || `Request failed with status code ${r.status}`);
+                }
+                return data;
+            })
             .then(data => {
                 if (btn) btn.disabled = false;
                 if (data.status === 'success') {
@@ -609,7 +618,7 @@
             .catch(err => {
                 if (btn) btn.disabled = false;
                 showSystemAlert({
-                    title: 'Network Error',
+                    title: 'Security / Session Error',
                     message: err.message,
                     type: 'error'
                 });

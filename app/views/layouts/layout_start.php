@@ -87,7 +87,11 @@ $searchAction = basename($_SERVER['PHP_SELF']);
         }
         html {
             font-size: 17.5px; /* Larger base typography for enhanced readability across all pages */
-            zoom: 1.07; /* Standard 107% ergonomic zoom */
+        }
+        @media (min-width: 1024px) {
+            html {
+                zoom: 1.07; /* Standard 107% ergonomic zoom restricted to desktop */
+            }
         }
         /* Global Legibility Floor: Elevate tiny pixel-based labels across all views */
         .text-\[8px\], .text-\[9px\] {
@@ -518,7 +522,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                     </button>
 
                     <!-- Global Functional Search Bar -->
-                    <form method="GET" action="<?= htmlspecialchars($searchAction) ?>" class="relative w-48 sm:w-80">
+                    <form method="GET" action="<?= htmlspecialchars($searchAction) ?>" class="relative w-28 xs:w-36 sm:w-64 md:w-80">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                             <i class="fa-solid fa-magnifying-glass text-sm"></i>
                         </div>
@@ -554,7 +558,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
 
                         <!-- Notification Dropdown Menu -->
                         <div id="notifications-dropdown"
-                             class="hidden origin-top-right-menu absolute right-0 mt-2 w-80 bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl py-2 z-50 text-xs">
+                             class="hidden origin-top-right-menu absolute right-0 mt-2 w-[calc(100vw-1.5rem)] sm:w-80 max-w-[340px] bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl py-2 z-50 text-xs">
                             <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                                 <span class="font-bold text-slate-900 dark:text-slate-100">System Telemetry & Alerts</span>
                                 <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">Online</span>
@@ -605,7 +609,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
 
                         <!-- User Profile Dropdown Menu -->
                         <div id="user-dropdown"
-                             class="hidden origin-top-right-menu absolute right-0 mt-2 w-72 bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl py-2 z-50 text-sm">
+                             class="hidden origin-top-right-menu absolute right-0 mt-2 w-[calc(100vw-1.5rem)] sm:w-72 max-w-[340px] bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl py-2 z-50 text-sm">
                             <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                                 <div class="flex items-center justify-between gap-2">
                                     <p class="font-bold text-slate-900 dark:text-slate-100 text-sm truncate"><?= htmlspecialchars($currentUser['full_name']) ?></p>

@@ -226,16 +226,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 ?>
                 <?php if ($page > 1): ?>
                     <a href="dashboard.php?page=<?= $page - 1 ?><?= $pageParam ?>"
-                       class="pagination-btn px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                       class="pagination-btn min-w-[32px] sm:min-w-[28px] min-h-[36px] sm:min-h-[28px] px-2 py-1 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                        title="Previous Page">&lt;</a>
                 <?php endif; ?>
                 <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                     <a href="dashboard.php?page=<?= $i ?><?= $pageParam ?>"
-                       class="pagination-btn px-1.5 py-0.5 rounded <?= $i === $page ? 'bg-blue-600 text-white font-bold' : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?> cursor-pointer"><?= $i ?></a>
+                       class="pagination-btn min-w-[32px] sm:min-w-[28px] min-h-[36px] sm:min-h-[28px] px-2 py-1 flex items-center justify-center rounded <?= $i === $page ? 'bg-blue-600 text-white font-bold' : 'border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' ?> cursor-pointer"><?= $i ?></a>
                 <?php endfor; ?>
                 <?php if ($page < $totalPages): ?>
                     <a href="dashboard.php?page=<?= $page + 1 ?><?= $pageParam ?>"
-                       class="pagination-btn px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
+                       class="pagination-btn min-w-[32px] sm:min-w-[28px] min-h-[36px] sm:min-h-[28px] px-2 py-1 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                        title="Next Page">&gt;</a>
                 <?php endif; ?>
             </div>

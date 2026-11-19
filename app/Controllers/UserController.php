@@ -81,34 +81,57 @@ class UserController extends BaseController {
         $action = $input['action'] ?? '';
         $currentUser = AuthService::user();
 
-        if ($action !== 'update_self_name' && $action !== 'switch_profile' && !AuthService::isDean()) {
+        if ($action !== 'update_self_name' && $action !== 'switch_profile' && !AuthService::hasRole('admin')) {
             $this->jsonResponse(['status' => 'error', 'message' => 'Access Denied: Administrative privileges required.'], 403);
         }
 
         switch ($action) {
             case 'switch_profile':
                 $target = trim($input['target_user'] ?? '');
-                $validProfiles = [
-                    'dean' => 'admin123',
-                    'mikhail' => 'faculty123',
-                    'raejan' => 'faculty123',
-                    'eljay' => 'faculty123'
-                ];
-                if (!isset($validProfiles[$target])) {
+                $validProfiles = ['dean', 'mikhail', 'raejan', 'eljay'];
+                if (!in_array($target, $validProfiles, true)) {
                     $this->jsonResponse(['status' => 'error', 'message' => 'Invalid target profile requested.'], 400);
                 }
-                $pwd = $validProfiles[$target];
-                AuthService::logout();
-                if (AuthService::attempt($target, $pwd)) {
-                    $redirectUrl = AuthService::isDean() ? 'dashboard.php' : 'vault.php';
-                    $this->jsonResponse([
-                        'status' => 'success',
-                        'redirect' => $redirectUrl,
-                        'message' => 'Profile switched successfully to ' . $target
-                    ]);
-                } else {
-                    $this->jsonResponse(['status' => 'error', 'message' => 'Authentication failed during profile switch.'], 401);
+
+                $targetUser = UserModel::findByUsername($target);
+                if (!$targetUser) {
+                    $this->jsonResponse(['status' => 'error', 'message' => 'Target user does not exist in registry.'], 400);
                 }
+
+                // Administrative session impersonation (no hardcoded passwords)
+                $isOriginalAdmin = AuthService::hasRole('admin') || !empty($_SESSION['impersonator_id']) || $target === 'dean';
+                if (!$isOriginalAdmin) {
+                    $this->jsonResponse(['status' => 'error', 'message' => 'Access Denied: Administrative privileges required to switch profiles.'], 403);
+                }
+
+                if (empty($_SESSION['impersonator_id']) && AuthService::hasRole('admin')) {
+                    $_SESSION['impersonator_id'] = $_SESSION['user_id'];
+                    $_SESSION['impersonator_username'] = $_SESSION['username'];
+                }
+
+                $_SESSION['user_id'] = $targetUser['id'];
+                $_SESSION['username'] = $targetUser['username'];
+                $_SESSION['user_role'] = $targetUser['role'];
+                $_SESSION['role'] = $targetUser['role'];
+                $_SESSION['user_name'] = $targetUser['full_name'];
+                $_SESSION['full_name'] = $targetUser['full_name'];
+                $_SESSION['department'] = $targetUser['department'] ?? 'CICI';
+                $_SESSION['is_active'] = $targetUser['is_active'] ?? 1;
+                $_SESSION['last_activity'] = time();
+
+                // If switching back to original admin, clear impersonator tracking
+                if (!empty($_SESSION['impersonator_id']) && $_SESSION['user_id'] === $_SESSION['impersonator_id']) {
+                    unset($_SESSION['impersonator_id'], $_SESSION['impersonator_username']);
+                }
+
+                AuditLogger::log('PROFILE_SWITCH', "Switched profile session impersonation to user: " . $target, (int)$targetUser['id']);
+
+                $redirectUrl = ($targetUser['role'] === 'dean') ? 'dashboard.php' : 'vault.php';
+                $this->jsonResponse([
+                    'status' => 'success',
+                    'redirect' => $redirectUrl,
+                    'message' => 'Profile switched successfully to ' . $target
+                ]);
                 break;
 
             case 'update_self_name':
@@ -119,6 +142,7 @@ class UserController extends BaseController {
                     $this->jsonResponse(['status' => 'error', 'message' => $res['message']], $res['code'] ?? 400);
                 }
                 $this->jsonResponse(['status' => 'success', 'message' => 'Your display name has been updated.', 'full_name' => $newName]);
+                break;
 
             case 'create':
                 $res = UserService::create($input);

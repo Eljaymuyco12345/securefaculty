@@ -415,9 +415,9 @@ class CertificateDAO implements CertificateDAOInterface {
 
     public static function incrementQuota(): void {
         $pdo = Database::getConnection();
-        $check = $pdo->prepare("SELECT id FROM api_quotas WHERE service_name = 'OCR_SPACE'");
+        $check = $pdo->prepare("SELECT COUNT(*) FROM api_quotas WHERE service_name = 'OCR_SPACE'");
         $check->execute();
-        if ($check->fetch()) {
+        if ((int)$check->fetchColumn() > 0) {
             $stmt = $pdo->prepare("UPDATE api_quotas SET current_usage = current_usage + 1, last_updated = CURRENT_TIMESTAMP WHERE service_name = 'OCR_SPACE'");
             $stmt->execute();
         } else {
