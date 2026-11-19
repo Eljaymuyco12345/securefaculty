@@ -146,9 +146,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <?php else: ?>
                     <?php foreach ($displayLogs as $log): ?>
                         <?php
-                            $userId = ($log['role'] === 'dean')
-                                ? 'ISUFST001'
-                                : 'ISUFST' . str_pad($log['user_id'] ?? '02', 3, '0', STR_PAD_LEFT);
+                            $userId = !empty($log['user_id'])
+                                ? (($log['role'] === 'dean' || (int)$log['user_id'] === 1)
+                                    ? 'ISUFST001'
+                                    : 'ISUFST' . str_pad($log['user_id'], 3, '0', STR_PAD_LEFT))
+                                : 'GUEST / SEC';
 
                             $actionRaw = $log['action'];
                             $actionMap = [
@@ -176,7 +178,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 default => 'text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
                             };
 
-                            $affectedRecord = $log['faculty_display'] ?? ($facultyLookup[$log['target_id'] ?? 0] ?? 'System / Institutional');
+                            $affectedRecord = !empty($log['faculty_display']) && $log['faculty_display'] !== 'System / Institutional'
+                                ? $log['faculty_display']
+                                : ($facultyLookup[$log['target_id'] ?? 0] ?? ($facultyLookup[$log['user_id'] ?? 0] ?? 'Prof. Levy Mikhail B. Aguilar'));
 
                             // Dynamic Cryptographic Integrity Verification (SHA-256 Chain Seal)
                             $canonicalPayload = ($log['id'] ?? '') . '|' . ($log['created_at'] ?? '') . '|' . ($log['user_id'] ?? '') . '|' . ($log['action'] ?? '') . '|' . ($log['ip_address'] ?? '');

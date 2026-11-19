@@ -111,11 +111,11 @@ class AuditLogDAO implements AuditLogDAOInterface {
             COALESCE(
                 u_target.full_name,
                 u_cert.full_name,
+                u_actor.full_name,
                 CASE 
-                    WHEN a.action IN ('OCR_EXTRACT', 'BATCH_UPLOAD') THEN u_actor.full_name
                     WHEN a.action IN ('DATABASE_BACKUP_CREATED', 'BACKUP_FAILED') THEN 'System Service'
                     WHEN a.action LIKE '%EXPORT%' THEN 'Accreditation Ledger'
-                    ELSE 'System / Institutional'
+                    ELSE 'Anonymous / Unauthenticated'
                 END
             ) AS faculty_display
         ";
@@ -199,11 +199,11 @@ class AuditLogDAO implements AuditLogDAOInterface {
             COALESCE(
                 u_target.full_name,
                 u_cert.full_name,
+                u_actor.full_name,
                 CASE 
-                    WHEN a.action IN ('OCR_EXTRACT', 'BATCH_UPLOAD') THEN u_actor.full_name
                     WHEN a.action IN ('DATABASE_BACKUP_CREATED', 'BACKUP_FAILED') THEN 'System Service'
                     WHEN a.action LIKE '%EXPORT%' THEN 'Accreditation Ledger'
-                    ELSE 'System / Institutional'
+                    ELSE 'Anonymous / Unauthenticated'
                 END
             ) AS faculty_display
         ";

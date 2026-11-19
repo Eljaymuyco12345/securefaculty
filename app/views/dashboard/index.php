@@ -176,11 +176,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             <?php
                                 $uid = ($row['role'] ?? 'faculty') === 'dean'
                                     ? 'ISUFST001'
-                                    : 'ISUFST' . str_pad($row['user_id'] ?? 2, 3, '0', STR_PAD_LEFT);
+                                    : (!empty($row['user_id']) ? 'ISUFST' . str_pad($row['user_id'], 3, '0', STR_PAD_LEFT) : 'GUEST');
 
                                 $actionRaw = $row['action'] ?? '';
                                 $actionLabel = ucwords(strtolower(str_replace('_', ' ', $actionRaw)));
-                                $faculty = $row['faculty_display'] ?? 'System / Institutional';
+                                $faculty = !empty($row['faculty_display']) && $row['faculty_display'] !== 'System / Institutional'
+                                    ? $row['faculty_display']
+                                    : 'Prof. Levy Mikhail B. Aguilar';
                             ?>
                             <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors table-row-item"
                                 data-action="<?= strtoupper($actionRaw) ?>"
