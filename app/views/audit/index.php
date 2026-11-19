@@ -172,7 +172,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 str_contains($actionRaw, 'ARCHIVE') => 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800/60',
                                 str_contains($actionRaw, 'DELETE') => 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60',
                                 str_contains($actionRaw, 'VIEW') || str_contains($actionRaw, 'DOWNLOAD') => 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800/60',
-                                str_contains($actionRaw, 'OCR') => 'text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:cyan-950/40 border-cyan-200 dark:border-cyan-800/60',
+                                str_contains($actionRaw, 'OCR') => 'text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-800/60',
                                 default => 'text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
                             };
 
