@@ -58,8 +58,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     </a>
 
     <!-- Document Operations -->
-    <a href="audit_logs.php?action=ARCHIVE_DOCUMENT" style="--stagger-i: 2"
-       class="stagger-item bg-white dark:bg-[#111c36] rounded-xl border <?= $actionFilter === 'ARCHIVE_DOCUMENT' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group">
+    <a href="audit_logs.php?action=DOC_OPERATIONS" style="--stagger-i: 2"
+       class="stagger-item bg-white dark:bg-[#111c36] rounded-xl border <?= $actionFilter === 'DOC_OPERATIONS' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 dark:border-slate-800' ?> shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-all group"
+       title="Filter by all document operations across repository">
         <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-base flex-shrink-0 group-hover:scale-105 transition-transform">
             <i class="fa-solid fa-file-shield"></i>
         </div>
@@ -93,6 +94,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                class="px-2.5 py-1 rounded <?= empty($actionFilter) ? 'bg-[#0d2342] text-white font-bold' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">All</a>
             <a href="audit_logs.php?action=LOGIN_SUCCESS<?= $search ? '&search=' . urlencode($search) : '' ?>"
                class="px-2.5 py-1 rounded <?= $actionFilter === 'LOGIN_SUCCESS' ? 'bg-[#0d2342] text-white font-bold' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">Logins</a>
+            <a href="audit_logs.php?action=DOC_OPERATIONS<?= $search ? '&search=' . urlencode($search) : '' ?>"
+               class="px-2.5 py-1 rounded <?= $actionFilter === 'DOC_OPERATIONS' ? 'bg-[#0d2342] text-white font-bold' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' ?>"
+               title="Show all document events: Decryptions, Vault Commits, Scans, Ingestions, Deletions">Doc Ops</a>
             <a href="audit_logs.php?action=VIEW_DOCUMENT<?= $search ? '&search=' . urlencode($search) : '' ?>"
                class="px-2.5 py-1 rounded <?= $actionFilter === 'VIEW_DOCUMENT' ? 'bg-[#0d2342] text-white font-bold' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' ?>">Decryptions</a>
             <a href="audit_logs.php?action=ARCHIVE_DOCUMENT<?= $search ? '&search=' . urlencode($search) : '' ?>"

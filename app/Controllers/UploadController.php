@@ -59,6 +59,19 @@ class UploadController extends BaseController {
                 $this->jsonResponse(['status' => 'error', 'message' => "Multi-page compilation exceeded maximum limit of {$maxPages} pages."], 400);
             }
 
+            // Enforce single document policy: PDFs and Word documents cannot be uploaded in multiples.
+            // Only multi-page photo scans (JPG/PNG) may be uploaded together.
+            for ($i = 0; $i < $count; $i++) {
+                $name = basename($_FILES['files']['name'][$i]);
+                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                if (in_array($ext, ['pdf', 'docx', 'doc', 'zip'])) {
+                    $this->jsonResponse([
+                        'status' => 'error',
+                        'message' => 'PDF and Word documents must be uploaded one certificate at a time. Multi-file uploads are only allowed for multi-page photo scans (JPG/PNG).'
+                    ], 400);
+                }
+            }
+
             $maxFileSize = 25 * 1024 * 1024;
             $firstOriginalName = basename($_FILES['files']['name'][0]);
             $finfo = finfo_open(FILEINFO_MIME_TYPE);

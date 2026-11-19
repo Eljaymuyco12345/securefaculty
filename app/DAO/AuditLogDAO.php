@@ -74,6 +74,8 @@ class AuditLogDAO implements AuditLogDAOInterface {
                 $whereClauses .= " AND (a.action LIKE 'OCR%' OR a.action = 'BATCH_UPLOAD')";
             } elseif ($act === 'EXPORT_REPORT') {
                 $whereClauses .= " AND a.action LIKE '%EXPORT%'";
+            } elseif ($act === 'DOC_OPERATIONS' || $act === 'DOC_OPS') {
+                $whereClauses .= " AND a.action IN ('ARCHIVE_DOCUMENT','DELETE_DOCUMENT','VIEW_DOCUMENT','DOWNLOAD_DOCUMENT','OCR_EXTRACT','COMMIT_VAULT_RECORD','BULK_DELETE_DOCUMENTS')";
             } elseif ($act === 'APPROVED') {
                 $whereClauses .= " AND a.action IN ('LOGIN_SUCCESS', 'COMMIT_VAULT_RECORD', 'VIEW_DOCUMENT', 'DOWNLOAD_DOCUMENT')";
             } elseif ($act === 'REJECTED') {
@@ -173,6 +175,8 @@ class AuditLogDAO implements AuditLogDAOInterface {
                 $whereClauses .= " AND (a.action LIKE 'OCR%' OR a.action = 'BATCH_UPLOAD')";
             } elseif ($act === 'EXPORT_REPORT') {
                 $whereClauses .= " AND a.action LIKE '%EXPORT%'";
+            } elseif ($act === 'DOC_OPERATIONS' || $act === 'DOC_OPS') {
+                $whereClauses .= " AND a.action IN ('ARCHIVE_DOCUMENT','DELETE_DOCUMENT','VIEW_DOCUMENT','DOWNLOAD_DOCUMENT','OCR_EXTRACT','COMMIT_VAULT_RECORD','BULK_DELETE_DOCUMENTS')";
             } else {
                 $whereClauses .= " AND a.action = :act";
                 $params[':act'] = mb_substr($act, 0, 50);

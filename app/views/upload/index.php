@@ -151,7 +151,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </div>
             <div>
                 <p class="text-sm font-bold text-slate-900 dark:text-white">Select or Drag & Drop Documents Here</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF, DOCX, PNG, JPG, &amp; <strong>ZIP Archives</strong> (Batch auto-unpack &amp; OCR)</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF &amp; DOCX (1 at a time), PNG &amp; JPG (single or multi-page), &amp; <strong>ZIP Archives</strong></p>
             </div>
             <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
                 <button type="button" onclick="document.getElementById('file-input').click()"
@@ -918,7 +918,7 @@ Upload a file above to extract metadata.</div>
                 </div>
                 <div>
                     <p class="text-sm font-bold text-slate-900 dark:text-white">Select or Drag & Drop Documents Here</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF, DOCX, PNG, JPG, &amp; <strong>ZIP Archives</strong> (Batch auto-unpack &amp; OCR)</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF &amp; DOCX (1 at a time), PNG &amp; JPG (single or multi-page), &amp; <strong>ZIP Archives</strong></p>
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
                     <button type="button" onclick="document.getElementById('file-input').click()"
@@ -1134,9 +1134,37 @@ Upload a file above to extract metadata.</div>
     function processUploadedFiles(files) {
         if (!files || files.length === 0) return;
 
+        const isMultiple = files.length > 1;
+
+        if (isMultiple) {
+            // Strictly enforce: PDF and Word documents must be uploaded 1 at a time.
+            // Only multi-page photo scans (JPG/PNG) may be selected together.
+            const allowedPhotoExts = ['jpg', 'jpeg', 'png', 'webp'];
+            let hasDocument = false;
+            for (let i = 0; i < files.length; i++) {
+                const ext = files[i].name.split('.').pop().toLowerCase();
+                if (!allowedPhotoExts.includes(ext)) {
+                    hasDocument = true;
+                    break;
+                }
+            }
+
+            if (hasDocument) {
+                const fileInput = document.getElementById('file-input');
+                if (fileInput) fileInput.value = '';
+                resetPipelineToDefault();
+                showSystemAlert({
+                    title: 'Single Document Policy Enforced',
+                    message: 'PDF and Word documents must be uploaded one certificate at a time. Multi-file uploads are only allowed for multi-page photo scans (JPG/PNG).',
+                    type: 'warning',
+                    buttonText: 'Understood'
+                });
+                return;
+            }
+        }
+
         const banner = document.getElementById('upload-banner');
         const formData = new FormData();
-        const isMultiple = files.length > 1;
 
         // Cancel any existing pending upload
         if (window.currentUploadAbortController) {
