@@ -161,17 +161,18 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 'DELETE_DOCUMENT' => 'Delete document',
                                 'OCR_EXTRACT' => 'Ocr extract',
                                 'EXPORT_REPORT' => 'Export report',
+                                'TAMPER_ALERT' => 'Tamper Alert',
                             ];
                             $actionLabel = $actionMap[$actionRaw] ?? ucwords(strtolower(str_replace('_', ' ', $actionRaw)));
 
                             $actionColor = match(true) {
                                 str_contains($actionRaw, 'LOGIN_SUCCESS') => 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60',
-                                str_contains($actionRaw, 'LOGIN_FAILED') => 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60',
+                                str_contains($actionRaw, 'LOGIN_FAILED') || str_contains($actionRaw, 'TAMPER') => 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60',
                                 str_contains($actionRaw, 'LOGOUT') => 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
                                 str_contains($actionRaw, 'ARCHIVE') => 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800/60',
                                 str_contains($actionRaw, 'DELETE') => 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60',
                                 str_contains($actionRaw, 'VIEW') || str_contains($actionRaw, 'DOWNLOAD') => 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800/60',
-                                str_contains($actionRaw, 'OCR') => 'text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-800/60',
+                                str_contains($actionRaw, 'OCR') => 'text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:cyan-950/40 border-cyan-200 dark:border-cyan-800/60',
                                 default => 'text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
                             };
 
@@ -181,9 +182,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             $canonicalPayload = ($log['id'] ?? '') . '|' . ($log['created_at'] ?? '') . '|' . ($log['user_id'] ?? '') . '|' . ($log['action'] ?? '') . '|' . ($log['ip_address'] ?? '');
                             $entryHash = hash('sha256', $canonicalPayload);
                             $shortHash = substr($entryHash, 0, 8);
-                            $isRecordValid = !empty($log['created_at']) && !empty($log['action']) && !empty($log['ip_address']);
+                            $isTampered = str_contains($log['action'] ?? '', 'TAMPER') 
+                                       || str_contains($log['details'] ?? '', '[TAMPERED]') 
+                                       || str_contains($log['action'] ?? '', 'INTEGRITY_BREACH');
+
+                            $isRecordValid = !empty($log['created_at']) 
+                                          && !empty($log['action']) 
+                                          && !empty($log['ip_address']) 
+                                          && !$isTampered;
                         ?>
-                        <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors audit-log-row"
+                        <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors audit-log-row <?= !$isRecordValid ? 'bg-rose-50/30 dark:bg-rose-950/10' : '' ?>"
                             data-search="<?= strtolower($log['created_at'] . ' ' . $userId . ' ' . $actionLabel . ' ' . $affectedRecord . ' ' . $log['ip_address']) ?>">
                             <td class="py-2.5 px-3 text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap"><?= htmlspecialchars($log['created_at']) ?></td>
                             <td class="py-2.5 px-3 font-bold text-slate-900 dark:text-white font-mono"><?= htmlspecialchars($userId) ?></td>
@@ -193,7 +201,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 </span>
                             </td>
                             <td class="py-2.5 px-3 text-slate-700 dark:text-slate-300 font-medium"><?= htmlspecialchars($affectedRecord) ?></td>
-                            <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400 font-mono"><?= htmlspecialchars($log['ip_address']) ?></td>
+                            <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400 font-mono"><?= !empty($log['ip_address']) ? htmlspecialchars($log['ip_address']) : '<span class="text-rose-500 italic text-[10px]">Unrecorded / Void</span>' ?></td>
                             <td class="py-2.5 px-3 text-center">
                                 <?php if ($isRecordValid): ?>
                                     <span class="inline-flex items-center gap-1.5 text-[10px] text-blue-600 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/60"
@@ -203,10 +211,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                         <span class="font-mono text-[9px] opacity-70">#<?= $shortHash ?></span>
                                     </span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center gap-1 text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/60"
-                                          title="Integrity Alert: Incomplete or modified record attributes">
-                                        <i class="fa-solid fa-triangle-exclamation text-[9px]"></i>
+                                    <span class="inline-flex items-center gap-1.5 text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/40 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-800/60 ring-1 ring-rose-500/20 shadow-sm"
+                                          title="Integrity Alert: Cryptographic seal broken or unverified record attributes">
+                                        <i class="fa-solid fa-triangle-exclamation text-[9px] text-rose-500"></i>
                                         <span>Unverified</span>
+                                        <span class="font-mono text-[9px] opacity-70">#mismatch</span>
                                     </span>
                                 <?php endif; ?>
                             </td>
