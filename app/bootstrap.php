@@ -50,11 +50,24 @@ AuthService::initSession();
 // Global OWASP Security Headers (OWASP Top 10 A01 & A05)
 if (!headers_sent()) {
     header('X-Content-Type-Options: nosniff');
-    header('X-Frame-Options: SAMEORIGIN');
     header('Referrer-Policy: strict-origin-when-cross-origin');
     header('X-XSS-Protection: 1; mode=block');
     header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
-    header("Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: blob:; font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-ancestors 'self';");
+
+    // Determine current host origin to allow embedding in in-app iframes across local and tunnels (e.g. *.trycloudflare.com)
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    $cspHost = '';
+    if ($host !== '') {
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
+            || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+            ? 'https://' : 'http://';
+        $cspHost = ' ' . $protocol . $host;
+    }
+
+    // Set frame-ancestors to permit same-origin and current tunnel domain for in-app PDF preview modal
+    header('X-Frame-Options: SAMEORIGIN');
+    header("Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: blob:; font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self' blob: data:{$cspHost}; frame-ancestors 'self'{$cspHost};");
     
     // Enforce HSTS when running on HTTPS or behind TLS-terminating reverse proxy
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
