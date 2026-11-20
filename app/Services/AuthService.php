@@ -215,6 +215,19 @@ class AuthService implements AuthServiceInterface {
         return self::check() && isset($_SESSION['role']) && $_SESSION['role'] === 'dean';
     }
 
+    public static function hasRole(string $role): bool {
+        self::initSession();
+        if (!self::check() || !isset($_SESSION['role'])) {
+            return false;
+        }
+        $targetRole = strtolower(trim($role));
+        $currentRole = strtolower(trim($_SESSION['role']));
+        if ($targetRole === 'admin' || $targetRole === 'administrator') {
+            return $currentRole === 'dean' || $currentRole === 'admin';
+        }
+        return $currentRole === $targetRole;
+    }
+
     public static function isFaculty(): bool {
         self::initSession();
         return self::check() && isset($_SESSION['role']) && $_SESSION['role'] === 'faculty';

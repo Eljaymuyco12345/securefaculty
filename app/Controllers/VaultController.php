@@ -19,13 +19,11 @@ class VaultController extends BaseController {
             return;
         }
 
-        // Strict Date Issued Filtering (NOT upload date)
-        $allCategories = ['All', 'Modules & IMs', 'Research', 'Seminars', 'Trainings', 'Workshops', 'Awards', 'Milestones'];
-        $allowedCategoryKeys = array_merge($allCategories, [
-            'Instructional Material', 'Research Publication', 'Seminar', 'Training', 'Workshop', 'Award', 'Academic Milestone'
-        ]);
-        $rawCategory = $_GET['category'] ?? 'All';
-        $category = in_array($rawCategory, $allowedCategoryKeys, true) ? $rawCategory : 'All';
+        // Standardized Categories across all modules
+        $allCategories = array_merge(['All'], CategoryService::getKeys());
+        $rawCategory = trim($_GET['category'] ?? 'All');
+        $normCategory = $rawCategory !== 'All' ? CategoryService::normalize($rawCategory) : 'All';
+        $category = in_array($normCategory, $allCategories, true) ? $normCategory : 'All';
         $search = trim($_GET['search'] ?? '');
         if (strlen($search) > 100) {
             $search = substr($search, 0, 100);
@@ -97,7 +95,7 @@ class VaultController extends BaseController {
                         AuditLogger::log('DISASSOCIATE_COAUTHOR', "Faculty '{$currentUser['full_name']}' removed co-authorship association from certificate #{$deleteId}", $deleteId);
                         $this->redirect('vault.php?msg=coauthor_removed');
                     } else {
-                        AuditLogger::log('DELETE_DOCUMENT', "Deleted certificate record #{$deleteId} and purged encrypted payload", $deleteId);
+                        AuditLogger::log('DELETE_DOCUMENT', "Deleted certificate record #{$deleteId} and purged encrypted payload", (int)($cert['faculty_id'] ?? $currentUser['id']));
                         $this->redirect('vault.php?msg=deleted');
                     }
                 } else {

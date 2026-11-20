@@ -104,7 +104,8 @@ class CertificateService {
         }
         $issuer = mb_substr(trim($input['issuer'] ?? 'Not Specified'), 0, 255);
         $category = mb_substr(trim($input['category'] ?? 'Seminar'), 0, 100);
-        $certNumber = !empty($input['cert_number']) ? mb_substr(trim($input['cert_number']), 0, 100) : null;
+        $rawCertNumber = !empty($input['cert_number']) ? preg_replace('/[\x00-\x1F\x7F]/', '', (string)$input['cert_number']) : null;
+        $certNumber = ($rawCertNumber !== null && trim($rawCertNumber) !== '') ? mb_substr(trim($rawCertNumber), 0, 100) : null;
         $originalFilename = mb_substr(basename($input['original_name'] ?? 'certificate.pdf'), 0, 255);
         $fileType = strtolower(pathinfo($originalFilename, PATHINFO_EXTENSION));
         if ($fileType !== 'pdf' && str_ends_with(strtolower($tempFilename), '.pdf')) {
@@ -138,7 +139,7 @@ class CertificateService {
             return ['success' => false, 'code' => 500, 'message' => 'Database commit failure: ' . $e->getMessage()];
         }
 
-        AuditLogger::log('COMMIT_VAULT_RECORD', "Approved and AES-256 encrypted certificate #{$certId}: '{$certData['title']}'", $certId);
+        AuditLogger::log('COMMIT_VAULT_RECORD', "Approved and AES-256 encrypted certificate #{$certId}: '{$certData['title']}'", (int)($assignedFacultyId ?: $certId));
 
         return [
             'success' => true,
@@ -178,6 +179,10 @@ class CertificateService {
             'cert' => $cert,
             'bytes' => $decryptedBytes
         ];
+    }
+
+    public static function incrementQuota(): void {
+        CertificateDAO::incrementQuota();
     }
 
     /**

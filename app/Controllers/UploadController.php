@@ -23,7 +23,7 @@ class UploadController extends BaseController {
             'isDean' => $isDean,
             'facultyList' => $facultyList,
             'activeNav' => 'pipeline',
-            'pageTitle' => 'Smart Pipeline - H-I-T-L Validation Loop'
+            'pageTitle' => 'Upload & Scan - Certificate Ingestion'
         ]);
     }
 
@@ -57,6 +57,19 @@ class UploadController extends BaseController {
             $maxPages = 30;
             if ($count > $maxPages) {
                 $this->jsonResponse(['status' => 'error', 'message' => "Multi-page compilation exceeded maximum limit of {$maxPages} pages."], 400);
+            }
+
+            // Enforce single document policy: PDFs and Word documents cannot be uploaded in multiples.
+            // Only multi-page photo scans (JPG/PNG) may be uploaded together.
+            for ($i = 0; $i < $count; $i++) {
+                $name = basename($_FILES['files']['name'][$i]);
+                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                if (in_array($ext, ['pdf', 'docx', 'doc', 'zip'])) {
+                    $this->jsonResponse([
+                        'status' => 'error',
+                        'message' => 'PDF and Word documents must be uploaded one certificate at a time. Multi-file uploads are only allowed for multi-page photo scans (JPG/PNG).'
+                    ], 400);
+                }
             }
 
             $maxFileSize = 25 * 1024 * 1024;
@@ -406,7 +419,8 @@ class UploadController extends BaseController {
         }
         $issuer = mb_substr(trim($input['issuer'] ?? 'Not Specified'), 0, 255);
         $category = mb_substr(trim($input['category'] ?? 'Seminar'), 0, 100);
-        $certNumber = !empty($input['cert_number']) ? mb_substr(trim($input['cert_number']), 0, 100) : null;
+        $rawCertNumber = !empty($input['cert_number']) ? preg_replace('/[\x00-\x1F\x7F]/', '', (string)$input['cert_number']) : null;
+        $certNumber = ($rawCertNumber !== null && trim($rawCertNumber) !== '') ? mb_substr(trim($rawCertNumber), 0, 100) : null;
         $originalFilename = mb_substr(basename($input['original_name'] ?? 'certificate.pdf'), 0, 255);
 
         // Strict Duplicate Pre-Commit Interception (OWASP A04 / Integrity Assurance)
@@ -487,7 +501,7 @@ class UploadController extends BaseController {
             $this->jsonResponse(['status' => 'error', 'message' => 'Database commit failure: ' . $e->getMessage()], 500);
         }
 
-        AuditLogger::log('COMMIT_VAULT_RECORD', "Approved and AES-256 encrypted certificate #{$certId}: '{$certData['title']}'", $certId);
+        AuditLogger::log('COMMIT_VAULT_RECORD', "Approved and AES-256 encrypted certificate #{$certId}: '{$certData['title']}'", (int)($assignedFacultyId ?: $certId));
 
         $this->jsonResponse([
             'status' => 'success',

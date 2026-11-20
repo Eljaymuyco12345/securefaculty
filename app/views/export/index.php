@@ -149,10 +149,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <select name="category"
                             class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-blue-500">
                         <?php
-                        $cats = ['All', 'Research Publication', 'Instructional Material', 'Seminar', 'Training', 'Workshop', 'Award', 'Academic Milestone'];
+                        $cats = array_merge(['All'], CategoryService::getKeys());
                         foreach ($cats as $c):
+                            $disp = $c === 'All' ? 'All Categories' : CategoryService::getLabel($c);
                         ?>
-                            <option value="<?= htmlspecialchars($c) ?>" <?= $category === $c ? 'selected' : '' ?>><?= htmlspecialchars($c) ?></option>
+                            <option value="<?= htmlspecialchars($c) ?>" <?= $category === $c ? 'selected' : '' ?>><?= htmlspecialchars($disp) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -167,15 +168,15 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 </div>
 
                 <!-- Apply and Reset Buttons -->
-                <div class="flex items-center gap-1.5 sm:col-span-2">
+                <div class="flex items-center gap-1.5 w-full sm:w-auto sm:col-span-2">
                     <button type="submit"
-                            class="flex-1 py-1.5 px-3 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            class="flex-1 min-h-[40px] sm:min-h-0 py-2 sm:py-1.5 px-3 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                         <i class="fa-solid fa-filter text-[10px]"></i>
                         <span>Apply Filter</span>
                     </button>
                     <?php if ($dateFrom || $dateTo || $category !== 'All' || $search): ?>
                         <a href="export.php<?= !empty($rawIds) ? '?ids=' . urlencode($rawIds) : '' ?>"
-                           class="py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all flex items-center justify-center cursor-pointer"
+                           class="min-h-[40px] sm:min-h-0 py-2 sm:py-1.5 px-3 sm:px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all flex items-center justify-center cursor-pointer"
                            title="Reset Filters">
                             <i class="fa-solid fa-xmark"></i>
                         </a>
@@ -185,36 +186,36 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
             <!-- Quick Date Range Presets (Nov–Dec example) -->
             <div class="flex items-center gap-2 flex-wrap pt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                <span class="font-bold flex items-center gap-1">
+                <span class="font-bold flex items-center gap-1 w-full sm:w-auto">
                     <i class="fa-regular fa-clock text-blue-500"></i>
                     Quick Range Presets:
                 </span>
                 <button type="button" onclick="setExportDatePreset('nov-dec')"
-                        class="px-2.5 py-1 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer">
+                        class="min-h-[40px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer flex items-center justify-center">
                     Nov – Dec (Late Year)
                 </button>
                 <button type="button" onclick="setExportDatePreset('q1')"
-                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
                     Jan – Mar (Q1)
                 </button>
                 <button type="button" onclick="setExportDatePreset('q2')"
-                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
                     Apr – Jun (Q2)
                 </button>
                 <button type="button" onclick="setExportDatePreset('q3')"
-                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
                     Jul – Sep (Q3)
                 </button>
                 <button type="button" onclick="setExportDatePreset('q4')"
-                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
                     Oct – Dec (Q4)
                 </button>
                 <button type="button" onclick="setExportDatePreset('this-year')"
-                        class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer">
+                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
                     Current Year (<?= date('Y') ?>)
                 </button>
                 <button type="button" onclick="setExportDatePreset('clear')"
-                        class="px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800 transition-colors cursor-pointer">
+                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800 transition-colors cursor-pointer flex items-center justify-center">
                     Clear Dates
                 </button>
             </div>

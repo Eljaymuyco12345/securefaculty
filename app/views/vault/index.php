@@ -96,13 +96,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <?php
         $tabs = [
             'All' => 'All Categories',
-            'Instructional Material' => 'Modules & IMs',
-            'Research Publication' => 'Research',
-            'Seminar' => 'Seminars',
-            'Training' => 'Trainings',
-            'Workshop' => 'Workshops',
-            'Award' => 'Awards',
-            'Academic Milestone' => 'Milestones'
+            'Research Publication' => 'Research Publication',
+            'Instructional Material' => 'Instructional Material / Course Module',
+            'Seminar' => 'Seminar / Webinar',
+            'Training' => 'Training / Bootcamp',
+            'Workshop' => 'Workshop',
+            'Award' => 'Award / Recognition',
+            'Academic Milestone' => 'Academic Milestone / Appointment'
         ];
         foreach ($tabs as $key => $label):
             $isActive = ($category === $key);
@@ -269,7 +269,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <div>
             <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">No cryptographic records found</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-                <?= $search || $dateFrom || $dateTo || $issuedYear ? 'No records match the selected Issued Date range or keyword.' : 'Ingest your seminars, publications, or certificates via the Smart Pipeline to securely archive them.' ?>
+                <?= $search || $dateFrom || $dateTo || $issuedYear ? 'No records match the selected Issued Date range or keyword.' : 'Ingest your seminars, publications, or certificates via Upload & Scan to securely archive them.' ?>
             </p>
         </div>
         <div class="pt-2 flex items-center justify-center gap-2">
@@ -389,8 +389,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 <?= htmlspecialchars($cert['issuer']) ?>
                             </td>
                             <td class="p-3 whitespace-nowrap">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                    <?= htmlspecialchars($cert['category']) ?>
+                                <span class="px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1.5 <?= CategoryService::getBadgeClass($cert['category'] ?? '') ?>">
+                                    <i class="<?= CategoryService::getIcon($cert['category'] ?? '') ?> text-[10px]"></i>
+                                    <span><?= htmlspecialchars(CategoryService::getShortLabel($cert['category'] ?? '')) ?></span>
                                 </span>
                             </td>
                             <td class="p-3 text-center whitespace-nowrap">
@@ -440,8 +441,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <div class="flex items-start justify-between gap-2 mb-2">
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <input type="checkbox" name="record_select" value="<?= $cert['id'] ?>" onchange="updateSelectionBar()" class="record-checkbox rounded border-slate-300 dark:border-slate-600 dark:bg-slate-800 text-blue-600 accent-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                <?= htmlspecialchars($cert['category']) ?>
+                            <span class="px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1.5 <?= CategoryService::getBadgeClass($cert['category'] ?? '') ?>">
+                                <i class="<?= CategoryService::getIcon($cert['category'] ?? '') ?> text-[10px]"></i>
+                                <span><?= htmlspecialchars(CategoryService::getShortLabel($cert['category'] ?? '')) ?></span>
                             </span>
                             <?php if ($isCoAuthor): ?>
                                 <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 flex items-center gap-1">
@@ -606,10 +608,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         if (ids.length === 0) return;
 
         showSystemConfirm({
-            title: 'Confirm Bulk Cryptographic Deletion',
-            message: `Are you sure you wish to permanently remove ${ids.length} selected certificate record(s) from your ledger? Primary author files will have their encrypted payloads purged from disk, while co-authored files will disassociate your authorship without affecting other co-authors. All actions are immutably logged in the audit ledger.`,
+            title: 'Delete Selected Documents?',
+            message: `Are you sure you want to delete <strong>${ids.length} selected document(s)</strong> from the vault?`,
             type: 'danger',
-            confirmText: `Yes, Delete ${ids.length} Records`,
+            confirmText: `Delete ${ids.length} Documents`,
+            cancelText: 'Cancel',
             onConfirm: function() {
                 const form = document.createElement('form');
                 form.method = 'POST';
@@ -638,20 +641,22 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     function confirmDelete(id, title, isCoAuthor = false, leadAuthor = '') {
         if (isCoAuthor) {
             showSystemConfirm({
-                title: 'Remove Co-Authored Document',
-                message: `You are listed as a co-author on <strong>"${title}"</strong>.<br><br>Removing this record will <strong>remove it from your personal vault</strong>. The original uploaded document and cryptographic archive owned by lead author <strong>${leadAuthor || 'the uploader'}</strong> will <strong>NOT</strong> be deleted.`,
+                title: 'Remove from Vault?',
+                message: `Remove <strong>"${title}"</strong> from your personal vault? The original file will remain in the lead author's vault.`,
                 type: 'warning',
-                confirmText: 'Yes, Remove from My Vault',
+                confirmText: 'Remove from Vault',
+                cancelText: 'Cancel',
                 onConfirm: function() {
                     executeDeletePost(id);
                 }
             });
         } else {
             showSystemConfirm({
-                title: 'Confirm Cryptographic Removal',
-                message: `Are you sure you wish to permanently remove "${title}" from the encrypted repository? This action purges the AES-256 ciphertext from disk and is logged in the compliance audit ledger.`,
+                title: 'Delete Document?',
+                message: `Are you sure you want to permanently delete <strong>"${title}"</strong>? This will remove the file from the vault.`,
                 type: 'danger',
-                confirmText: 'Yes, Permanently Delete',
+                confirmText: 'Delete Document',
+                cancelText: 'Cancel',
                 onConfirm: function() {
                     executeDeletePost(id);
                 }
@@ -833,14 +838,14 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 }
 </style>
 
-<dialog id="docPreviewModal" aria-labelledby="docPreviewTitle" class="fixed inset-0 m-auto p-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0c1830] text-slate-800 dark:text-slate-100 shadow-2xl max-w-6xl w-[96vw] h-[92vh] max-h-[95vh] flex-col overflow-hidden outline-none z-50">
+<dialog id="docPreviewModal" aria-labelledby="docPreviewTitle" class="fixed inset-0 m-auto p-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0c1830] text-slate-800 dark:text-slate-100 shadow-2xl max-w-6xl w-[96vw] h-[92dvh] sm:h-[90vh] max-h-[92dvh] sm:max-h-[90vh] flex-col overflow-hidden outline-none z-50">
     <!-- Header -->
-    <div class="px-5 py-3.5 bg-slate-50 dark:bg-[#111c36] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 flex-shrink-0">
-        <div class="flex items-center gap-3 min-w-0">
+    <div class="px-5 py-3.5 bg-slate-50 dark:bg-[#111c36] border-b border-slate-200 dark:border-slate-800 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 flex-shrink-0">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
             <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 p-1 flex items-center justify-center flex-shrink-0 shadow-sm">
                 <img src="assets/images/isufst_logo.png" alt="ISUFST Official Seal" class="max-w-full max-h-full object-contain">
             </div>
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1">
                 <h3 id="docPreviewTitle" class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">Document Preview</h3>
                 <div id="docPreviewMeta" class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap mt-0.5">
                     <!-- Badges populated dynamically via openDocPreview -->
@@ -849,7 +854,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </div>
 
         <!-- Controls -->
-        <div class="flex items-center gap-2 flex-shrink-0">
+        <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end sm:justify-start">
             <a id="docPreviewNewTab" href="#" target="_blank" rel="noopener noreferrer"
                class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
                title="Open in a separate browser tab if needed">
@@ -863,7 +868,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <span>Download PDF</span>
             </a>
             <button type="button" onclick="closeDocPreview()"
-                    class="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-base cursor-pointer"
+                    class="order-first sm:order-last p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-base cursor-pointer"
                     title="Close Preview (Esc)">
                 <i class="fa-solid fa-xmark"></i>
             </button>

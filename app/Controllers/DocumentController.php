@@ -30,7 +30,7 @@ class DocumentController extends BaseController {
 
         $isDownload = isset($_GET['download']) && $_GET['download'] == '1';
         $action = $isDownload ? 'DOWNLOAD_DOCUMENT' : 'VIEW_DOCUMENT';
-        AuditLogger::log($action, "Just-in-Time Decryption executed for certificate #{$id}: '{$cert['title']}'", $id);
+        AuditLogger::log($action, "Just-in-Time Decryption executed for certificate #{$id}: '{$cert['title']}'", (int)($cert['faculty_id'] ?? $id));
 
         $ext = strtolower(ltrim($cert['file_type'] ?? '', '.'));
 

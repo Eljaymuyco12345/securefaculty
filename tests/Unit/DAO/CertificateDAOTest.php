@@ -188,4 +188,71 @@ class CertificateDAOTest extends TestCase {
 
         $this->assertEquals($initial['current_usage'] + 1, $after['current_usage'], "Usage count must increment by 1");
     }
+
+    public function testDateIssuedRangeFilterAccuracy(): void {
+        $uniqueTag = 'DATE_FILTER_TEST_' . bin2hex(random_bytes(4));
+
+        // 1. Target: In-range certificate (2026-05-15)
+        $id1 = CertificateDAO::create([
+            'faculty_id' => 2,
+            'title' => "Target In-Range Certificate {$uniqueTag}",
+            'date_issued' => '2026-05-15',
+            'category' => 'Research Publication',
+            'file_path' => $this->tempEncFile,
+            'original_filename' => 'target.pdf',
+            'file_type' => 'pdf',
+            'file_size' => 1024,
+            'file_hash' => hash('sha256', 'target_' . time() . rand(1, 99999))
+        ]);
+        $this->createdCertIds[] = $id1;
+
+        // 2. Earlier: Out-of-range certificate (2025-11-20)
+        $id2 = CertificateDAO::create([
+            'faculty_id' => 2,
+            'title' => "Earlier Out-of-Range Certificate {$uniqueTag}",
+            'date_issued' => '2025-11-20',
+            'category' => 'Research Publication',
+            'file_path' => $this->tempEncFile,
+            'original_filename' => 'earlier.pdf',
+            'file_type' => 'pdf',
+            'file_size' => 1024,
+            'file_hash' => hash('sha256', 'earlier_' . time() . rand(1, 99999))
+        ]);
+        $this->createdCertIds[] = $id2;
+
+        // 3. Later: Out-of-range certificate (2026-09-10)
+        $id3 = CertificateDAO::create([
+            'faculty_id' => 2,
+            'title' => "Later Out-of-Range Certificate {$uniqueTag}",
+            'date_issued' => '2026-09-10',
+            'category' => 'Research Publication',
+            'file_path' => $this->tempEncFile,
+            'original_filename' => 'later.pdf',
+            'file_type' => 'pdf',
+            'file_size' => 1024,
+            'file_hash' => hash('sha256', 'later_' . time() . rand(1, 99999))
+        ]);
+        $this->createdCertIds[] = $id3;
+
+        // Verification A: Range May 2026 (2026-05-01 to 2026-05-31)
+        $results = CertificateDAO::getAll('All', $uniqueTag, null, '2026-05-01', '2026-05-31');
+        $resultIds = array_column($results, 'id');
+        $this->assertContains($id1, $resultIds, "Target certificate (2026-05-15) must be included in May 2026 range");
+        $this->assertFalse(in_array($id2, $resultIds, true), "Earlier certificate (2025-11-20) must be excluded from May 2026 range");
+        $this->assertFalse(in_array($id3, $resultIds, true), "Later certificate (2026-09-10) must be excluded from May 2026 range");
+
+        // Verification B: Exact single-day boundary match (2026-05-15 to 2026-05-15)
+        $boundaryResults = CertificateDAO::getAll('All', $uniqueTag, null, '2026-05-15', '2026-05-15');
+        $boundaryIds = array_column($boundaryResults, 'id');
+        $this->assertContains($id1, $boundaryIds, "Boundary match on exact issued date must succeed");
+        $this->assertFalse(in_array($id2, $boundaryIds, true), "Earlier date must not match boundary");
+        $this->assertFalse(in_array($id3, $boundaryIds, true), "Later date must not match boundary");
+
+        // Verification C: Range for previous year (2025-01-01 to 2025-12-31)
+        $pastResults = CertificateDAO::getAll('All', $uniqueTag, null, '2025-01-01', '2025-12-31');
+        $pastIds = array_column($pastResults, 'id');
+        $this->assertContains($id2, $pastIds, "Earlier certificate (2025-11-20) must be returned in 2025 range");
+        $this->assertFalse(in_array($id1, $pastIds, true), "Target certificate must not appear in 2025 range");
+        $this->assertFalse(in_array($id3, $pastIds, true), "Later certificate must not appear in 2025 range");
+    }
 }

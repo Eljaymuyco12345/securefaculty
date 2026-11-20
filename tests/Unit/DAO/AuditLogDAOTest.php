@@ -87,4 +87,28 @@ class AuditLogDAOTest extends TestCase {
         $this->assertEquals($this->uniqueAction, $exportRows[0]['action']);
         $this->assertArrayHasKey('faculty_display', $exportRows[0]);
     }
+
+    public function testGetPaginatedAndExportLogsWithFacultyFilter(): void {
+        AuditLogDAO::insertLog(
+            2,
+            'mikhail',
+            'faculty',
+            $this->uniqueAction,
+            2,
+            'Faculty filter verification test entry',
+            '10.0.0.99',
+            'FilterTester/1.0'
+        );
+
+        // Verify getPaginatedLogs does not throw HY093 or fail when filtering by facultyId
+        $paginated = AuditLogDAO::getPaginatedLogs('', $this->uniqueAction, 1, 10, 2, '');
+        $this->assertTrue(is_array($paginated));
+        $this->assertGreaterThan(0, $paginated['totalRows']);
+        $this->assertGreaterThan(0, count($paginated['rows']));
+
+        // Verify getExportLogs does not throw HY093 or fail when filtering by facultyId
+        $exported = AuditLogDAO::getExportLogs('', $this->uniqueAction, 2, '');
+        $this->assertTrue(is_array($exported));
+        $this->assertGreaterThan(0, count($exported));
+    }
 }

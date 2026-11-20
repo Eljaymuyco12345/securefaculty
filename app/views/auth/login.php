@@ -26,6 +26,12 @@ $msg = $msg ?? null;
             } else {
                 document.documentElement.classList.remove('dark');
             }
+            var zoom = localStorage.getItem('securefaculty_zoom');
+            if (!zoom || zoom === '1.12') {
+                zoom = '1.07';
+                localStorage.setItem('securefaculty_zoom', '1.07');
+            }
+            document.documentElement.style.zoom = zoom;
         })();
     </script>
     <!-- Tailwind CSS CDN with class-based dark mode -->
@@ -53,6 +59,23 @@ $msg = $msg ?? null;
         html.dark {
             color-scheme: dark;
             accent-color: oklch(0.68 0.17 250);
+        }
+        html {
+            font-size: 17.5px;
+        }
+        @media (min-width: 1024px) {
+            html {
+                zoom: 1.07;
+            }
+        }
+        .text-\[8px\], .text-\[9px\] {
+            font-size: 11px !important;
+        }
+        .text-\[10px\] {
+            font-size: 12px !important;
+        }
+        .text-\[11px\] {
+            font-size: 12.5px !important;
         }
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -124,7 +147,7 @@ $msg = $msg ?? null;
 <body class="min-h-screen flex bg-slate-100 dark:bg-[#081225] overflow-x-hidden antialiased transition-colors duration-200">
 
     <!-- Left Navy Accent Panel matching Figure 4.2 -->
-    <aside class="w-16 sm:w-28 md:w-36 lg:w-44 bg-[#0d2342] dark:bg-[#060e1d] select-none flex flex-col justify-between items-center py-6 border-r border-[#08182f] dark:border-slate-900 flex-shrink-0">
+    <aside class="hidden sm:flex sm:w-16 md:w-36 lg:w-44 bg-[#0d2342] dark:bg-[#060e1d] select-none flex-col justify-between items-center py-6 border-r border-[#08182f] dark:border-slate-900 flex-shrink-0">
         <div class="flex flex-col items-center gap-3">
             <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shadow-md flex-shrink-0">
                 <img src="assets/images/isufst_logo.png" alt="ISUFST Logo" class="max-w-full max-h-full object-contain">

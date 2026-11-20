@@ -2,7 +2,7 @@
 $isDean = $isDean ?? false;
 $facultyList = $facultyList ?? [];
 $activeNav = $activeNav ?? 'pipeline';
-$pageTitle = $pageTitle ?? 'Smart Pipeline - H-I-T-L Validation Loop';
+$pageTitle = $pageTitle ?? 'Upload & Scan - Certificate Ingestion';
 require_once __DIR__ . '/../layouts/layout_start.php';
 ?>
 
@@ -34,9 +34,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pb-2 border-b border-slate-100 dark:border-slate-800/60">
         <div>
             <h2 class="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 tracking-wider uppercase inline-block bg-slate-100 dark:bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                SMART PIPELINE - METADATA EXTRACTION LOOP (H-I-T-L Validation)
+                UPLOAD &amp; SCAN - METADATA EXTRACTION LOOP (H-I-T-L Validation)
             </h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Multi-stage pipeline: Ingestion &rarr; Rasterization &rarr; OCR Extraction &rarr; H-I-T-L Verification &rarr; AES-256 Vault</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Multi-stage workflow: Ingestion &rarr; Rasterization &rarr; OCR Extraction &rarr; H-I-T-L Verification &rarr; AES-256 Vault</p>
         </div>
         <button type="button" onclick="openProgressModal()"
             class="px-3 py-1.5 rounded-lg border border-blue-300 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
@@ -151,18 +151,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             </div>
             <div>
                 <p class="text-sm font-bold text-slate-900 dark:text-white">Select or Drag & Drop Documents Here</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF, DOCX, PNG, JPG, &amp; <strong>ZIP Archives</strong> (Batch auto-unpack &amp; OCR)</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF &amp; DOCX (1 at a time), PNG &amp; JPG (single or multi-page), &amp; <strong>ZIP Archives</strong></p>
             </div>
             <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
                 <button type="button" onclick="document.getElementById('file-input').click()"
                     class="px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer">
                     <i class="fa-regular fa-folder-open"></i>
                     <span>Browse Document / ZIP Archive</span>
-                </button>
-                <button type="button" onclick="loadSampleDemoCertificate()"
-                    class="px-3.5 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                    <span>Load Demo Sample</span>
                 </button>
             </div>
         </div>
@@ -291,7 +286,7 @@ Upload a file above to extract metadata.</div>
 
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Category:</label>
-                    <select id="field_category"
+                    <select id="field_category" onchange="handleHitlCategoryChange(this.value)"
                         class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
                         <option value="Research Publication" selected>Research Publication</option>
                         <option value="Instructional Material">Instructional Material / Course Module</option>
@@ -300,7 +295,16 @@ Upload a file above to extract metadata.</div>
                         <option value="Workshop">Workshop</option>
                         <option value="Award">Award / Recognition</option>
                         <option value="Academic Milestone">Academic Milestone / Appointment</option>
+                        <option value="Other">Other</option>
                     </select>
+                </div>
+
+                <div id="other_category_container" class="hidden">
+                    <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Specify Document Type / Notes:</label>
+                    <input type="text" id="field_category_other"
+                        placeholder="e.g. Guest Speaker Plaque, Board Resolution..."
+                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500">
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Categorized under "Other" with your custom specification.</p>
                 </div>
 
                 <div>
@@ -374,7 +378,7 @@ Upload a file above to extract metadata.</div>
     </div>
 
     <!-- Batch ZIP Review Work Area (Revealed when a ZIP archive is ingested) -->
-    <div id="batch-work-area" class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-300 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-4 hidden">
+    <div id="batch-work-area" class="min-w-0 max-w-full overflow-hidden bg-white dark:bg-[#111c36] rounded-xl border border-slate-300 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-4 hidden">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
             <div>
                 <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
@@ -669,6 +673,36 @@ Upload a file above to extract metadata.</div>
         }
     }
 
+    function handleHitlCategoryChange(val) {
+        const container = document.getElementById('other_category_container');
+        if (!container) return;
+        if (val === 'Other') {
+            container.classList.remove('hidden');
+            document.getElementById('field_category_other')?.focus();
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+
+    function setHitlCategoryValue(val) {
+        const catSelect = document.getElementById('field_category');
+        const otherContainer = document.getElementById('other_category_container');
+        const otherInput = document.getElementById('field_category_other');
+        if (!catSelect) return;
+
+        if (val && val.toLowerCase().startsWith('other')) {
+            catSelect.value = 'Other';
+            if (otherContainer) otherContainer.classList.remove('hidden');
+            if (otherInput) {
+                otherInput.value = val.includes(':') ? val.split(':').slice(1).join(':').trim() : '';
+            }
+        } else {
+            catSelect.value = val || 'Seminar';
+            if (otherContainer) otherContainer.classList.add('hidden');
+            if (otherInput) otherInput.value = '';
+        }
+    }
+
     function setDateDetectionStatus(dateVal) {
         const statusEl = document.getElementById('date-detect-status');
         const warnBox = document.getElementById('date-warning-msg');
@@ -879,18 +913,13 @@ Upload a file above to extract metadata.</div>
                 </div>
                 <div>
                     <p class="text-sm font-bold text-slate-900 dark:text-white">Select or Drag & Drop Documents Here</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF, DOCX, PNG, JPG, &amp; <strong>ZIP Archives</strong> (Batch auto-unpack &amp; OCR)</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF &amp; DOCX (1 at a time), PNG &amp; JPG (single or multi-page), &amp; <strong>ZIP Archives</strong></p>
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
                     <button type="button" onclick="document.getElementById('file-input').click()"
                         class="px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer">
                         <i class="fa-regular fa-folder-open"></i>
                         <span>Browse Document / ZIP Archive</span>
-                    </button>
-                    <button type="button" onclick="loadSampleDemoCertificate()"
-                        class="px-3.5 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
-                        <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                        <span>Load Demo Sample</span>
                     </button>
                 </div>
             </div>
@@ -1083,7 +1112,7 @@ Upload a file above to extract metadata.</div>
             document.getElementById('field_cert_number').value = consoleObj.CertNo;
             document.getElementById('field_date').value = consoleObj.Date;
             document.getElementById('field_issuer').value = consoleObj.Issuer;
-            document.getElementById('field_category').value = consoleObj.Type;
+            setHitlCategoryValue(consoleObj.Type);
             setDateDetectionStatus(consoleObj.Date);
 
             document.getElementById('duplicate-warning-box').classList.add('hidden');
@@ -1095,9 +1124,37 @@ Upload a file above to extract metadata.</div>
     function processUploadedFiles(files) {
         if (!files || files.length === 0) return;
 
+        const isMultiple = files.length > 1;
+
+        if (isMultiple) {
+            // Strictly enforce: PDF and Word documents must be uploaded 1 at a time.
+            // Only multi-page photo scans (JPG/PNG) may be selected together.
+            const allowedPhotoExts = ['jpg', 'jpeg', 'png', 'webp'];
+            let hasDocument = false;
+            for (let i = 0; i < files.length; i++) {
+                const ext = files[i].name.split('.').pop().toLowerCase();
+                if (!allowedPhotoExts.includes(ext)) {
+                    hasDocument = true;
+                    break;
+                }
+            }
+
+            if (hasDocument) {
+                const fileInput = document.getElementById('file-input');
+                if (fileInput) fileInput.value = '';
+                resetPipelineToDefault();
+                showSystemAlert({
+                    title: 'Single Document Policy Enforced',
+                    message: 'PDF and Word documents must be uploaded one certificate at a time. Multi-file uploads are only allowed for multi-page photo scans (JPG/PNG).',
+                    type: 'warning',
+                    buttonText: 'Understood'
+                });
+                return;
+            }
+        }
+
         const banner = document.getElementById('upload-banner');
         const formData = new FormData();
-        const isMultiple = files.length > 1;
 
         // Cancel any existing pending upload
         if (window.currentUploadAbortController) {
@@ -1248,7 +1305,7 @@ Upload a file above to extract metadata.</div>
             document.getElementById('field_title').value = data.metadata.title;
             document.getElementById('field_date').value = data.metadata.date_issued || '';
             document.getElementById('field_issuer').value = data.metadata.issuer;
-            document.getElementById('field_category').value = data.metadata.category;
+            setHitlCategoryValue(data.metadata.category);
             document.getElementById('field_cert_number').value = data.metadata.cert_number || '';
             setDateDetectionStatus(data.metadata.date_issued);
 
@@ -1453,7 +1510,7 @@ Upload a file above to extract metadata.</div>
         document.getElementById('field_cert_number').value = item.metadata?.cert_number || '';
         document.getElementById('field_date').value = item.metadata?.date_issued || '';
         document.getElementById('field_issuer').value = item.metadata?.issuer || '';
-        document.getElementById('field_category').value = item.metadata?.category || 'Seminar';
+        setHitlCategoryValue(item.metadata?.category);
         setDateDetectionStatus(item.metadata?.date_issued);
 
         // Update confidence badge for selected batch item
@@ -1606,6 +1663,12 @@ Upload a file above to extract metadata.</div>
         }
 
         const tempFile = document.getElementById('temp_filename').value;
+        let effectiveCategory = document.getElementById('field_category').value;
+        if (effectiveCategory === 'Other') {
+            const otherCustom = (document.getElementById('field_category_other')?.value || '').trim();
+            effectiveCategory = otherCustom ? ('Other: ' + otherCustom) : 'Other';
+        }
+
         const payload = {
             temp_filename: tempFile || 'sample.docx',
             original_name: document.getElementById('original_name').value || 'Certificate_Sample.docx',
@@ -1617,7 +1680,7 @@ Upload a file above to extract metadata.</div>
             cert_number: certNumber,
             date_issued: dateIssued,
             issuer: issuer,
-            category: document.getElementById('field_category').value,
+            category: effectiveCategory,
             force_duplicate: forceDup,
             csrf_token: window.CSRF_TOKEN || ''
         };
