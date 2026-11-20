@@ -111,23 +111,6 @@
                     <span class="font-semibold text-slate-700 dark:text-slate-200 block">Cryptographic Layer:</span>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">AES-256-CBC with randomized IVs and Just-in-Time Decryption to memory.</p>
                 </div>
-
-                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80">
-                    <span class="font-semibold text-slate-700 dark:text-slate-200 block">Active User & One-Gate Switcher:</span>
-                    <p class="text-[10px] text-slate-400 mb-2">Instantly switch between Dean and Faculty test profiles for system evaluation:</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="login.php" onclick="event.preventDefault(); switchUser('dean', 'admin123')"
-                           class="py-2 px-3 text-center rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-user-shield text-xs"></i>
-                            <span>Dean Profile</span>
-                        </a>
-                        <a href="login.php" onclick="event.preventDefault(); switchUser('mikhail', 'faculty123')"
-                           class="py-2 px-3 text-center rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-user-graduate text-xs"></i>
-                            <span>Faculty Profile</span>
-                        </a>
-                    </div>
-                </div>
             </div>
 
             <div class="pt-2 border-t border-slate-100 dark:border-slate-800 text-right">

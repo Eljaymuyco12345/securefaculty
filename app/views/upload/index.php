@@ -159,11 +159,6 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <i class="fa-regular fa-folder-open"></i>
                     <span>Browse Document / ZIP Archive</span>
                 </button>
-                <button type="button" onclick="loadSampleDemoCertificate()"
-                    class="px-3.5 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                    <span>Load Demo Sample</span>
-                </button>
             </div>
         </div>
     </div>
@@ -925,11 +920,6 @@ Upload a file above to extract metadata.</div>
                         class="px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer">
                         <i class="fa-regular fa-folder-open"></i>
                         <span>Browse Document / ZIP Archive</span>
-                    </button>
-                    <button type="button" onclick="loadSampleDemoCertificate()"
-                        class="px-3.5 py-2 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
-                        <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                        <span>Load Demo Sample</span>
                     </button>
                 </div>
             </div>

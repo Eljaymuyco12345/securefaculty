@@ -87,8 +87,10 @@ class AuditLogDAO implements AuditLogDAOInterface {
         }
 
         if ($facultyId !== null && $facultyId > 0) {
-            $whereClauses .= " AND (a.target_id = :fac_id OR c.faculty_id = :fac_id OR (a.target_id IS NULL AND a.user_id = :fac_id))";
-            $params[':fac_id'] = $facultyId;
+            $whereClauses .= " AND (a.target_id = :fac_id1 OR c.faculty_id = :fac_id2 OR (a.target_id IS NULL AND a.user_id = :fac_id3))";
+            $params[':fac_id1'] = $facultyId;
+            $params[':fac_id2'] = $facultyId;
+            $params[':fac_id3'] = $facultyId;
         }
 
         if ($category && trim($category) !== '' && $category !== 'All') {
@@ -184,8 +186,10 @@ class AuditLogDAO implements AuditLogDAOInterface {
         }
 
         if ($facultyId !== null && $facultyId > 0) {
-            $whereClauses .= " AND (a.target_id = :fac_id OR c.faculty_id = :fac_id OR (a.target_id IS NULL AND a.user_id = :fac_id))";
-            $params[':fac_id'] = $facultyId;
+            $whereClauses .= " AND (a.target_id = :fac_id1 OR c.faculty_id = :fac_id2 OR (a.target_id IS NULL AND a.user_id = :fac_id3))";
+            $params[':fac_id1'] = $facultyId;
+            $params[':fac_id2'] = $facultyId;
+            $params[':fac_id3'] = $facultyId;
         }
 
         if ($category && trim($category) !== '' && $category !== 'All') {
