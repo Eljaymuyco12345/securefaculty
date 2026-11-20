@@ -27,13 +27,13 @@ class UserDAO implements UserDAOInterface {
 
     public static function getFacultyList(): array {
         $pdo = Database::getConnection();
-        $stmt = $pdo->query("SELECT id, full_name, username, department FROM users ORDER BY full_name ASC");
+        $stmt = $pdo->query("SELECT id, full_name, username, department FROM users WHERE is_active = 1 ORDER BY full_name ASC");
         return $stmt->fetchAll();
     }
 
     public static function getFacultyOnly(): array {
         $pdo = Database::getConnection();
-        $stmt = $pdo->query("SELECT id, full_name, username FROM users WHERE role = 'faculty' ORDER BY full_name ASC");
+        $stmt = $pdo->query("SELECT id, full_name, username FROM users WHERE role = 'faculty' AND is_active = 1 ORDER BY full_name ASC");
         return $stmt->fetchAll();
     }
 
