@@ -245,7 +245,7 @@ Upload a file above to extract metadata.</div>
                         class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
                         <?php foreach ($facultyList as $f): ?>
                             <option value="<?= $f['id'] ?>" <?= $f['id'] == $currentUser['id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($f['full_name']) ?> (<?= htmlspecialchars($f['username']) ?>)
+                                <?= htmlspecialchars($f['full_name']) ?> (<?= $f['id'] == $currentUser['id'] ? 'Dean / Myself' : htmlspecialchars($f['username']) ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -450,6 +450,42 @@ Upload a file above to extract metadata.</div>
 
 </div>
 
+<!-- Instant File Size Error Modal (Direct Top-Level DOM Modal & Backdrop) -->
+<div id="file-size-error-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[99999] flex items-center justify-center p-4 hidden" onclick="if(event.target===this)closeFileSizeErrorModal()">
+    <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-rose-200 dark:border-rose-900/60 shadow-2xl max-w-md w-full p-6 text-center space-y-4">
+        <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/80 shadow-inner">
+            <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+        </div>
+        <div>
+            <h3 id="file-size-modal-title" class="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">Upload Blocked: File Size Exceeds 25MB</h3>
+            <p id="file-size-modal-message" class="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                The selected file exceeds the strict 25MB system limit. To prevent getting stuck in Stage 1 or 2, the pipeline has stopped immediately.
+            </p>
+        </div>
+        <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl text-left text-xs space-y-1">
+            <div class="flex items-center justify-between text-rose-900 dark:text-rose-200 font-bold">
+                <span>Selected File:</span>
+                <span id="file-size-modal-filename" class="font-mono truncate max-w-[180px]">-</span>
+            </div>
+            <div class="flex items-center justify-between text-rose-800 dark:text-rose-300">
+                <span>File Size:</span>
+                <span id="file-size-modal-filesize" class="font-mono font-bold">-</span>
+            </div>
+            <div class="flex items-center justify-between text-rose-800 dark:text-rose-300">
+                <span>Maximum Allowed:</span>
+                <span class="font-mono font-bold">25.0 MB</span>
+            </div>
+        </div>
+        <div class="pt-2 flex items-center gap-2">
+            <button type="button" onclick="closeFileSizeErrorModal()"
+                class="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 transition-all cursor-pointer flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check"></i>
+                <span>Understood / Select Another File</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Stage Progress & Live Telemetry Modal (Requirements 2, 3, 4) -->
 <div id="stage-progress-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-2xl w-full p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
@@ -581,6 +617,7 @@ Upload a file above to extract metadata.</div>
             <div id="modal-error-list" class="max-h-28 overflow-y-auto font-mono text-[11px] text-rose-700 dark:text-rose-300 space-y-1">
             </div>
         </div>
+
 
         <!-- Modal Actions -->
         <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
@@ -1120,9 +1157,90 @@ Upload a file above to extract metadata.</div>
         }, 1200);
     }
 
+    function showFileSizeErrorModal(fileName, fileSizeMB) {
+        const modal = document.getElementById('file-size-error-modal');
+        const fnEl = document.getElementById('file-size-modal-filename');
+        const fsEl = document.getElementById('file-size-modal-filesize');
+        const msgEl = document.getElementById('file-size-modal-message');
+
+        if (fnEl) fnEl.textContent = fileName || 'Uploaded File';
+        if (fsEl) fsEl.textContent = `${fileSizeMB} MB`;
+        if (msgEl) {
+            msgEl.textContent = `The file "${fileName}" is ${fileSizeMB}MB, which exceeds the 25.0MB maximum upload limit. The system has stopped immediately to prevent waiting or getting stuck in processing.`;
+        }
+
+        // Show the banner on the dropzone as well for dual visual clarity
+        const banner = document.getElementById('upload-banner');
+        if (banner) {
+            banner.className = "p-5 rounded-xl border-2 border-dashed border-rose-500 bg-rose-50/80 dark:bg-rose-950/40 text-center transition-all";
+            banner.innerHTML = `
+                <div class="max-w-md mx-auto space-y-3">
+                    <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-400 mx-auto flex items-center justify-center text-xl shadow-inner">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-rose-900 dark:text-rose-100">Upload Blocked: File Size Exceeds 25MB</p>
+                        <p class="text-xs text-rose-700 dark:text-rose-300 mt-1">"${escapeHtml(fileName)}" is <strong>${fileSizeMB}MB</strong> (system limit is 25MB). Please select a file under 25MB.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
+                        <button type="button" onclick="resetPipelineToDefault(); document.getElementById('file-input').click();"
+                            class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer">
+                            <i class="fa-regular fa-folder-open"></i>
+                            <span>Choose Different File</span>
+                        </button>
+                        <button type="button" onclick="resetPipelineToDefault()"
+                            class="px-3 py-2 rounded-lg border border-rose-300 dark:border-rose-700 bg-white dark:bg-slate-800 text-rose-700 dark:text-rose-300 font-bold text-xs hover:bg-rose-100/50 transition-all cursor-pointer">
+                            <span>Reset Dropzone</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+    }
+
+    function closeFileSizeErrorModal() {
+        const modal = document.getElementById('file-size-error-modal');
+        if (modal) modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
     // Unified Upload & Pipeline Processor
     function processUploadedFiles(files) {
         if (!files || files.length === 0) return;
+
+        // Instant Pre-flight Guard: Enforce 25MB maximum file size limit before starting any upload
+        const MAX_BYTES = 25 * 1024 * 1024; // 25 MiB
+        for (let i = 0; i < files.length; i++) {
+            if (files[i].size > MAX_BYTES) {
+                const sizeMB = (files[i].size / (1024 * 1024)).toFixed(1);
+                const fileName = files[i].name;
+
+                // 1. Reset file input
+                const fileInput = document.getElementById('file-input');
+                if (fileInput) fileInput.value = '';
+
+                // 2. Abort any active operations and reset state
+                if (window.currentUploadAbortController) {
+                    try { window.currentUploadAbortController.abort(); } catch (e) {}
+                    window.currentUploadAbortController = null;
+                }
+                if (window.stage2Timeout) {
+                    clearTimeout(window.stage2Timeout);
+                    window.stage2Timeout = null;
+                }
+                stopTelemetryTimer();
+                resetStepperToDefault();
+
+                // 3. Immediately trigger modal
+                showFileSizeErrorModal(fileName, sizeMB);
+                return;
+            }
+        }
 
         const isMultiple = files.length > 1;
 
@@ -1358,10 +1476,21 @@ Upload a file above to extract metadata.</div>
         })
         .catch(err => {
             stopTelemetryTimer();
+            if (window.stage2Timeout) {
+                clearTimeout(window.stage2Timeout);
+                window.stage2Timeout = null;
+            }
             if (err.name === 'AbortError') {
                 // Deliberate user reset / cancel; no error banner needed
                 return;
             }
+            resetStepperToDefault();
+            showSystemAlert({
+                title: 'Ingestion Error',
+                message: err.message || 'Failed to process document.',
+                type: 'error',
+                buttonText: 'Understood'
+            });
             banner.innerHTML = `
                 <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-center space-y-2">
                     <span class="text-xs font-bold text-rose-600 dark:text-rose-400 block">Ingestion error: ${escapeHtml(err.message)}</span>
@@ -1372,7 +1501,6 @@ Upload a file above to extract metadata.</div>
                     </button>
                 </div>
             `;
-            resetStepperToDefault();
             addTelemetryError(err.message);
         });
     }

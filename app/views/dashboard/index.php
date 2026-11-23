@@ -426,9 +426,6 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <span class="text-slate-600 dark:text-slate-300 font-medium">
                     Active: <strong id="activeFilterSummary" class="text-blue-700 dark:text-blue-300"><?= $filterTitle ?></strong>
                 </span>
-                <span id="rowCountDisplay" class="font-mono font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
-                    <?= number_format($totalRows) ?> in database
-                </span>
             </div>
 
             <p class="text-[11px] text-slate-400 dark:text-slate-500 italic">

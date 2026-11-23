@@ -31,7 +31,11 @@ $msg = $msg ?? null;
                 zoom = '1.07';
                 localStorage.setItem('securefaculty_zoom', '1.07');
             }
-            document.documentElement.style.zoom = zoom;
+            if (window.innerWidth >= 1024) {
+                document.documentElement.style.zoom = zoom;
+            } else {
+                document.documentElement.style.zoom = '1.0';
+            }
         })();
     </script>
     <!-- Tailwind CSS CDN with class-based dark mode -->
@@ -164,13 +168,13 @@ $msg = $msg ?? null;
     <main class="flex-1 grid-bg flex flex-col justify-center items-center p-4 sm:p-8 relative">
 
         <!-- Top Right Controls: Theme Switcher & Environment Pill -->
-        <div class="absolute top-4 right-6 flex items-center gap-2">
+        <div class="relative sm:absolute sm:top-4 sm:right-6 w-full sm:w-auto flex items-center justify-end gap-2 mb-4 sm:mb-0 z-20">
             <button type="button" onclick="toggleTheme()" id="themeToggleBtn" aria-label="Toggle visual theme"
-                class="p-2 rounded-full bg-white/90 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm transition-all cursor-pointer">
-                <i class="fa-solid fa-moon dark:hidden text-xs"></i>
-                <i class="fa-solid fa-sun hidden dark:inline text-xs text-amber-400"></i>
+                class="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm transition-all cursor-pointer">
+                <i class="fa-solid fa-moon dark:hidden text-sm"></i>
+                <i class="fa-solid fa-sun hidden dark:inline text-sm text-amber-400"></i>
             </button>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium shadow-sm">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium shadow-sm">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 XAMPP / Localhost
             </span>

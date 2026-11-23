@@ -838,40 +838,42 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 }
 </style>
 
-<dialog id="docPreviewModal" aria-labelledby="docPreviewTitle" class="fixed inset-0 m-auto p-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0c1830] text-slate-800 dark:text-slate-100 shadow-2xl max-w-6xl w-[96vw] h-[92dvh] sm:h-[90vh] max-h-[92dvh] sm:max-h-[90vh] flex-col overflow-hidden outline-none z-50">
+<dialog id="docPreviewModal" aria-labelledby="docPreviewTitle" class="fixed inset-0 m-auto p-0 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0c1830] text-slate-800 dark:text-slate-100 shadow-2xl max-w-6xl w-[92vw] sm:w-[96vw] h-[90dvh] sm:h-[90vh] max-h-[90dvh] sm:max-h-[90vh] flex-col overflow-hidden outline-none z-50">
     <!-- Header -->
-    <div class="px-5 py-3.5 bg-slate-50 dark:bg-[#111c36] border-b border-slate-200 dark:border-slate-800 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 flex-shrink-0">
-        <div class="flex items-center gap-3 min-w-0 flex-1">
-            <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 p-1 flex items-center justify-center flex-shrink-0 shadow-sm">
+    <div class="px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50 dark:bg-[#111c36] border-b border-slate-200 dark:border-slate-800 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-3 flex-shrink-0">
+        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 p-1 flex items-center justify-center flex-shrink-0 shadow-sm">
                 <img src="assets/images/isufst_logo.png" alt="ISUFST Official Seal" class="max-w-full max-h-full object-contain">
             </div>
             <div class="min-w-0 flex-1">
-                <h3 id="docPreviewTitle" class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">Document Preview</h3>
-                <div id="docPreviewMeta" class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap mt-0.5">
+                <h3 id="docPreviewTitle" class="text-xs sm:text-base font-extrabold text-slate-900 dark:text-white truncate">Document Preview</h3>
+                <div id="docPreviewMeta" class="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 flex-wrap mt-0.5">
                     <!-- Badges populated dynamically via openDocPreview -->
                 </div>
             </div>
         </div>
 
         <!-- Controls -->
-        <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end sm:justify-start">
+        <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-start">
             <a id="docPreviewNewTab" href="#" target="_blank" rel="noopener noreferrer"
-               class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
+               class="px-3 py-1.5 min-h-[38px] sm:min-h-0 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
                title="Open in a separate browser tab if needed">
                 <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
-                <span class="hidden sm:inline">Open in Tab</span>
+                <span class="inline">Open in Tab</span>
             </a>
-            <a id="docPreviewDownload" href="#"
-               class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
-               title="Download Decrypted PDF Copy">
-                <i class="fa-solid fa-download text-xs"></i>
-                <span>Download PDF</span>
-            </a>
-            <button type="button" onclick="closeDocPreview()"
-                    class="order-first sm:order-last p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-base cursor-pointer"
-                    title="Close Preview (Esc)">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <div class="flex items-center gap-1.5">
+                <a id="docPreviewDownload" href="#"
+                   class="px-3.5 py-1.5 min-h-[38px] sm:min-h-0 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+                   title="Download Decrypted PDF Copy">
+                    <i class="fa-solid fa-download text-xs"></i>
+                    <span>Download PDF</span>
+                </a>
+                <button type="button" onclick="closeDocPreview()"
+                        class="p-2 min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-base cursor-pointer"
+                        title="Close Preview (Esc)">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
         </div>
     </div>
 

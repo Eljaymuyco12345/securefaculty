@@ -168,8 +168,8 @@
         </div>
     </div>
 
-    <!-- 4. Floating System Guide & Tutorial Assistant (FAB) -->
-    <div id="system-tutorial-fab" class="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 print:hidden">
+    <!-- 4. Floating System Guide & Tutorial Assistant (FAB) - Hidden on Mobile to avoid UI Occlusion, Accessible via Navigation Menu -->
+    <div id="system-tutorial-fab" class="hidden md:block fixed bottom-6 right-6 z-30 print:hidden transition-all duration-300">
         <button type="button" onclick="openSystemTutorial()"
                 title="Open SecureFaculty System Guide & Interactive Tutorial"
                 class="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-[#0d2342] via-[#14335e] to-[#1e447b] dark:from-blue-600 dark:via-blue-500 dark:to-indigo-600 text-white shadow-2xl hover:shadow-blue-500/30 border-2 border-white/20 hover:border-white/50 hover:scale-105 active:scale-95 transition-all cursor-pointer">
