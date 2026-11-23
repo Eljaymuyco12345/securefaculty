@@ -207,19 +207,19 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 </div>
 
 <!-- Modal 1: Provision New User -->
-<div id="modal-create-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+<div id="modal-create-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col p-5 sm:p-6 space-y-4 overflow-hidden">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-user-plus text-emerald-600 dark:text-emerald-400 text-sm"></i>
                 <h3 class="modal-title text-sm font-bold text-slate-900 dark:text-slate-100">Provision New Academic Account</h3>
             </div>
-            <button type="button" onclick="closeCreateUserModal()" aria-label="Close modal" class="touch-target text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+            <button type="button" onclick="closeCreateUserModal()" aria-label="Close modal" class="touch-target p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        <form id="createUserForm" onsubmit="submitCreateUser(event)" class="space-y-3 text-xs">
+        <form id="createUserForm" onsubmit="submitCreateUser(event)" class="space-y-3 text-xs overflow-y-auto pr-1">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username (CICI ID): *</label>
@@ -286,19 +286,19 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 </div>
 
 <!-- Modal 2: Edit Profile -->
-<div id="modal-edit-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full p-6 space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+<div id="modal-edit-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col p-5 sm:p-6 space-y-4 overflow-hidden">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-user-pen text-blue-600 dark:text-blue-400 text-sm"></i>
                 <h3 class="modal-title text-sm font-bold text-slate-900 dark:text-slate-100">Update User Record</h3>
             </div>
-            <button type="button" onclick="closeEditUserModal()" aria-label="Close modal" class="touch-target text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+            <button type="button" onclick="closeEditUserModal()" aria-label="Close modal" class="touch-target p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        <form id="editUserForm" onsubmit="submitEditUser(event)" class="space-y-3 text-xs">
+        <form id="editUserForm" onsubmit="submitEditUser(event)" class="space-y-3 text-xs overflow-y-auto pr-1">
             <input type="hidden" id="edit_user_id">
 
             <div>

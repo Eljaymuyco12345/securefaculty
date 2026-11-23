@@ -16,7 +16,8 @@ class UploadController extends BaseController {
         $currentUser = AuthService::user();
         $isDean = AuthService::isDean();
 
-        $facultyList = UserModel::getFacultyOnly();
+        // When Dean/Admin is uploading, include all academic profiles (Dean + Faculty) so Dean can archive their own certificates or upload for others
+        $facultyList = $isDean ? UserModel::getFacultyList() : UserModel::getFacultyOnly();
 
         $this->renderView('upload/index.php', [
             'currentUser' => $currentUser,

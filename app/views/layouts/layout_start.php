@@ -42,7 +42,11 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                 savedZoom = '1.07';
                 localStorage.setItem('securefaculty_zoom', '1.07');
             }
-            document.documentElement.style.zoom = savedZoom;
+            if (window.innerWidth >= 1024) {
+                document.documentElement.style.zoom = savedZoom;
+            } else {
+                document.documentElement.style.zoom = '1.0';
+            }
         })();
     </script>
     <!-- Tailwind CSS CDN -->
@@ -356,13 +360,13 @@ $searchAction = basename($_SERVER['PHP_SELF']);
 
     <!-- Mobile Sidebar Backdrop Overlay -->
     <div id="sidebar-backdrop" onclick="toggleSidebar(false)"
-         class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+         class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden lg:hidden transition-opacity"></div>
 
     <div class="flex-1 flex relative">
 
         <!-- Unified Left Navy Sidebar (Fixed to Viewport & Fits All Displays) -->
         <aside id="main-sidebar"
-               class="fixed inset-y-0 left-0 z-40 w-60 sidebar-navy safe-area-sidebar select-none text-slate-300 flex flex-col justify-between flex-shrink-0 border-r border-[#08182f] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
+               class="fixed inset-y-0 left-0 z-50 w-60 sidebar-navy safe-area-sidebar select-none text-slate-300 flex flex-col justify-between flex-shrink-0 border-r border-[#08182f] transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out -left-[1px]">
             <div class="flex-1 min-h-0 flex flex-col overflow-y-auto">
                 <!-- Brand / Logo matching Figure 4.3 with Official ISUFST Seal -->
                 <div class="h-14 px-3.5 flex items-center justify-between border-b border-[#14335e] flex-shrink-0">
@@ -493,6 +497,13 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                         <i class="fa-solid fa-gear w-5 text-center text-sm"></i>
                         <span>System Settings</span>
                     </a>
+
+                    <!-- System Guide (How-To Tutorial) -->
+                    <a href="javascript:void(0)" onclick="openSystemTutorial()"
+                       class="sidebar-hover flex items-center gap-3 px-3 py-2 rounded-lg text-slate-200 transition-all font-semibold text-sm">
+                        <i class="fa-solid fa-graduation-cap w-5 text-center text-sm text-amber-300"></i>
+                        <span>System Guide</span>
+                    </a>
                 </nav>
             </div>
 
@@ -517,7 +528,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                 <div class="flex items-center gap-3">
                     <!-- Hamburger button on mobile -->
                     <button type="button" onclick="toggleSidebar(true)" aria-label="Open Navigation Menu"
-                            class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 lg:hidden text-lg p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition-colors">
+                            class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 lg:hidden text-lg p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition-colors">
                         <i class="fa-solid fa-bars"></i>
                     </button>
 
@@ -542,7 +553,7 @@ $searchAction = basename($_SERVER['PHP_SELF']);
 
                     <!-- Theme Toggle Button (Light / Dark Mode) -->
                     <button type="button" onclick="toggleTheme()" id="themeToggleBtn" aria-label="Toggle Dark / Light Mode"
-                            class="touch-target p-2 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
+                            class="touch-target p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
                             title="Toggle Theme">
                         <i class="fa-solid fa-moon dark:hidden text-sm"></i>
                         <i class="fa-solid fa-sun hidden dark:inline text-sm text-amber-400"></i>
@@ -551,9 +562,9 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                     <!-- Interactive Notification Bell -->
                     <div class="relative">
                         <button type="button" onclick="toggleNotifications()" aria-label="View System Notifications"
-                                class="touch-target text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 p-2 rounded-lg text-sm hover:bg-slate-100 dark:hover:bg-slate-800/80 relative transition-colors">
+                                class="touch-target text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-sm hover:bg-slate-100 dark:hover:bg-slate-800/80 relative transition-colors">
                             <i class="fa-regular fa-bell"></i>
-                            <span class="w-2 h-2 rounded-full bg-blue-600 absolute top-1.5 right-1.5 ring-2 ring-white dark:ring-[#0c1830]"></span>
+                            <span class="w-2 h-2 rounded-full bg-blue-600 absolute top-2 right-2 ring-2 ring-white dark:ring-[#0c1830]"></span>
                         </button>
 
                         <!-- Notification Dropdown Menu -->

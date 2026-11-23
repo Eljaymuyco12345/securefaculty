@@ -184,40 +184,51 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 </div>
             </div>
 
-            <!-- Quick Date Range Presets (Nov–Dec example) -->
-            <div class="flex items-center gap-2 flex-wrap pt-1 text-[11px] text-slate-500 dark:text-slate-400">
+            <!-- Quick Date Range Presets -->
+            <?php
+                $curYear = date('Y');
+                $isNovDec = ($dateFrom === "{$curYear}-11-01" && $dateTo === "{$curYear}-12-31");
+                $isQ1 = ($dateFrom === "{$curYear}-01-01" && $dateTo === "{$curYear}-03-31");
+                $isQ2 = ($dateFrom === "{$curYear}-04-01" && $dateTo === "{$curYear}-06-30");
+                $isQ3 = ($dateFrom === "{$curYear}-07-01" && $dateTo === "{$curYear}-09-30");
+                $isQ4 = ($dateFrom === "{$curYear}-10-01" && $dateTo === "{$curYear}-12-31");
+                $isThisYear = ($dateFrom === "{$curYear}-01-01" && $dateTo === "{$curYear}-12-31");
+            ?>
+            <div class="flex items-center gap-1.5 flex-wrap pt-2 text-[11px] text-slate-500 dark:text-slate-400">
                 <span class="font-bold flex items-center gap-1 w-full sm:w-auto">
                     <i class="fa-regular fa-clock text-blue-500"></i>
                     Quick Range Presets:
                 </span>
-                <button type="button" onclick="setExportDatePreset('nov-dec')"
-                        class="min-h-[40px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 transition-colors cursor-pointer flex items-center justify-center">
-                    Nov – Dec (Late Year)
-                </button>
-                <button type="button" onclick="setExportDatePreset('q1')"
-                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
-                    Jan – Mar (Q1)
-                </button>
-                <button type="button" onclick="setExportDatePreset('q2')"
-                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
-                    Apr – Jun (Q2)
-                </button>
-                <button type="button" onclick="setExportDatePreset('q3')"
-                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
-                    Jul – Sep (Q3)
-                </button>
-                <button type="button" onclick="setExportDatePreset('q4')"
-                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
-                    Oct – Dec (Q4)
-                </button>
-                <button type="button" onclick="setExportDatePreset('this-year')"
-                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center justify-center">
-                    Current Year (<?= date('Y') ?>)
-                </button>
-                <button type="button" onclick="setExportDatePreset('clear')"
-                        class="min-h-[40px] sm:min-h-0 px-2 py-1.5 sm:py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800 transition-colors cursor-pointer flex items-center justify-center">
-                    Clear Dates
-                </button>
+                <div class="flex items-center gap-1.5 flex-wrap w-full sm:w-auto">
+                    <button type="button" onclick="setExportDatePreset('nov-dec')"
+                            class="min-h-[36px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded font-semibold border transition-all cursor-pointer flex items-center justify-center <?= $isNovDec ? 'bg-blue-600 text-white border-blue-700 shadow-sm ring-2 ring-blue-400/40' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' ?>">
+                        Nov – Dec (Late Year)
+                    </button>
+                    <button type="button" onclick="setExportDatePreset('q1')"
+                            class="min-h-[36px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded font-semibold border transition-all cursor-pointer flex items-center justify-center <?= $isQ1 ? 'bg-blue-600 text-white border-blue-700 shadow-sm ring-2 ring-blue-400/40' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' ?>">
+                        Jan – Mar (Q1)
+                    </button>
+                    <button type="button" onclick="setExportDatePreset('q2')"
+                            class="min-h-[36px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded font-semibold border transition-all cursor-pointer flex items-center justify-center <?= $isQ2 ? 'bg-blue-600 text-white border-blue-700 shadow-sm ring-2 ring-blue-400/40' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' ?>">
+                        Apr – Jun (Q2)
+                    </button>
+                    <button type="button" onclick="setExportDatePreset('q3')"
+                            class="min-h-[36px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded font-semibold border transition-all cursor-pointer flex items-center justify-center <?= $isQ3 ? 'bg-blue-600 text-white border-blue-700 shadow-sm ring-2 ring-blue-400/40' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' ?>">
+                        Jul – Sep (Q3)
+                    </button>
+                    <button type="button" onclick="setExportDatePreset('q4')"
+                            class="min-h-[36px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded font-semibold border transition-all cursor-pointer flex items-center justify-center <?= $isQ4 ? 'bg-blue-600 text-white border-blue-700 shadow-sm ring-2 ring-blue-400/40' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' ?>">
+                        Oct – Dec (Q4)
+                    </button>
+                    <button type="button" onclick="setExportDatePreset('this-year')"
+                            class="min-h-[36px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded font-semibold border transition-all cursor-pointer flex items-center justify-center <?= $isThisYear ? 'bg-blue-600 text-white border-blue-700 shadow-sm ring-2 ring-blue-400/40' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' ?>">
+                        Current Year (<?= $curYear ?>)
+                    </button>
+                    <button type="button" onclick="setExportDatePreset('clear')"
+                            class="min-h-[36px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800 transition-colors cursor-pointer flex items-center justify-center">
+                        Clear Dates
+                    </button>
+                </div>
             </div>
         </form>
     </div>

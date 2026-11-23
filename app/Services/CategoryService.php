@@ -132,7 +132,15 @@ class CategoryService {
     /**
      * Get display label for a category
      */
+    /**
+     * Get display label for a category
+     */
     public static function getLabel(string $category): string {
+        $trimmed = trim($category);
+        if (preg_match('/^other\s*[:(]\s*(.+?)[)]?$/i', $trimmed, $m)) {
+            $custom = trim($m[1]);
+            return $custom !== '' ? "Other ({$custom})" : 'Other';
+        }
         $norm = self::normalize($category);
         return self::CATEGORIES[$norm]['label'] ?? $category;
     }
@@ -141,6 +149,11 @@ class CategoryService {
      * Get short display label for a category
      */
     public static function getShortLabel(string $category): string {
+        $trimmed = trim($category);
+        if (preg_match('/^other\s*[:(]\s*(.+?)[)]?$/i', $trimmed, $m)) {
+            $custom = trim($m[1]);
+            return $custom !== '' ? "Other ({$custom})" : 'Other';
+        }
         $norm = self::normalize($category);
         return self::CATEGORIES[$norm]['short_label'] ?? $category;
     }
