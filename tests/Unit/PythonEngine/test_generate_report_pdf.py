@@ -110,6 +110,75 @@ class TestGenerateReportPdf(unittest.TestCase):
         self.assertTrue(os.path.exists(self.temp_pdf.name))
         self.assertGreater(os.path.getsize(self.temp_pdf.name), 1000)
 
+    def test_pdf_generation_accreditation_fields(self):
+        accreditation_payload = {
+            "meta": {
+                "category": "Research Publication",
+                "date_scope": "All Validated Records",
+                "auditor_name": "Dean & Accreditation Team"
+            },
+            "records": [
+                {
+                    "title": "International Scopus Publication in AI",
+                    "file_type": "PDF",
+                    "faculty_name": "Prof. Levy Mikhail B. Aguilar",
+                    "academic_rank": "Assistant Professor II",
+                    "co_authors": "Prof. Rae Jan B. Corneja",
+                    "cert_number": "CERT-2026-INTL-01",
+                    "date_issued": "2026-05-12",
+                    "issuer": "IEEE Computer Society",
+                    "category": "Research Publication",
+                    "scope": "International",
+                    "indexing": "Scopus",
+                    "place_issued": "Tokyo, Japan"
+                },
+                {
+                    "title": "National Seminar on Cybersecurity",
+                    "file_type": "PDF",
+                    "faculty_name": "Prof. Maria Santos",
+                    "academic_rank": "Associate Professor I",
+                    "cert_number": "CERT-2026-NAT-02",
+                    "date_issued": "2026-06-20",
+                    "issuer": "DICT Philippines",
+                    "category": "Seminar",
+                    "scope": "National",
+                    "indexing": "None",
+                    "place_issued": "Manila, Philippines"
+                },
+                {
+                    "title": "Regional Training on Data Science",
+                    "file_type": "PDF",
+                    "faculty_name": "Engr. Juan Dela Cruz",
+                    "academic_rank": "Instructor III",
+                    "cert_number": "CERT-2026-REG-03",
+                    "date_issued": "2026-07-15",
+                    "issuer": "CHED Region VI",
+                    "category": "Training",
+                    "scope": "Regional",
+                    "indexing": "Peer-Reviewed",
+                    "place_issued": "Iloilo City, Philippines"
+                },
+                {
+                    "title": "Institutional Curriculum Workshop",
+                    "file_type": "PDF",
+                    "faculty_name": "Dr. Pedro Reyes",
+                    "academic_rank": "Professor I",
+                    "cert_number": "CERT-2026-INST-04",
+                    "date_issued": "2026-08-01",
+                    "issuer": "ISUFST CICI",
+                    "category": "Workshop",
+                    "scope": "Institutional",
+                    "indexing": "None",
+                    "place_issued": "Barotac Nuevo, Iloilo"
+                }
+            ]
+        }
+        with open(self.temp_json.name, 'w', encoding='utf-8') as f:
+            json.dump(accreditation_payload, f)
+        generate_report_pdf.generate_pdf(self.temp_json.name, self.temp_pdf.name)
+        self.assertTrue(os.path.exists(self.temp_pdf.name))
+        self.assertGreater(os.path.getsize(self.temp_pdf.name), 1000)
+
 
 if __name__ == '__main__':
     unittest.main()

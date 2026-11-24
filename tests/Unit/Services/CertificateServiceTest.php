@@ -164,4 +164,62 @@ class CertificateServiceTest extends TestCase {
         $this->assertEquals('duplicate_detected', $res2['status']);
         @unlink($dupPath);
     }
+
+    public function testCommitCertificateWithAccreditationFields(): void {
+        $tempFile = 'staged_accred_' . bin2hex(random_bytes(6)) . '.pdf';
+        file_put_contents(TEMP_DIR . DIRECTORY_SEPARATOR . $tempFile, "%PDF-1.4 Accred Commit Test " . time());
+
+        $input = [
+            'temp_filename' => $tempFile,
+            'title' => 'Accreditation Commit Verification',
+            'issuer' => 'Springer Nature',
+            'date_issued' => '2026-07-20',
+            'category' => 'Research Publication',
+            'original_name' => 'springer_pub.pdf',
+            'scope' => 'International',
+            'indexing' => 'Scopus',
+            'place_issued' => 'Berlin, Germany',
+            'authors' => 'Prof. Mikhail Aguilar',
+            'accreditation_area' => 'Area V: Research'
+        ];
+
+        $res = CertificateService::commitCertificate($input, 2, false);
+        $this->assertTrue($res['success']);
+        $certId = (int)$res['certificate_id'];
+        $this->createdCerts[] = $certId;
+
+        $cert = CertificateDAO::find($certId);
+        $this->assertNotNull($cert);
+        $this->assertEquals('International', $cert['scope']);
+        $this->assertEquals('Scopus', $cert['indexing']);
+        $this->assertEquals('Berlin, Germany', $cert['place_issued']);
+        $this->assertEquals('Prof. Mikhail Aguilar', $cert['authors']);
+        $this->assertEquals('Area V: Research', $cert['accreditation_area']);
+    }
+
+    public function testCommitCertificateInfersAccreditationAreaWhenEmpty(): void {
+        $tempFile = 'staged_infer_' . bin2hex(random_bytes(6)) . '.pdf';
+        file_put_contents(TEMP_DIR . DIRECTORY_SEPARATOR . $tempFile, "%PDF-1.4 Infer Test " . time());
+
+        $input = [
+            'temp_filename' => $tempFile,
+            'title' => 'Inferred Area Test',
+            'issuer' => 'ISUFST',
+            'date_issued' => '2026-07-21',
+            'category' => 'Instructional Material',
+            'original_name' => 'module.pdf',
+            'scope' => 'Institutional',
+            'indexing' => 'None',
+            'accreditation_area' => '' // Empty: should be inferred automatically
+        ];
+
+        $res = CertificateService::commitCertificate($input, 2, false);
+        $this->assertTrue($res['success']);
+        $certId = (int)$res['certificate_id'];
+        $this->createdCerts[] = $certId;
+
+        $cert = CertificateDAO::find($certId);
+        $this->assertNotNull($cert);
+        $this->assertEquals('Area III: Curriculum & Instruction', $cert['accreditation_area']);
+    }
 }

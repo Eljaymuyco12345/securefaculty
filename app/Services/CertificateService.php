@@ -6,8 +6,11 @@
  */
 
 require_once __DIR__ . '/../DAO/CertificateDAO.php';
+require_once __DIR__ . '/../DAO/UserDAO.php';
+require_once __DIR__ . '/../Models/CertificateModel.php';
 require_once __DIR__ . '/../Services/CryptoService.php';
 require_once __DIR__ . '/../Services/AuditLogger.php';
+require_once __DIR__ . '/../Services/CategoryService.php';
 
 class CertificateService {
     /**
@@ -113,6 +116,23 @@ class CertificateService {
             $fileType = 'pdf';
         }
 
+        // Accreditation compliance fields
+        $scope = CertificateModel::normalizeScope($input['scope'] ?? 'Institutional');
+        $indexing = CertificateModel::normalizeIndexing($input['indexing'] ?? 'None');
+
+        $rawPlace = !empty($input['place_issued']) ? trim((string)$input['place_issued']) : null;
+        $placeIssued = ($rawPlace !== null && $rawPlace !== '') ? mb_substr($rawPlace, 0, 255) : null;
+
+        $rawAuthors = !empty($input['authors']) ? trim((string)$input['authors']) : null;
+        $authors = ($rawAuthors !== null && $rawAuthors !== '') ? mb_substr($rawAuthors, 0, 500) : null;
+
+        $rawArea = !empty($input['accreditation_area']) ? trim((string)$input['accreditation_area']) : null;
+        if ($rawArea !== null && $rawArea !== '') {
+            $accreditationArea = mb_substr($rawArea, 0, 100);
+        } else {
+            $accreditationArea = CategoryService::inferAccreditationArea($category);
+        }
+
         $certData = [
             'faculty_id' => $assignedFacultyId,
             'title' => $title,
@@ -129,7 +149,12 @@ class CertificateService {
             'file_hash' => $fileHash,
             'cert_number' => $certNumber,
             'processing_status' => 'completed',
-            'batch_id' => $input['batch_id'] ?? null
+            'batch_id' => $input['batch_id'] ?? null,
+            'scope' => $scope,
+            'indexing' => $indexing,
+            'place_issued' => $placeIssued,
+            'authors' => $authors,
+            'accreditation_area' => $accreditationArea
         ];
 
         try {

@@ -8,6 +8,7 @@ $search = $search ?? '';
 $dateFrom = $dateFrom ?? '';
 $dateTo = $dateTo ?? '';
 $issuedYear = $issuedYear ?? '';
+$scope = $scope ?? ($_GET['scope'] ?? 'All');
 $viewMode = $viewMode ?? 'table';
 $availableYears = $availableYears ?? [];
 $facultyMembers = $facultyMembers ?? [];
@@ -15,6 +16,49 @@ $allCategories = $allCategories ?? ['All', 'Modules & IMs', 'Research', 'Seminar
 $targetFacultyId = $targetFacultyId ?? null;
 $activeNav = $activeNav ?? 'certificates';
 $pageTitle = $pageTitle ?? ($isDean ? 'Institutional Department Vault' : 'Faculty Personal Digital Vault');
+
+if (!function_exists('renderScopeBadge')) {
+    function renderScopeBadge(?string $scope): string {
+        $s = trim($scope ?? '');
+        $sl = strtolower($s);
+        if (str_contains($sl, 'internat')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800" title="Accreditation Scope: International"><i class="fa-solid fa-earth-americas text-[9px] text-indigo-600 dark:text-indigo-400"></i><span>International</span></span>';
+        } elseif (str_contains($sl, 'nation')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" title="Accreditation Scope: National"><i class="fa-solid fa-flag text-[9px] text-emerald-600 dark:text-emerald-400"></i><span>National</span></span>';
+        } elseif (str_contains($sl, 'region')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800" title="Accreditation Scope: Regional"><i class="fa-solid fa-map-location-dot text-[9px] text-amber-600 dark:text-amber-400"></i><span>Regional</span></span>';
+        } else {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700" title="Accreditation Scope: Institutional"><i class="fa-solid fa-building-columns text-[9px] text-slate-500 dark:text-slate-400"></i><span>Institutional</span></span>';
+        }
+    }
+}
+
+if (!function_exists('renderIndexingBadge')) {
+    function renderIndexingBadge(?string $indexing, ?string $category = null): string {
+        $idx = trim($indexing ?? '');
+        $idxL = strtolower($idx);
+        if (str_contains($idxL, 'scopus')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-xs" title="Indexing: Scopus Indexed"><i class="fa-solid fa-certificate text-[9px] text-amber-600 dark:text-amber-400"></i><span>Scopus Indexed</span></span>';
+        } elseif (str_contains($idxL, 'web of science') || str_contains($idxL, 'wos')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800" title="Indexing: Web of Science"><i class="fa-solid fa-flask text-[9px] text-purple-600 dark:text-purple-400"></i><span>WoS</span></span>';
+        } elseif (str_contains($idxL, 'peer')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-teal-50 dark:bg-teal-950/70 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800" title="Indexing: Peer-Reviewed"><i class="fa-solid fa-check-double text-[9px] text-teal-600 dark:text-teal-400"></i><span>Peer-Reviewed</span></span>';
+        }
+        return '';
+    }
+}
+
+if (!function_exists('resolveAaccupArea')) {
+    function resolveAaccupArea(?string $area, ?string $category = null): string {
+        if (!empty($area) && trim($area) !== '') return trim($area);
+        $cat = strtolower(trim($category ?? ''));
+        if (str_contains($cat, 'research')) return 'Area V: Research';
+        if (str_contains($cat, 'instructional') || str_contains($cat, 'module')) return 'Area III: Curriculum and Instruction';
+        if (str_contains($cat, 'seminar') || str_contains($cat, 'training') || str_contains($cat, 'workshop') || str_contains($cat, 'award') || str_contains($cat, 'milestone')) return 'Area VIII: Faculty Development';
+        return 'Area VIII: Faculty Development';
+    }
+}
+
 require_once __DIR__ . '/../layouts/layout_start.php';
 ?>
 
@@ -62,13 +106,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 
         <!-- View Mode Switcher -->
         <div class="inline-flex rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111c36] p-0.5 shadow-sm">
-            <a href="vault.php?view=table&category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?>"
+            <a href="vault.php?view=table&category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?>"
                class="px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 <?= $viewMode === 'table' ? 'bg-[#0d2342] text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200' ?>"
                title="Table List View">
                 <i class="fa-solid fa-table-list"></i>
                 <span class="hidden sm:inline">Table View</span>
             </a>
-            <a href="vault.php?view=grid&category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?>"
+            <a href="vault.php?view=grid&category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?>"
                class="px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 <?= $viewMode === 'grid' ? 'bg-[#0d2342] text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200' ?>"
                title="Card Grid View">
                 <i class="fa-solid fa-grip"></i>
@@ -77,7 +121,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </div>
 
         <!-- Direct Link to Accreditation Report & PDF -->
-        <a href="export.php?category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?>"
+        <a href="export.php?category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?>"
            class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer">
             <i class="fa-solid fa-file-pdf text-sm animate-pulse"></i>
             <span>Official Report &amp; PDF</span>
@@ -113,6 +157,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             if ($dateFrom) $tabUrl .= '&date_from=' . urlencode($dateFrom);
             if ($dateTo) $tabUrl .= '&date_to=' . urlencode($dateTo);
             if ($issuedYear) $tabUrl .= '&issued_year=' . urlencode($issuedYear);
+            if ($scope && $scope !== 'All') $tabUrl .= '&scope=' . urlencode($scope);
         ?>
             <a href="<?= $tabUrl ?>"
                class="px-3 py-1.5 rounded-lg text-xs transition-all <?= $isActive ? 'bg-[#0d2342] dark:bg-blue-600 text-white font-bold shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' ?>">
@@ -121,7 +166,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <?php endforeach; ?>
     </div>
     <?php
-        $activeFilterCount = ($search !== '' ? 1 : 0) + ($dateFrom !== '' ? 1 : 0) + ($dateTo !== '' ? 1 : 0) + ($issuedYear !== '' ? 1 : 0) + ($isDean && $targetFacultyId ? 1 : 0);
+        $activeFilterCount = ($search !== '' ? 1 : 0) + ($dateFrom !== '' ? 1 : 0) + ($dateTo !== '' ? 1 : 0) + ($issuedYear !== '' ? 1 : 0) + (($scope ?? 'All') !== 'All' ? 1 : 0) + ($isDean && $targetFacultyId ? 1 : 0);
     ?>
     <button type="button" onclick="toggleVaultFilters()" id="vaultFilterToggleBtn" aria-expanded="true" aria-controls="vaultFilterDisclosure"
             class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer">
@@ -144,7 +189,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <input type="hidden" name="category" value="<?= htmlspecialchars($category) ?>">
         <?php endif; ?>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs items-end">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5 text-xs items-end">
             <!-- Date Issued From -->
             <div>
                 <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
@@ -176,6 +221,21 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             Year <?= $yr ?>
                         </option>
                     <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Scope Filter Dropdown -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                    <i class="fa-solid fa-earth-americas text-indigo-500 mr-1"></i>Scope / Level:
+                </label>
+                <select name="scope"
+                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-blue-500">
+                    <option value="All" <?= ($scope ?? 'All') === 'All' ? 'selected' : '' ?>>All Scopes</option>
+                    <option value="International" <?= ($scope ?? '') === 'International' ? 'selected' : '' ?>>International</option>
+                    <option value="National" <?= ($scope ?? '') === 'National' ? 'selected' : '' ?>>National</option>
+                    <option value="Regional" <?= ($scope ?? '') === 'Regional' ? 'selected' : '' ?>>Regional</option>
+                    <option value="Institutional" <?= ($scope ?? '') === 'Institutional' ? 'selected' : '' ?>>Institutional</option>
                 </select>
             </div>
 
@@ -215,7 +275,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <i class="fa-solid fa-filter text-[10px]"></i>
                     <span>Apply</span>
                 </button>
-                <?php if ($search || $dateFrom || $dateTo || $issuedYear || ($isDean && $targetFacultyId)): ?>
+                <?php if ($search || $dateFrom || $dateTo || $issuedYear || ($scope && $scope !== 'All') || ($isDean && $targetFacultyId)): ?>
                     <a href="vault.php?view=<?= urlencode($viewMode) ?><?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?>"
                        class="py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all flex items-center justify-center cursor-pointer"
                        title="Reset Filters">
@@ -332,7 +392,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                     <?php endif; ?>
                                 </div>
                                 <button type="button"
-                                        onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>)"
+                                        onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>)"
                                         class="text-left hover:text-blue-600 dark:hover:text-blue-400 font-semibold transition-colors line-clamp-1 cursor-pointer"
                                         title="Preview <?= htmlspecialchars($cert['title']) ?>">
                                     <?= htmlspecialchars($cert['title']) ?>
@@ -386,14 +446,27 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             <td class="p-3 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
                                 <span class="font-bold text-blue-950 dark:text-blue-300"><?= htmlspecialchars($cert['date_issued']) ?></span>
                             </td>
-                            <td class="p-3 text-slate-600 dark:text-slate-400 max-w-[140px] truncate" title="<?= htmlspecialchars($cert['issuer']) ?>">
-                                <?= htmlspecialchars($cert['issuer']) ?>
+                            <td class="p-3 text-slate-600 dark:text-slate-400 max-w-[150px]">
+                                <div class="truncate font-medium" title="<?= htmlspecialchars($cert['issuer']) ?>"><?= htmlspecialchars($cert['issuer']) ?></div>
+                                <?php $place = !empty($cert['place_issued']) ? $cert['place_issued'] : (!empty($cert['venue']) ? $cert['venue'] : ''); ?>
+                                <?php if ($place): ?>
+                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5 truncate" title="Venue / Place: <?= htmlspecialchars($place) ?>">
+                                        <i class="fa-solid fa-location-dot text-rose-500 text-[9px] flex-shrink-0"></i>
+                                        <span><?= htmlspecialchars($place) ?></span>
+                                    </span>
+                                <?php endif; ?>
                             </td>
                             <td class="p-3 whitespace-nowrap">
-                                <span class="px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1.5 <?= CategoryService::getBadgeClass($cert['category'] ?? '') ?>">
-                                    <i class="<?= CategoryService::getIcon($cert['category'] ?? '') ?> text-[10px]"></i>
-                                    <span><?= htmlspecialchars(CategoryService::getShortLabel($cert['category'] ?? '')) ?></span>
-                                </span>
+                                <div class="flex flex-col gap-1 items-start">
+                                    <span class="px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1.5 <?= CategoryService::getBadgeClass($cert['category'] ?? '') ?>">
+                                        <i class="<?= CategoryService::getIcon($cert['category'] ?? '') ?> text-[10px]"></i>
+                                        <span><?= htmlspecialchars(CategoryService::getShortLabel($cert['category'] ?? '')) ?></span>
+                                    </span>
+                                    <div class="flex items-center gap-1 flex-wrap">
+                                        <?= renderScopeBadge($cert['scope'] ?? 'Institutional') ?>
+                                        <?= renderIndexingBadge($cert['indexing'] ?? '', $cert['category'] ?? '') ?>
+                                    </div>
+                                </div>
                             </td>
                             <td class="p-3 text-center whitespace-nowrap">
                                 <span class="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold">
@@ -404,7 +477,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             <td class="p-3 text-right whitespace-nowrap">
                                 <div class="inline-flex items-center gap-1">
                                     <button type="button"
-                                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>)"
+                                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>)"
                                             class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[10px] font-bold inline-flex items-center gap-1 shadow-sm border border-transparent dark:border-slate-700 transition-all cursor-pointer"
                                             title="Preview Document In-App">
                                         <i class="fa-regular fa-eye"></i>
@@ -446,6 +519,8 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 <i class="<?= CategoryService::getIcon($cert['category'] ?? '') ?> text-[10px]"></i>
                                 <span><?= htmlspecialchars(CategoryService::getShortLabel($cert['category'] ?? '')) ?></span>
                             </span>
+                            <?= renderScopeBadge($cert['scope'] ?? 'Institutional') ?>
+                            <?= renderIndexingBadge($cert['indexing'] ?? '', $cert['category'] ?? '') ?>
                             <?php if ($isCoAuthor): ?>
                                 <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800 flex items-center gap-1">
                                     <i class="fa-solid fa-user-group text-[8px]"></i>
@@ -526,6 +601,15 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         <span class="truncate"><?= htmlspecialchars($cert['issuer']) ?></span>
                     </p>
 
+                    <!-- Place Issued / Venue -->
+                    <?php $place = !empty($cert['place_issued']) ? $cert['place_issued'] : (!empty($cert['venue']) ? $cert['venue'] : ''); ?>
+                    <?php if ($place): ?>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5 truncate" title="Venue / Place: <?= htmlspecialchars($place) ?>">
+                            <i class="fa-solid fa-location-dot text-[10px] text-rose-500"></i>
+                            <span>Venue / Place: <strong class="text-slate-700 dark:text-slate-300"><?= htmlspecialchars($place) ?></strong></span>
+                        </p>
+                    <?php endif; ?>
+
                     <!-- Date Issued -->
                     <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5 font-mono">
                         <i class="fa-regular fa-calendar-check text-[10px] text-blue-600"></i>
@@ -536,7 +620,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <!-- Card Actions matching Figure D.2 -->
                 <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                     <button type="button"
-                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>)"
+                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>)"
                             class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                             title="Preview Document In-App">
                         <i class="fa-regular fa-eye text-[10px]"></i>
@@ -736,12 +820,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <?php endif; ?>
 
     // --- In-App PDF Document Preview Controller ---
-    function openDocPreview(id, title, issuer, date, category, certNo) {
+    function openDocPreview(id, title, issuer, date, category, certNo, scope, indexing, venue, aaccupArea) {
         const dialog = document.getElementById('docPreviewModal');
         const iframe = document.getElementById('docPreviewIframe');
         const spinner = document.getElementById('docPreviewSpinner');
         const titleEl = document.getElementById('docPreviewTitle');
         const metaEl = document.getElementById('docPreviewMeta');
+        const accProfileEl = document.getElementById('docPreviewAccreditationProfile');
         const newTabLink = document.getElementById('docPreviewNewTab');
         const downloadLink = document.getElementById('docPreviewDownload');
 
@@ -760,6 +845,57 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 metaHtml += `<span class="font-mono text-slate-400 text-[10px]">#${escapeDocHtml(certNo)}</span>`;
             }
             metaEl.innerHTML = metaHtml;
+        }
+
+        // Display full Accreditation Profile (AACCUP Area, Scope, Indexing, Venue / Place Issued)
+        if (accProfileEl) {
+            let accHtml = '';
+            
+            // 1. AACCUP Area
+            const areaVal = aaccupArea || (category === 'Research Publication' ? 'Area V: Research' : (category === 'Instructional Material' ? 'Area III: Curriculum and Instruction' : 'Area VIII: Faculty Development'));
+            accHtml += `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800" title="AACCUP Evaluation Area"><i class="fa-solid fa-award text-indigo-500 text-[10px]"></i><span>${escapeDocHtml(areaVal)}</span></span>`;
+
+            // 2. Scope / Classification Badge
+            const scopeVal = scope || 'Institutional';
+            let scopeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+            let scopeIcon = 'fa-building-columns';
+            const sL = scopeVal.toLowerCase();
+            if (sL.includes('internat')) {
+                scopeClass = 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800';
+                scopeIcon = 'fa-earth-americas text-indigo-500';
+            } else if (sL.includes('nation')) {
+                scopeClass = 'bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
+                scopeIcon = 'fa-flag text-emerald-500';
+            } else if (sL.includes('region')) {
+                scopeClass = 'bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800';
+                scopeIcon = 'fa-map-location-dot text-amber-500';
+            }
+            accHtml += `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-bold ${scopeClass} border" title="Accreditation Scope / Classification"><i class="fa-solid ${scopeIcon} text-[10px]"></i><span>Scope: ${escapeDocHtml(scopeVal)}</span></span>`;
+
+            // 3. Indexing / Refereed Status Badge (for Research Publication or indexed documents)
+            if (indexing && indexing !== 'None' && indexing !== 'N/A') {
+                let idxClass = 'bg-teal-50 dark:bg-teal-950/70 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800';
+                let idxIcon = 'fa-check-double text-teal-500';
+                let idxText = indexing;
+                const iL = indexing.toLowerCase();
+                if (iL.includes('scopus')) {
+                    idxClass = 'bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700';
+                    idxIcon = 'fa-certificate text-amber-500';
+                    idxText = 'Scopus Indexed';
+                } else if (iL.includes('web of science') || iL.includes('wos')) {
+                    idxClass = 'bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800';
+                    idxIcon = 'fa-flask text-purple-500';
+                    idxText = 'WoS';
+                }
+                accHtml += `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-bold ${idxClass} border" title="Journal Indexing / Refereed Status"><i class="fa-solid ${idxIcon} text-[10px]"></i><span>${escapeDocHtml(idxText)}</span></span>`;
+            }
+
+            // 4. Venue / Place Issued
+            if (venue && venue !== 'None' && venue !== 'N/A') {
+                accHtml += `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10.5px] font-medium bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800" title="Venue / Place Issued"><i class="fa-solid fa-location-dot text-rose-500 text-[10px]"></i><span>${escapeDocHtml(venue)}</span></span>`;
+            }
+
+            accProfileEl.innerHTML = accHtml;
         }
 
         const docUrl = 'view_document.php?id=' + encodeURIComponent(id);
@@ -876,6 +1012,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- Accreditation Profile Bar -->
+    <div id="docPreviewAccreditationProfile" class="px-4 sm:px-5 py-2.5 bg-slate-100/90 dark:bg-[#0c1830] border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-2 text-xs flex-shrink-0">
+        <!-- Badges populated dynamically via openDocPreview -->
     </div>
 
     <!-- Viewer Body -->

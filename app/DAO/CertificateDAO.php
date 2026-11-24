@@ -104,8 +104,9 @@ class CertificateDAO implements CertificateDAOInterface {
                     faculty_id, title, issuer, date_issued, category,
                     file_path, original_filename, file_type, file_size,
                     ocr_raw_text, ocr_confidence, status,
-                    file_hash, cert_number, processing_status, batch_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    file_hash, cert_number, processing_status, batch_id,
+                    scope, indexing, place_issued, authors, accreditation_area
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
@@ -124,7 +125,12 @@ class CertificateDAO implements CertificateDAOInterface {
                 $data['file_hash'] ?? null,
                 $data['cert_number'] ?? null,
                 $data['processing_status'] ?? 'completed',
-                $data['batch_id'] ?? null
+                $data['batch_id'] ?? null,
+                $data['scope'] ?? 'Institutional',
+                $data['indexing'] ?? 'None',
+                $data['place_issued'] ?? null,
+                $data['authors'] ?? null,
+                $data['accreditation_area'] ?? null
             ]);
 
             $certId = (int)$pdo->lastInsertId();
@@ -150,19 +156,58 @@ class CertificateDAO implements CertificateDAOInterface {
 
     public static function createBatch(array $batchData): void {
         $pdo = Database::getConnection();
-        $bStmt = $pdo->prepare("
-            INSERT INTO processing_batches (batch_uuid, user_id, total_files, processed_files, success_files, failed_files, status, current_stage, log_summary)
-            VALUES (?, ?, ?, ?, ?, ?, 'completed', 'Review', ?)
-        ");
-        $bStmt->execute([
-            $batchData['batch_uuid'],
-            $batchData['user_id'],
-            $batchData['total_files'],
-            $batchData['processed_files'],
-            $batchData['success_files'],
-            $batchData['failed_files'],
-            $batchData['log_summary']
-        ]);
+
+        // 1. If batchData is a sequential list of certificate rows
+        if (isset($batchData[0]) && is_array($batchData[0])) {
+            foreach ($batchData as $cert) {
+                if (is_array($cert)) {
+                    $coAuthors = $cert['co_authors'] ?? $cert['co_author_ids'] ?? [];
+                    self::create($cert, is_array($coAuthors) ? $coAuthors : []);
+                }
+            }
+            return;
+        }
+
+        // 2. If batchData contains 'certificates' or 'items' list
+        if (!empty($batchData['certificates']) && is_array($batchData['certificates'])) {
+            foreach ($batchData['certificates'] as $cert) {
+                if (is_array($cert)) {
+                    $coAuthors = $cert['co_authors'] ?? $cert['co_author_ids'] ?? [];
+                    self::create($cert, is_array($coAuthors) ? $coAuthors : []);
+                }
+            }
+        } elseif (!empty($batchData['items']) && is_array($batchData['items'])) {
+            foreach ($batchData['items'] as $item) {
+                if (is_array($item) && isset($item['title'])) {
+                    $coAuthors = $item['co_authors'] ?? $item['co_author_ids'] ?? [];
+                    self::create($item, is_array($coAuthors) ? $coAuthors : []);
+                }
+            }
+        }
+
+        // 3. If batchData is a single certificate record with accreditation metadata
+        if (isset($batchData['faculty_id']) && isset($batchData['title']) && !isset($batchData['batch_uuid'])) {
+            $coAuthors = $batchData['co_authors'] ?? $batchData['co_author_ids'] ?? [];
+            self::create($batchData, is_array($coAuthors) ? $coAuthors : []);
+            return;
+        }
+
+        // 4. Ingestion tracking record for processing_batches table
+        if (isset($batchData['batch_uuid'])) {
+            $bStmt = $pdo->prepare("
+                INSERT INTO processing_batches (batch_uuid, user_id, total_files, processed_files, success_files, failed_files, status, current_stage, log_summary)
+                VALUES (?, ?, ?, ?, ?, ?, 'completed', 'Review', ?)
+            ");
+            $bStmt->execute([
+                $batchData['batch_uuid'],
+                $batchData['user_id'] ?? null,
+                $batchData['total_files'] ?? 0,
+                $batchData['processed_files'] ?? 0,
+                $batchData['success_files'] ?? 0,
+                $batchData['failed_files'] ?? 0,
+                $batchData['log_summary'] ?? ''
+            ]);
+        }
     }
 
     public static function getForFaculty(int $facultyId, ?array $filters = null): array {
@@ -173,6 +218,9 @@ class CertificateDAO implements CertificateDAOInterface {
         $dateFrom = $filters['date_from'] ?? null;
         $dateTo = $filters['date_to'] ?? null;
         $issuedYear = $filters['issued_year'] ?? null;
+        $scope = $filters['scope'] ?? null;
+        $indexing = $filters['indexing'] ?? null;
+        $accreditationArea = $filters['accreditation_area'] ?? null;
 
         $sql = "
             SELECT c.*, u.full_name as faculty_name, fp.academic_rank, fp.employee_id,
@@ -203,13 +251,30 @@ class CertificateDAO implements CertificateDAOInterface {
             }
         }
 
+        if ($scope && trim($scope) !== '' && strtolower(trim($scope)) !== 'all') {
+            $sql .= " AND c.scope = :scope";
+            $params[':scope'] = trim($scope);
+        }
+
+        if ($indexing && trim($indexing) !== '' && strtolower(trim($indexing)) !== 'all') {
+            $sql .= " AND c.indexing = :indexing";
+            $params[':indexing'] = trim($indexing);
+        }
+
+        if ($accreditationArea && trim($accreditationArea) !== '' && strtolower(trim($accreditationArea)) !== 'all') {
+            $sql .= " AND c.accreditation_area = :accreditation_area";
+            $params[':accreditation_area'] = trim($accreditationArea);
+        }
+
         if ($search && trim($search) !== '') {
-            $sql .= " AND (c.title LIKE :s_title OR c.issuer LIKE :s_issuer OR c.ocr_raw_text LIKE :s_ocr OR c.cert_number LIKE :s_num)";
+            $sql .= " AND (c.title LIKE :s_title OR c.issuer LIKE :s_issuer OR c.ocr_raw_text LIKE :s_ocr OR c.cert_number LIKE :s_num OR c.authors LIKE :s_authors OR c.place_issued LIKE :s_place)";
             $term = '%' . trim($search) . '%';
             $params[':s_title'] = $term;
             $params[':s_issuer'] = $term;
             $params[':s_ocr'] = $term;
             $params[':s_num'] = $term;
+            $params[':s_authors'] = $term;
+            $params[':s_place'] = $term;
         }
 
         if ($dateFrom && trim($dateFrom) !== '') {
@@ -242,7 +307,7 @@ class CertificateDAO implements CertificateDAOInterface {
         return $stmt->fetchAll();
     }
 
-    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null): array {
+    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null, ?string $scope = null, ?string $indexing = null, ?string $accreditationArea = null): array {
         $pdo = Database::getConnection();
 
         if (is_array($categoryOrFilters)) {
@@ -252,6 +317,9 @@ class CertificateDAO implements CertificateDAOInterface {
             $dateFrom = $categoryOrFilters['date_from'] ?? null;
             $dateTo = $categoryOrFilters['date_to'] ?? null;
             $issuedYear = $categoryOrFilters['issued_year'] ?? null;
+            $scope = $categoryOrFilters['scope'] ?? $scope;
+            $indexing = $categoryOrFilters['indexing'] ?? $indexing;
+            $accreditationArea = $categoryOrFilters['accreditation_area'] ?? $accreditationArea;
         } else {
             $category = $categoryOrFilters;
         }
@@ -286,14 +354,31 @@ class CertificateDAO implements CertificateDAOInterface {
             }
         }
 
+        if ($scope && trim($scope) !== '' && strtolower(trim($scope)) !== 'all') {
+            $sql .= " AND c.scope = :scope";
+            $params[':scope'] = trim($scope);
+        }
+
+        if ($indexing && trim($indexing) !== '' && strtolower(trim($indexing)) !== 'all') {
+            $sql .= " AND c.indexing = :indexing";
+            $params[':indexing'] = trim($indexing);
+        }
+
+        if ($accreditationArea && trim($accreditationArea) !== '' && strtolower(trim($accreditationArea)) !== 'all') {
+            $sql .= " AND c.accreditation_area = :accreditation_area";
+            $params[':accreditation_area'] = trim($accreditationArea);
+        }
+
         if ($search && trim($search) !== '') {
-            $sql .= " AND (c.title LIKE :s_title OR c.issuer LIKE :s_issuer OR u.full_name LIKE :s_name OR c.ocr_raw_text LIKE :s_ocr OR c.cert_number LIKE :s_num)";
+            $sql .= " AND (c.title LIKE :s_title OR c.issuer LIKE :s_issuer OR u.full_name LIKE :s_name OR c.ocr_raw_text LIKE :s_ocr OR c.cert_number LIKE :s_num OR c.authors LIKE :s_authors OR c.place_issued LIKE :s_place)";
             $term = '%' . trim($search) . '%';
             $params[':s_title'] = $term;
             $params[':s_issuer'] = $term;
             $params[':s_name'] = $term;
             $params[':s_ocr'] = $term;
             $params[':s_num'] = $term;
+            $params[':s_authors'] = $term;
+            $params[':s_place'] = $term;
         }
 
         if ($dateFrom && trim($dateFrom) !== '') {

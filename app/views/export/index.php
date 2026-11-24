@@ -6,9 +6,45 @@ $search = $search ?? '';
 $dateFrom = $dateFrom ?? '';
 $dateTo = $dateTo ?? '';
 $issuedYear = $issuedYear ?? '';
+$scope = $scope ?? ($_GET['scope'] ?? 'All');
+$indexing = $indexing ?? ($_GET['indexing'] ?? 'All');
 $rawIds = $rawIds ?? '';
 $activeNav = $activeNav ?? 'records';
 $pageTitle = $pageTitle ?? 'Institutional Accreditation Report & Certificate Ledger';
+
+if (!function_exists('renderScopeBadge')) {
+    function renderScopeBadge(?string $scope): string {
+        $s = trim($scope ?? '');
+        $sl = strtolower($s);
+        if (str_contains($sl, 'internat')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800" title="Accreditation Scope: International"><i class="fa-solid fa-earth-americas text-[9px] text-indigo-600 dark:text-indigo-400"></i><span>International</span></span>';
+        } elseif (str_contains($sl, 'nation')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" title="Accreditation Scope: National"><i class="fa-solid fa-flag text-[9px] text-emerald-600 dark:text-emerald-400"></i><span>National</span></span>';
+        } elseif (str_contains($sl, 'region')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800" title="Accreditation Scope: Regional"><i class="fa-solid fa-map-location-dot text-[9px] text-amber-600 dark:text-amber-400"></i><span>Regional</span></span>';
+        } else {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700" title="Accreditation Scope: Institutional"><i class="fa-solid fa-building-columns text-[9px] text-slate-500 dark:text-slate-400"></i><span>Institutional</span></span>';
+        }
+    }
+}
+
+if (!function_exists('renderIndexingBadge')) {
+    function renderIndexingBadge(?string $indexing, ?string $category = null): string {
+        $idx = trim($indexing ?? '');
+        $idxL = strtolower($idx);
+        if (str_contains($idxL, 'scopus')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shadow-xs" title="Indexing: Scopus Indexed"><i class="fa-solid fa-certificate text-[9px] text-amber-600 dark:text-amber-400"></i><span>Scopus Indexed</span></span>';
+        } elseif (str_contains($idxL, 'web of science') || str_contains($idxL, 'wos')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800" title="Indexing: Web of Science"><i class="fa-solid fa-flask text-[9px] text-purple-600 dark:text-purple-400"></i><span>WoS</span></span>';
+        } elseif (str_contains($idxL, 'peer')) {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-teal-50 dark:bg-teal-950/70 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800" title="Indexing: Peer-Reviewed"><i class="fa-solid fa-check-double text-[9px] text-teal-600 dark:text-teal-400"></i><span>Peer-Reviewed</span></span>';
+        } elseif ($idx && $idx !== 'None' && $idx !== 'N/A') {
+            return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">' . htmlspecialchars($idx) . '</span>';
+        }
+        return '<span class="text-slate-400 dark:text-slate-500 italic text-[10px]">None</span>';
+    }
+}
+
 require_once __DIR__ . '/../layouts/layout_start.php';
 ?>
 
@@ -107,7 +143,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <i class="fa-solid fa-arrow-left"></i>
                 <span>Back to Vault</span>
             </a>
-            <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
+            <a href="export.php?format=csv<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
+               class="px-4 py-2.5 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+               title="Export Official Raw Accreditation Ledger in CSV Format">
+                <i class="fa-solid fa-file-csv text-base text-emerald-600 dark:text-emerald-400"></i>
+                <span>Export CSV</span>
+            </a>
+            <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-sm flex items-center gap-2.5 shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
                 <i class="fa-solid fa-file-pdf text-base animate-pulse"></i>
                 <span>Download PDF Report</span>
@@ -122,7 +164,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <input type="hidden" name="ids" value="<?= htmlspecialchars($rawIds) ?>">
             <?php endif; ?>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2.5 text-xs items-end">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5 text-xs items-end">
                 <!-- Date From -->
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
@@ -158,6 +200,36 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     </select>
                 </div>
 
+                <!-- Scope / Level -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <i class="fa-solid fa-earth-americas text-indigo-500 mr-1"></i>Scope / Level:
+                    </label>
+                    <select name="scope"
+                            class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-blue-500">
+                        <option value="All" <?= ($scope ?? 'All') === 'All' ? 'selected' : '' ?>>All Scopes</option>
+                        <option value="International" <?= ($scope ?? '') === 'International' ? 'selected' : '' ?>>International</option>
+                        <option value="National" <?= ($scope ?? '') === 'National' ? 'selected' : '' ?>>National</option>
+                        <option value="Regional" <?= ($scope ?? '') === 'Regional' ? 'selected' : '' ?>>Regional</option>
+                        <option value="Institutional" <?= ($scope ?? '') === 'Institutional' ? 'selected' : '' ?>>Institutional</option>
+                    </select>
+                </div>
+
+                <!-- Indexing Status -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <i class="fa-solid fa-certificate text-amber-500 mr-1"></i>Indexing:
+                    </label>
+                    <select name="indexing"
+                            class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-blue-500">
+                        <option value="All" <?= ($indexing ?? 'All') === 'All' ? 'selected' : '' ?>>All Indexing</option>
+                        <option value="Scopus" <?= ($indexing ?? '') === 'Scopus' ? 'selected' : '' ?>>Scopus</option>
+                        <option value="Web of Science" <?= ($indexing ?? '') === 'Web of Science' ? 'selected' : '' ?>>WoS</option>
+                        <option value="Peer-Reviewed" <?= ($indexing ?? '') === 'Peer-Reviewed' ? 'selected' : '' ?>>Peer-Reviewed</option>
+                        <option value="None" <?= ($indexing ?? '') === 'None' ? 'selected' : '' ?>>None / Unindexed</option>
+                    </select>
+                </div>
+
                 <!-- Keyword Search -->
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
@@ -168,15 +240,15 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 </div>
 
                 <!-- Apply and Reset Buttons -->
-                <div class="flex items-center gap-1.5 w-full sm:w-auto sm:col-span-2">
+                <div class="flex items-center gap-1.5 w-full">
                     <button type="submit"
-                            class="flex-1 min-h-[40px] sm:min-h-0 py-2 sm:py-1.5 px-3 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            class="flex-1 min-h-[38px] py-2 sm:py-1.5 px-3 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                         <i class="fa-solid fa-filter text-[10px]"></i>
-                        <span>Apply Filter</span>
+                        <span>Apply</span>
                     </button>
-                    <?php if ($dateFrom || $dateTo || $category !== 'All' || $search): ?>
+                    <?php if ($dateFrom || $dateTo || $category !== 'All' || $search || ($scope && $scope !== 'All') || ($indexing && $indexing !== 'All')): ?>
                         <a href="export.php<?= !empty($rawIds) ? '?ids=' . urlencode($rawIds) : '' ?>"
-                           class="min-h-[40px] sm:min-h-0 py-2 sm:py-1.5 px-3 sm:px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all flex items-center justify-center cursor-pointer"
+                           class="min-h-[38px] py-2 sm:py-1.5 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all flex items-center justify-center cursor-pointer"
                            title="Reset Filters">
                             <i class="fa-solid fa-xmark"></i>
                         </a>
@@ -240,6 +312,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800">
                 Category: <?= htmlspecialchars($category) ?>
             </span>
+            <?php if ($scope && $scope !== 'All'): ?>
+                <span class="px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
+                    Scope: <?= htmlspecialchars($scope) ?>
+                </span>
+            <?php endif; ?>
+            <?php if ($indexing && $indexing !== 'All'): ?>
+                <span class="px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800">
+                    Indexing: <?= htmlspecialchars($indexing) ?>
+                </span>
+            <?php endif; ?>
             <?php if ($dateFrom || $dateTo): ?>
                 <span class="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 font-mono">
                     Issued Date: <?= htmlspecialchars($dateFrom ?: 'Any') ?> &rarr; <?= htmlspecialchars($dateTo ?: 'Present') ?>
@@ -313,20 +395,23 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <table class="w-full text-left text-xs border border-slate-200 dark:border-slate-800">
             <thead>
                 <tr class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase tracking-wider">
-                    <th class="p-2 border-r border-slate-200 dark:border-slate-800 w-10 text-center">#</th>
+                    <th class="p-2 border-r border-slate-200 dark:border-slate-800 w-8 text-center">#</th>
                     <th class="p-2 border-r border-slate-200 dark:border-slate-800">Document / Certificate Title</th>
                     <th class="p-2 border-r border-slate-200 dark:border-slate-800">Certificate Holder</th>
-                    <th class="p-2 border-r border-slate-200 dark:border-slate-800">Cert No. / Ref</th>
+                    <th class="p-2 border-r border-slate-200 dark:border-slate-800">Cert Ref</th>
                     <th class="p-2 border-r border-slate-200 dark:border-slate-800">Date Issued</th>
                     <th class="p-2 border-r border-slate-200 dark:border-slate-800">Issuing Authority</th>
                     <th class="p-2 border-r border-slate-200 dark:border-slate-800">Category</th>
-                    <th class="p-2 text-center">Cryptographic Integrity</th>
+                    <th class="p-2 border-r border-slate-200 dark:border-slate-800 text-center">Scope / Level</th>
+                    <th class="p-2 border-r border-slate-200 dark:border-slate-800 text-center">Indexing Status</th>
+                    <th class="p-2 border-r border-slate-200 dark:border-slate-800">Place Issued</th>
+                    <th class="p-2 text-center">Integrity</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-[11px]">
                 <?php if (empty($records)): ?>
                     <tr>
-                        <td colspan="8" class="p-8 text-center text-slate-400 dark:text-slate-500">No institutional records match the selected scope criteria.</td>
+                        <td colspan="11" class="p-8 text-center text-slate-400 dark:text-slate-500">No institutional records match the selected scope criteria.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($records as $idx => $r): ?>
@@ -360,13 +445,30 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             <td class="p-2 border-r border-slate-100 dark:border-slate-800 font-mono text-slate-800 dark:text-slate-200 font-semibold whitespace-nowrap">
                                 <?= htmlspecialchars($r['date_issued']) ?>
                             </td>
-                            <td class="p-2 border-r border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 max-w-[140px] truncate">
+                            <td class="p-2 border-r border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 max-w-[130px] truncate" title="<?= htmlspecialchars($r['issuer']) ?>">
                                 <?= htmlspecialchars($r['issuer']) ?>
                             </td>
                             <td class="p-2 border-r border-slate-100 dark:border-slate-800 whitespace-nowrap">
                                 <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                                     <?= htmlspecialchars($r['category']) ?>
                                 </span>
+                            </td>
+                            <td class="p-2 border-r border-slate-100 dark:border-slate-800 text-center whitespace-nowrap">
+                                <?= renderScopeBadge($r['scope'] ?? 'Institutional') ?>
+                            </td>
+                            <td class="p-2 border-r border-slate-100 dark:border-slate-800 text-center whitespace-nowrap">
+                                <?= renderIndexingBadge($r['indexing'] ?? '', $r['category'] ?? '') ?>
+                            </td>
+                            <td class="p-2 border-r border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 max-w-[120px] truncate" title="<?= htmlspecialchars($r['place_issued'] ?? ($r['venue'] ?? '')) ?>">
+                                <?php $place = !empty($r['place_issued']) ? $r['place_issued'] : (!empty($r['venue']) ? $r['venue'] : ''); ?>
+                                <?php if ($place): ?>
+                                    <span class="text-[10px] text-slate-700 dark:text-slate-300 flex items-center gap-1 truncate">
+                                        <i class="fa-solid fa-location-dot text-rose-500 text-[9px] flex-shrink-0"></i>
+                                        <span><?= htmlspecialchars($place) ?></span>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-slate-400 dark:text-slate-500 italic text-[10px]">N/A</span>
+                                <?php endif; ?>
                             </td>
                             <td class="p-2 text-center text-emerald-700 dark:text-emerald-300 font-semibold text-[10px] whitespace-nowrap">
                                 <span class="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60">
@@ -399,14 +501,22 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </div>
     </div>
 
-    <!-- Bottom Standout Download PDF Action (Screen Only) -->
+    <!-- Bottom Standout Download Actions (Screen Only) -->
     <div class="pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-3 print:hidden">
         <span class="text-xs text-slate-500 dark:text-slate-400">Ready to export official ledger with cryptographic verification?</span>
-        <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
-           class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-sm flex items-center gap-2.5 shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
-            <i class="fa-solid fa-file-pdf text-base"></i>
-            <span>Download PDF Report</span>
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="export.php?format=csv<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
+               class="px-4 py-2.5 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+               title="Export Official Raw Accreditation Ledger in CSV Format">
+                <i class="fa-solid fa-file-csv text-base text-emerald-600 dark:text-emerald-400"></i>
+                <span>Export CSV</span>
+            </a>
+            <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
+               class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-sm flex items-center gap-2.5 shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+                <i class="fa-solid fa-file-pdf text-base"></i>
+                <span>Download PDF Report</span>
+            </a>
+        </div>
     </div>
 
 </div>

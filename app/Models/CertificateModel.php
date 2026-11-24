@@ -54,6 +54,61 @@ class CertificateModel {
         return null;
     }
 
+    /**
+     * Domain validation & normalization of geographic scope for accreditation compliance
+     * Allowed: Institutional, Regional, National, International (Default: Institutional)
+     */
+    public static function normalizeScope(?string $scope): string {
+        if (!$scope || trim($scope) === '') {
+            return 'Institutional';
+        }
+        $s = strtolower(trim($scope));
+        if (str_contains($s, 'internat')) {
+            return 'International';
+        }
+        if (str_contains($s, 'nat')) {
+            return 'National';
+        }
+        if (str_contains($s, 'regio')) {
+            return 'Regional';
+        }
+        return 'Institutional';
+    }
+
+    /**
+     * Domain validation & normalization of journal indexing / peer-review tier
+     * Allowed: None, Peer-Reviewed, CHED Recognized, Scopus, Web of Science (Default: None)
+     */
+    public static function normalizeIndexing(?string $indexing): string {
+        if (!$indexing || trim($indexing) === '') {
+            return 'None';
+        }
+        $s = strtolower(trim($indexing));
+        if ($s === 'none' || $s === 'n/a' || $s === 'not indexed' || $s === 'non-indexed') {
+            return 'None';
+        }
+        if (str_contains($s, 'scopus')) {
+            return 'Scopus';
+        }
+        if (str_contains($s, 'web of science') || str_contains($s, 'wos') || str_contains($s, 'clarivate')) {
+            return 'Web of Science';
+        }
+        if (str_contains($s, 'ched')) {
+            return 'CHED Recognized';
+        }
+        if (str_contains($s, 'peer') || str_contains($s, 'refereed')) {
+            return 'Peer-Reviewed';
+        }
+        return match (strtolower($s)) {
+            'scopus' => 'Scopus',
+            'web of science' => 'Web of Science',
+            'ched recognized' => 'CHED Recognized',
+            'peer-reviewed', 'peer reviewed' => 'Peer-Reviewed',
+            'none' => 'None',
+            default => 'None',
+        };
+    }
+
     public static function find(int $id): ?array {
         return CertificateDAO::find($id);
     }
@@ -78,11 +133,17 @@ class CertificateModel {
         return CertificateDAO::getForFaculty($facultyId, $filters);
     }
 
-    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null): array {
-        return CertificateDAO::getAll($categoryOrFilters, $search, $facultyId, $dateFrom, $dateTo, $issuedYear);
+    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null, ?string $scope = null, ?string $indexing = null, ?string $accreditationArea = null): array {
+        return CertificateDAO::getAll($categoryOrFilters, $search, $facultyId, $dateFrom, $dateTo, $issuedYear, $scope, $indexing, $accreditationArea);
     }
 
     public static function create(array $data, array $coAuthorIds = []): int {
+        if (isset($data['scope'])) {
+            $data['scope'] = self::normalizeScope($data['scope']);
+        }
+        if (isset($data['indexing'])) {
+            $data['indexing'] = self::normalizeIndexing($data['indexing']);
+        }
         return CertificateDAO::create($data, $coAuthorIds);
     }
 

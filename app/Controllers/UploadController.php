@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/BaseController.php';
+require_once __DIR__ . '/../Services/CategoryService.php';
 
 class UploadController extends BaseController {
     /**
@@ -476,6 +477,23 @@ class UploadController extends BaseController {
             }
         }
 
+        // Extract, sanitize, clamp, assign defaults for accreditation compliance
+        $scope = CertificateModel::normalizeScope($input['scope'] ?? 'Institutional');
+        $indexing = CertificateModel::normalizeIndexing($input['indexing'] ?? 'None');
+
+        $rawPlace = !empty($input['place_issued']) ? trim((string)$input['place_issued']) : null;
+        $placeIssued = ($rawPlace !== null && $rawPlace !== '') ? mb_substr($rawPlace, 0, 255) : null;
+
+        $rawAuthors = !empty($input['authors']) ? trim((string)$input['authors']) : null;
+        $authors = ($rawAuthors !== null && $rawAuthors !== '') ? mb_substr($rawAuthors, 0, 500) : null;
+
+        $rawArea = !empty($input['accreditation_area']) ? trim((string)$input['accreditation_area']) : null;
+        if ($rawArea !== null && $rawArea !== '') {
+            $accreditationArea = mb_substr($rawArea, 0, 100);
+        } else {
+            $accreditationArea = CategoryService::inferAccreditationArea($category);
+        }
+
         $certData = [
             'faculty_id' => $assignedFacultyId,
             'title' => $title,
@@ -492,7 +510,12 @@ class UploadController extends BaseController {
             'file_hash' => $fileHash,
             'cert_number' => $certNumber,
             'processing_status' => 'completed',
-            'batch_id' => $input['batch_id'] ?? null
+            'batch_id' => $input['batch_id'] ?? null,
+            'scope' => $scope,
+            'indexing' => $indexing,
+            'place_issued' => $placeIssued,
+            'authors' => $authors,
+            'accreditation_area' => $accreditationArea
         ];
 
         try {

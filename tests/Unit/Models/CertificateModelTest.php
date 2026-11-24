@@ -109,4 +109,26 @@ class CertificateModelTest extends TestCase {
     public function testIsAuthorOrCoAuthorForNonExistentReturnsFalse(): void {
         $this->assertFalse(CertificateModel::isAuthorOrCoAuthor(-999, -999));
     }
+
+    public function testNormalizeScope(): void {
+        $this->assertEquals("Institutional", CertificateModel::normalizeScope(null));
+        $this->assertEquals("Institutional", CertificateModel::normalizeScope(""));
+        $this->assertEquals("Institutional", CertificateModel::normalizeScope("institutional"));
+        $this->assertEquals("Regional", CertificateModel::normalizeScope("Regional"));
+        $this->assertEquals("National", CertificateModel::normalizeScope("National"));
+        $this->assertEquals("International", CertificateModel::normalizeScope("International"));
+        $this->assertEquals("International", CertificateModel::normalizeScope("international conference"));
+    }
+
+    public function testNormalizeIndexing(): void {
+        $this->assertEquals("None", CertificateModel::normalizeIndexing(null));
+        $this->assertEquals("None", CertificateModel::normalizeIndexing(""));
+        $this->assertEquals("None", CertificateModel::normalizeIndexing("None"));
+        $this->assertEquals("Peer-Reviewed", CertificateModel::normalizeIndexing("peer-reviewed"));
+        $this->assertEquals("Peer-Reviewed", CertificateModel::normalizeIndexing("refereed journal"));
+        $this->assertEquals("CHED Recognized", CertificateModel::normalizeIndexing("ched recognized"));
+        $this->assertEquals("Scopus", CertificateModel::normalizeIndexing("scopus indexed"));
+        $this->assertEquals("Web of Science", CertificateModel::normalizeIndexing("web of science"));
+        $this->assertEquals("Web of Science", CertificateModel::normalizeIndexing("clarivate wos"));
+    }
 }

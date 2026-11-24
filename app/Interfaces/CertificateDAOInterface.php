@@ -6,7 +6,7 @@
  */
 
 interface CertificateDAOInterface {
-    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null): array;
+    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null, ?string $scope = null, ?string $indexing = null, ?string $accreditationArea = null): array;
     public static function getForFaculty(int $facultyId, ?array $filters = null): array;
     public static function find(int $id): ?array;
     public static function findByHash(string $hash): ?array;
