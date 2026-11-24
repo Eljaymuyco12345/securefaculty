@@ -839,7 +839,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 metaHtml += `<span class="flex items-center gap-1"><i class="fa-solid fa-building-columns text-[9px] text-slate-400"></i> ${escapeDocHtml(issuer)}</span>`;
             }
             if (date) {
-                metaHtml += `<span class="flex items-center gap-1 font-mono"><i class="fa-regular fa-calendar-check text-[9px] text-emerald-500"></i> ${escapeDocHtml(date)}</span>`;
+                const isResearch = (category === 'Research Publication');
+                const dateLabelText = isResearch ? 'Published: ' : 'Issued: ';
+                metaHtml += `<span class="flex items-center gap-1 font-mono" title="${isResearch ? 'Publication Date' : 'Date Issued'}"><i class="fa-regular fa-calendar-check text-[9px] text-emerald-500"></i> ${dateLabelText}${escapeDocHtml(date)}</span>`;
             }
             if (certNo) {
                 metaHtml += `<span class="font-mono text-slate-400 text-[10px]">#${escapeDocHtml(certNo)}</span>`;

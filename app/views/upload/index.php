@@ -253,20 +253,20 @@ Upload a file above to extract metadata.</div>
                 <?php endif; ?>
 
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Title:</label>
+                    <label id="field_title_label" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Document Title:</label>
                     <input type="text" id="field_title" value="" placeholder="Extracted document title will appear here"
                         class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Certificate / Reference No.:</label>
+                        <label id="field_cert_number_label" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Certificate / Reference No.:</label>
                         <input type="text" id="field_cert_number" value="" placeholder="e.g. CERT-2025-001 (Optional)"
                             class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-0.5">
-                            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Date Issued (on Certificate):</label>
+                            <label id="field_date_label" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Date Issued (on Certificate):</label>
                             <span id="date-detect-status" class="text-[9px] font-semibold text-slate-400"></span>
                         </div>
                         <input type="date" id="field_date" value=""
@@ -778,6 +778,10 @@ Upload a file above to extract metadata.</div>
         const issuerLabel = document.getElementById('field_issuer_label');
         const authorsHint = document.getElementById('field_authors_hint');
         const authorsLabel = document.getElementById('field_authors_label');
+        const titleLabel = document.getElementById('field_title_label');
+        const titleInput = document.getElementById('field_title');
+        const dateLabel = document.getElementById('field_date_label');
+        const certNoLabel = document.getElementById('field_cert_number_label');
 
         // 1. Other Category container
         if (otherContainer) {
@@ -811,20 +815,36 @@ Upload a file above to extract metadata.</div>
             }
         }
 
-        // 4. Dynamic Issuer Label and Authors Hints based on category
+        // 4. Dynamic Field Labels, Placeholders, and Authors Hints based on category
         if (category === 'Research Publication') {
+            if (titleLabel) titleLabel.textContent = 'Research / Manuscript Title:';
+            if (titleInput) titleInput.placeholder = 'Extracted research publication title...';
+            if (dateLabel) dateLabel.textContent = 'Publication Date (Date Published):';
+            if (certNoLabel) certNoLabel.textContent = 'ISSN / DOI / Ref No. (Optional):';
             if (issuerLabel) issuerLabel.textContent = 'Publication Journal / Publisher:';
-            if (authorsLabel) authorsLabel.textContent = 'Authors String (as published):';
+            if (authorsLabel) authorsLabel.textContent = 'Authors (as published):';
             if (authorsHint) authorsHint.textContent = 'List primary author and co-authors as printed on the publication paper / journal citation.';
         } else if (category === 'Research Presentation') {
-            if (issuerLabel) issuerLabel.textContent = 'Organizer / Issuing Authority:';
+            if (titleLabel) titleLabel.textContent = 'Presentation / Topic Title:';
+            if (titleInput) titleInput.placeholder = 'Extracted research presentation title...';
+            if (dateLabel) dateLabel.textContent = 'Date Presented / Issued:';
+            if (certNoLabel) certNoLabel.textContent = 'Presentation Ref / Certificate No.:';
+            if (issuerLabel) issuerLabel.textContent = 'Organizer / Conference Forum:';
             if (authorsLabel) authorsLabel.textContent = 'Presenter / Author(s):';
             if (authorsHint) authorsHint.textContent = 'List presenter and contributing authors as printed on presentation certificate / program.';
         } else if (placeCategories.includes(category)) {
+            if (titleLabel) titleLabel.textContent = 'Activity / Training Title:';
+            if (titleInput) titleInput.placeholder = 'Extracted activity title...';
+            if (dateLabel) dateLabel.textContent = 'Date Issued / Conducted:';
+            if (certNoLabel) certNoLabel.textContent = 'Certificate / Reference No.:';
             if (issuerLabel) issuerLabel.textContent = 'Organizer / Issuing Authority:';
             if (authorsLabel) authorsLabel.textContent = 'Participant / Recipient Name(s):';
             if (authorsHint) authorsHint.textContent = 'List participant or recipient names as printed on the certificate.';
         } else {
+            if (titleLabel) titleLabel.textContent = 'Document Title:';
+            if (titleInput) titleInput.placeholder = 'Extracted document title will appear here';
+            if (dateLabel) dateLabel.textContent = 'Date Issued (on Certificate):';
+            if (certNoLabel) certNoLabel.textContent = 'Certificate / Reference No.:';
             if (issuerLabel) issuerLabel.textContent = 'Issuing Authority:';
             if (authorsLabel) authorsLabel.textContent = 'Authors / Presenter String:';
             if (authorsHint) authorsHint.textContent = 'List primary author and co-authors as printed on the certificate / paper.';
