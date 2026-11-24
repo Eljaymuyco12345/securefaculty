@@ -253,20 +253,20 @@ Upload a file above to extract metadata.</div>
                 <?php endif; ?>
 
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Title:</label>
+                    <label id="field_title_label" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Document Title:</label>
                     <input type="text" id="field_title" value="" placeholder="Extracted document title will appear here"
                         class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Certificate / Reference No.:</label>
+                        <label id="field_cert_number_label" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Certificate / Reference No.:</label>
                         <input type="text" id="field_cert_number" value="" placeholder="e.g. CERT-2025-001 (Optional)"
                             class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-0.5">
-                            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Date Issued (on Certificate):</label>
+                            <label id="field_date_label" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Date Issued (on Certificate):</label>
                             <span id="date-detect-status" class="text-[9px] font-semibold text-slate-400"></span>
                         </div>
                         <input type="date" id="field_date" value=""
@@ -279,7 +279,7 @@ Upload a file above to extract metadata.</div>
                 </div>
 
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Issuing Authority:</label>
+                    <label id="field_issuer_label" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Issuing Authority:</label>
                     <input type="text" id="field_issuer" value="" placeholder="Extracted issuing authority will appear here"
                         class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                 </div>
@@ -289,6 +289,7 @@ Upload a file above to extract metadata.</div>
                     <select id="field_category" onchange="handleHitlCategoryChange(this.value)"
                         class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
                         <option value="Research Publication" selected>Research Publication</option>
+                        <option value="Research Presentation">Research Presentation</option>
                         <option value="Instructional Material">Instructional Material / Course Module</option>
                         <option value="Seminar">Seminar / Webinar</option>
                         <option value="Training">Training / Bootcamp</option>
@@ -305,6 +306,64 @@ Upload a file above to extract metadata.</div>
                         placeholder="e.g. Guest Speaker Plaque, Board Resolution..."
                         class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-blue-500">
                     <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Categorized under "Other" with your custom specification.</p>
+                </div>
+
+                <!-- Accreditation Compliance & Classification Section -->
+                <div class="p-2.5 rounded-lg bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                            <i class="fa-solid fa-stamp text-blue-600 dark:text-blue-400"></i>
+                            <span>Accreditation &amp; Classification</span>
+                        </div>
+                        <span class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 px-1.5 py-0.5 rounded">
+                            CHED / AACCUP
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <!-- 1. Scope / Level -->
+                        <div id="scope_container">
+                            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Scope / Level:</label>
+                            <select id="field_scope"
+                                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
+                                <option value="Institutional">Institutional (Campus / College)</option>
+                                <option value="Regional">Regional (Western Visayas / Region VI)</option>
+                                <option value="National">National (Philippines)</option>
+                                <option value="International">International (Global / Cross-Border)</option>
+                            </select>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">AACCUP / CHED Accreditation classification level</p>
+                        </div>
+
+                        <!-- 2. Research Indexing & Peer-Review Status -->
+                        <div id="indexing_container">
+                            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Research Indexing &amp; Peer-Review Status:</label>
+                            <select id="field_indexing"
+                                class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
+                                <option value="None">None / Non-Indexed</option>
+                                <option value="Peer-Reviewed">Peer-Reviewed (Refereed Journal)</option>
+                                <option value="CHED Recognized">CHED-Recognized Journal</option>
+                                <option value="Scopus">Scopus Indexed</option>
+                                <option value="Web of Science">Web of Science (WoS / Clarivate)</option>
+                            </select>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Publication Journal Indexing (Area V Research Requirement)</p>
+                        </div>
+                    </div>
+
+                    <!-- 3. Place Issued / Venue / Location -->
+                    <div id="place_issued_container" class="hidden">
+                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Place Issued / Venue / Location:</label>
+                        <input type="text" id="field_place_issued" placeholder="e.g. Iloilo City / ISUFST Main Campus / Virtual (Zoom)"
+                            class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Physical campus, city, or virtual conference/webinar platform</p>
+                    </div>
+
+                    <!-- 4. Authors / Presenter String -->
+                    <div id="authors_container">
+                        <label id="field_authors_label" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Authors / Presenter String:</label>
+                        <input type="text" id="field_authors" placeholder="e.g. Dr. Arlene Poblador, Prof. Jane Doe"
+                            class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
+                        <p id="field_authors_hint" class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">List primary author and co-authors as printed on the certificate / paper.</p>
+                    </div>
                 </div>
 
                 <div>
@@ -711,13 +770,84 @@ Upload a file above to extract metadata.</div>
     }
 
     function handleHitlCategoryChange(val) {
-        const container = document.getElementById('other_category_container');
-        if (!container) return;
-        if (val === 'Other') {
-            container.classList.remove('hidden');
-            document.getElementById('field_category_other')?.focus();
+        const category = val || '';
+        const otherContainer = document.getElementById('other_category_container');
+        const indexingContainer = document.getElementById('indexing_container');
+        const placeContainer = document.getElementById('place_issued_container');
+        const scopeContainer = document.getElementById('scope_container');
+        const issuerLabel = document.getElementById('field_issuer_label');
+        const authorsHint = document.getElementById('field_authors_hint');
+        const authorsLabel = document.getElementById('field_authors_label');
+        const titleLabel = document.getElementById('field_title_label');
+        const titleInput = document.getElementById('field_title');
+        const dateLabel = document.getElementById('field_date_label');
+        const certNoLabel = document.getElementById('field_cert_number_label');
+
+        // 1. Other Category container
+        if (otherContainer) {
+            if (category === 'Other') {
+                otherContainer.classList.remove('hidden');
+                document.getElementById('field_category_other')?.focus();
+            } else {
+                otherContainer.classList.add('hidden');
+            }
+        }
+
+        // 2. Indexing Container: Shown when Category is "Research Publication" or "Research Presentation"
+        const isResearch = (category === 'Research Publication' || category === 'Research Presentation');
+        if (indexingContainer) {
+            if (isResearch) {
+                indexingContainer.classList.remove('hidden');
+                if (scopeContainer) scopeContainer.classList.remove('sm:col-span-2');
+            } else {
+                indexingContainer.classList.add('hidden');
+                if (scopeContainer) scopeContainer.classList.add('sm:col-span-2');
+            }
+        }
+
+        // 3. Place Issued Container: Shown for Training, Seminar, Workshop, Research Presentation, Award, etc.
+        const placeCategories = ['Seminar', 'Training', 'Workshop', 'Research Presentation', 'Award'];
+        if (placeContainer) {
+            if (placeCategories.includes(category)) {
+                placeContainer.classList.remove('hidden');
+            } else {
+                placeContainer.classList.add('hidden');
+            }
+        }
+
+        // 4. Dynamic Field Labels, Placeholders, and Authors Hints based on category
+        if (category === 'Research Publication') {
+            if (titleLabel) titleLabel.textContent = 'Research / Manuscript Title:';
+            if (titleInput) titleInput.placeholder = 'Extracted research publication title...';
+            if (dateLabel) dateLabel.textContent = 'Publication Date (Date Published):';
+            if (certNoLabel) certNoLabel.textContent = 'ISSN / DOI / Ref No. (Optional):';
+            if (issuerLabel) issuerLabel.textContent = 'Publication Journal / Publisher:';
+            if (authorsLabel) authorsLabel.textContent = 'Authors (as published):';
+            if (authorsHint) authorsHint.textContent = 'List primary author and co-authors as printed on the publication paper / journal citation.';
+        } else if (category === 'Research Presentation') {
+            if (titleLabel) titleLabel.textContent = 'Presentation / Topic Title:';
+            if (titleInput) titleInput.placeholder = 'Extracted research presentation title...';
+            if (dateLabel) dateLabel.textContent = 'Date Presented / Issued:';
+            if (certNoLabel) certNoLabel.textContent = 'Presentation Ref / Certificate No.:';
+            if (issuerLabel) issuerLabel.textContent = 'Organizer / Conference Forum:';
+            if (authorsLabel) authorsLabel.textContent = 'Presenter / Author(s):';
+            if (authorsHint) authorsHint.textContent = 'List presenter and contributing authors as printed on presentation certificate / program.';
+        } else if (placeCategories.includes(category)) {
+            if (titleLabel) titleLabel.textContent = 'Activity / Training Title:';
+            if (titleInput) titleInput.placeholder = 'Extracted activity title...';
+            if (dateLabel) dateLabel.textContent = 'Date Issued / Conducted:';
+            if (certNoLabel) certNoLabel.textContent = 'Certificate / Reference No.:';
+            if (issuerLabel) issuerLabel.textContent = 'Organizer / Issuing Authority:';
+            if (authorsLabel) authorsLabel.textContent = 'Participant / Recipient Name(s):';
+            if (authorsHint) authorsHint.textContent = 'List participant or recipient names as printed on the certificate.';
         } else {
-            container.classList.add('hidden');
+            if (titleLabel) titleLabel.textContent = 'Document Title:';
+            if (titleInput) titleInput.placeholder = 'Extracted document title will appear here';
+            if (dateLabel) dateLabel.textContent = 'Date Issued (on Certificate):';
+            if (certNoLabel) certNoLabel.textContent = 'Certificate / Reference No.:';
+            if (issuerLabel) issuerLabel.textContent = 'Issuing Authority:';
+            if (authorsLabel) authorsLabel.textContent = 'Authors / Presenter String:';
+            if (authorsHint) authorsHint.textContent = 'List primary author and co-authors as printed on the certificate / paper.';
         }
     }
 
@@ -734,9 +864,73 @@ Upload a file above to extract metadata.</div>
                 otherInput.value = val.includes(':') ? val.split(':').slice(1).join(':').trim() : '';
             }
         } else {
-            catSelect.value = val || 'Seminar';
+            catSelect.value = val || 'Research Publication';
             if (otherContainer) otherContainer.classList.add('hidden');
             if (otherInput) otherInput.value = '';
+        }
+        handleHitlCategoryChange(catSelect.value);
+    }
+
+    function autoDetectAccreditationFields(text, metadata = {}) {
+        const combined = ((text || '') + ' ' + (metadata?.title || '') + ' ' + (metadata?.issuer || '')).toLowerCase();
+        const rawString = (text || '') + ' ' + (metadata?.title || '') + ' ' + (metadata?.issuer || '');
+
+        // 1. Auto-detect Scope from OCR text
+        const scopeEl = document.getElementById('field_scope');
+        if (scopeEl) {
+            if (metadata?.scope && ['Institutional', 'Regional', 'National', 'International'].includes(metadata.scope)) {
+                scopeEl.value = metadata.scope;
+            } else if (combined.includes('international')) {
+                scopeEl.value = 'International';
+            } else if (combined.includes('national')) {
+                scopeEl.value = 'National';
+            } else if (combined.includes('regional') || combined.includes('region vi') || combined.includes('western visayas')) {
+                scopeEl.value = 'Regional';
+            } else {
+                scopeEl.value = 'Institutional';
+            }
+        }
+
+        // 2. Auto-detect Indexing
+        const indexingEl = document.getElementById('field_indexing');
+        if (indexingEl) {
+            if (metadata?.indexing && ['None', 'Peer-Reviewed', 'CHED Recognized', 'Scopus', 'Web of Science'].includes(metadata.indexing)) {
+                indexingEl.value = metadata.indexing;
+            } else if (combined.includes('scopus')) {
+                indexingEl.value = 'Scopus';
+            } else if (combined.includes('web of science') || combined.includes('clarivate')) {
+                indexingEl.value = 'Web of Science';
+            } else if (combined.includes('peer reviewed') || combined.includes('peer-reviewed') || combined.includes('refereed')) {
+                indexingEl.value = 'Peer-Reviewed';
+            } else if (combined.includes('ched recognized') || combined.includes('ched accredited')) {
+                indexingEl.value = 'CHED Recognized';
+            } else {
+                indexingEl.value = 'None';
+            }
+        }
+
+        // 3. Auto-detect Place Issued / Venue
+        const placeEl = document.getElementById('field_place_issued');
+        if (placeEl) {
+            if (metadata?.place_issued) {
+                placeEl.value = metadata.place_issued;
+            } else {
+                const venueRegex = /\b(Iloilo\s+City|Barotac\s+Nuevo|Barotac\s+Viejo|Dumalag|Passi\s+City|Roxas\s+City|Bacolod\s+City|Manila|Cebu(?:\s+City)?|Davao(?:\s+City)?|Quezon\s+City|ISUFST(?:\s+[A-Za-z]+)?(?:\s+Campus)?|Zoom(?:\s+Meeting)?|Google\s+Meet|Microsoft\s+Teams|Webex)\b/i;
+                const match = rawString.match(venueRegex);
+                if (match) {
+                    placeEl.value = match[0].trim();
+                } else {
+                    placeEl.value = '';
+                }
+            }
+        }
+
+        // 4. Authors / Presenter
+        const authorsEl = document.getElementById('field_authors');
+        if (authorsEl) {
+            if (metadata?.authors) {
+                authorsEl.value = metadata.authors;
+            }
         }
     }
 
@@ -764,6 +958,8 @@ Upload a file above to extract metadata.</div>
                 setDateDetectionStatus(this.value);
             });
         }
+        const currentCat = document.getElementById('field_category')?.value || 'Research Publication';
+        handleHitlCategoryChange(currentCat);
     });
 
     function setActiveStep(activeNum) {
@@ -894,6 +1090,21 @@ Upload a file above to extract metadata.</div>
         if (batchWorkArea) batchWorkArea.classList.add('hidden');
         const dupBox = document.getElementById('duplicate-warning-box');
         if (dupBox) dupBox.classList.add('hidden');
+
+        // 8b. Reset accreditation inputs
+        const scopeEl = document.getElementById('field_scope');
+        if (scopeEl) scopeEl.value = 'Institutional';
+        const indexingEl = document.getElementById('field_indexing');
+        if (indexingEl) indexingEl.value = 'None';
+        const placeEl = document.getElementById('field_place_issued');
+        if (placeEl) placeEl.value = '';
+        const authorsEl = document.getElementById('field_authors');
+        if (authorsEl) authorsEl.value = '';
+        const catSelect = document.getElementById('field_category');
+        if (catSelect) {
+            catSelect.value = 'Research Publication';
+            handleHitlCategoryChange('Research Publication');
+        }
 
         // 9. Close modal
         document.getElementById('stage-progress-modal').classList.add('hidden');
@@ -1151,6 +1362,11 @@ Upload a file above to extract metadata.</div>
             document.getElementById('field_issuer').value = consoleObj.Issuer;
             setHitlCategoryValue(consoleObj.Type);
             setDateDetectionStatus(consoleObj.Date);
+            autoDetectAccreditationFields(document.getElementById('raw_text').value, consoleObj);
+
+            consoleObj.Scope = document.getElementById('field_scope')?.value || 'Institutional';
+            consoleObj.Indexing = document.getElementById('field_indexing')?.value || 'None';
+            document.getElementById('rawConsole').textContent = JSON.stringify(consoleObj, null, 2);
 
             document.getElementById('duplicate-warning-box').classList.add('hidden');
             document.getElementById('hitl-panel').scrollIntoView({ behavior: 'smooth' });
@@ -1404,14 +1620,6 @@ Upload a file above to extract metadata.</div>
             document.getElementById('batch-work-area').classList.add('hidden');
             document.getElementById('work-area').classList.remove('hidden');
 
-            const consoleObj = {
-                "Title": data.metadata.title,
-                "Date": data.metadata.date_issued,
-                "Issuer": data.metadata.issuer,
-                "Type": data.metadata.category
-            };
-            document.getElementById('rawConsole').textContent = JSON.stringify(consoleObj, null, 2);
-
             // Populate form
             document.getElementById('temp_filename').value = data.temp_filename;
             document.getElementById('original_name').value = data.original_name;
@@ -1426,6 +1634,17 @@ Upload a file above to extract metadata.</div>
             setHitlCategoryValue(data.metadata.category);
             document.getElementById('field_cert_number').value = data.metadata.cert_number || '';
             setDateDetectionStatus(data.metadata.date_issued);
+            autoDetectAccreditationFields(data.raw_text, data.metadata);
+
+            const consoleObj = {
+                "Title": data.metadata.title,
+                "Date": data.metadata.date_issued,
+                "Issuer": data.metadata.issuer,
+                "Type": data.metadata.category,
+                "Scope": document.getElementById('field_scope')?.value || 'Institutional',
+                "Indexing": document.getElementById('field_indexing')?.value || 'None'
+            };
+            document.getElementById('rawConsole').textContent = JSON.stringify(consoleObj, null, 2);
 
             // Update dynamic confidence badge
             const confBadge = document.getElementById('ocrConfidenceBadge');
@@ -1640,6 +1859,7 @@ Upload a file above to extract metadata.</div>
         document.getElementById('field_issuer').value = item.metadata?.issuer || '';
         setHitlCategoryValue(item.metadata?.category);
         setDateDetectionStatus(item.metadata?.date_issued);
+        autoDetectAccreditationFields(item.raw_text, item.metadata);
 
         // Update confidence badge for selected batch item
         const confBadge = document.getElementById('ocrConfidenceBadge');
@@ -1714,6 +1934,10 @@ Upload a file above to extract metadata.</div>
                 date_issued: item.metadata?.date_issued || '',
                 issuer: item.metadata?.issuer || 'Not Specified',
                 category: item.metadata?.category || 'Seminar',
+                scope: item.metadata?.scope || 'Institutional',
+                indexing: item.metadata?.indexing || 'None',
+                place_issued: item.metadata?.place_issued || '',
+                authors: item.metadata?.authors || '',
                 force_duplicate: 1, // In batch committal, allow existing items to be archived as versions
                 csrf_token: window.CSRF_TOKEN || ''
             };
@@ -1809,6 +2033,10 @@ Upload a file above to extract metadata.</div>
             date_issued: dateIssued,
             issuer: issuer,
             category: effectiveCategory,
+            scope: document.getElementById('field_scope')?.value || 'Institutional',
+            indexing: document.getElementById('field_indexing') ? document.getElementById('field_indexing').value : 'None',
+            place_issued: document.getElementById('field_place_issued')?.value.trim() || '',
+            authors: document.getElementById('field_authors')?.value.trim() || '',
             force_duplicate: forceDup,
             csrf_token: window.CSRF_TOKEN || ''
         };

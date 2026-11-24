@@ -24,6 +24,7 @@ $testFiles = [
         __DIR__ . '/Unit/Services/CryptoServiceTest.php',
         __DIR__ . '/Unit/Services/AuthServiceTest.php',
         __DIR__ . '/Unit/Services/AuditLoggerTest.php',
+        __DIR__ . '/Unit/Services/CategoryServiceTest.php',
         __DIR__ . '/Unit/Services/CertificateServiceTest.php',
         __DIR__ . '/Unit/Services/UserServiceTest.php',
         __DIR__ . '/Unit/Services/BackupServiceTest.php',

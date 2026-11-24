@@ -40,7 +40,23 @@ class ExportControllerTest extends TestCase {
         $this->assertTrue($controller->renderedData['isDean']);
         $this->assertArrayHasKey('records', $controller->renderedData);
         $this->assertArrayHasKey('currentUser', $controller->renderedData);
+        $this->assertArrayHasKey('facultyMembers', $controller->renderedData);
+        $this->assertTrue(is_array($controller->renderedData['facultyMembers']));
         $this->assertEquals('records', $controller->renderedData['activeNav']);
+    }
+
+    public function testIndexRendersExportViewForDeanWithFacultyFilter(): void {
+        AuthService::attempt('dean', 'admin123');
+
+        $controller = new TestableExportController();
+        $_GET['format'] = 'html';
+        $_GET['faculty_id'] = '2'; // Dr. Arlene Poblador or faculty
+        $controller->index();
+
+        $this->assertEquals('export/index.php', $controller->renderedView);
+        $this->assertEquals(2, $controller->renderedData['targetFacultyId']);
+        $this->assertArrayHasKey('targetFacultyName', $controller->renderedData);
+        unset($_GET['faculty_id']);
     }
 
     public function testIndexRendersExportViewForFaculty(): void {

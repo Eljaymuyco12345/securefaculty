@@ -453,40 +453,6 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                         <span>Accreditation Records</span>
                     </a>
 
-                    <?php if (!$isDean): ?>
-                        <div class="px-2.5 pt-2 pb-0.5 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                            Administrative Suite
-                        </div>
-
-                        <!-- Locked Dean Items with Informative Tooltip Modal -->
-                        <button type="button" onclick="showDeanRestrictedModal('Dean Dashboard')"
-                                class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#14335e]/50 transition-all text-sm text-left">
-                            <span class="flex items-center gap-3">
-                                <i class="fa-solid fa-chart-pie w-5 text-center text-sm"></i>
-                                <span>Dean's Dashboard</span>
-                            </span>
-                            <i class="fa-solid fa-lock text-xs text-amber-400/80"></i>
-                        </button>
-
-                        <button type="button" onclick="showDeanRestrictedModal('User Management')"
-                                class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#14335e]/50 transition-all text-sm text-left">
-                            <span class="flex items-center gap-3">
-                                <i class="fa-solid fa-users-gear w-5 text-center text-sm"></i>
-                                <span>User Management</span>
-                            </span>
-                            <i class="fa-solid fa-lock text-xs text-amber-400/80"></i>
-                        </button>
-
-                        <button type="button" onclick="showDeanRestrictedModal('Compliance Audit Ledger')"
-                                class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#14335e]/50 transition-all text-sm text-left">
-                            <span class="flex items-center gap-3">
-                                <i class="fa-solid fa-clipboard-check w-5 text-center text-sm"></i>
-                                <span>Compliance Audit</span>
-                            </span>
-                            <i class="fa-solid fa-lock text-xs text-amber-400/80"></i>
-                        </button>
-                    <?php endif; ?>
-
                     <div class="px-2.5 pt-2 pb-0.5 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
                         System Configuration
                     </div>

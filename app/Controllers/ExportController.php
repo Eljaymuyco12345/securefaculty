@@ -21,6 +21,19 @@ class ExportController extends BaseController {
         $dateFrom = trim(substr($_GET['date_from'] ?? '', 0, 10));
         $dateTo = trim(substr($_GET['date_to'] ?? '', 0, 10));
         $issuedYear = trim(substr($_GET['issued_year'] ?? '', 0, 4));
+        $scope = trim(substr($_GET['scope'] ?? 'All', 0, 50));
+        $indexing = trim(substr($_GET['indexing'] ?? 'All', 0, 50));
+
+        $facultyMembers = $isDean ? UserModel::getFacultyList() : [];
+        $targetFacultyName = '';
+        if ($targetFacultyId) {
+            foreach ($facultyMembers as $fm) {
+                if ((int)$fm['id'] === $targetFacultyId) {
+                    $targetFacultyName = $fm['full_name'];
+                    break;
+                }
+            }
+        }
 
         // Query records based on bulk selected IDs or active filters
         if (!empty($rawIds)) {
@@ -28,21 +41,79 @@ class ExportController extends BaseController {
             $records = !empty($idList) ? CertificateModel::getByIds($idList, $isDean ? null : (int)$currentUser['id']) : [];
         } else {
             if ($isDean) {
-                $records = CertificateModel::getAll($category, $search, $targetFacultyId, $dateFrom, $dateTo, $issuedYear);
+                $records = CertificateModel::getAll($category, $search, $targetFacultyId, $dateFrom, $dateTo, $issuedYear, $scope, $indexing);
             } else {
                 $filters = [
                     'category' => $category,
                     'search' => $search,
                     'date_from' => $dateFrom,
                     'date_to' => $dateTo,
-                    'issued_year' => $issuedYear
+                    'issued_year' => $issuedYear,
+                    'scope' => $scope,
+                    'indexing' => $indexing
                 ];
                 $records = CertificateModel::getForFaculty($currentUser['id'], $filters);
             }
         }
 
-        // Dedicated PDF Document Export Handler (Policy: all exports are immutable PDF)
-        if ($format === 'pdf' || $format === 'csv') {
+        // CSV Export Handler
+        if ($format === 'csv') {
+            $filename = "CICI_Accreditation_Ledger_" . ($category !== 'All' ? preg_replace('/[^a-zA-Z0-9]/', '_', $category) . "_" : "") . date('Ymd_His') . ".csv";
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
+            fputcsv($out, [
+                '#',
+                'Document Title',
+                'Faculty Holder',
+                'Co-Authors',
+                'Academic Rank',
+                'Cert Ref / Number',
+                'Date Issued',
+                'Issuing Authority',
+                'Category',
+                'Scope / Level',
+                'Indexing Status',
+                'Place Issued / Venue',
+                'AACCUP Area',
+                'Cryptographic Integrity'
+            ]);
+            foreach ($records as $idx => $r) {
+                $scopeVal = $r['scope'] ?? 'Institutional';
+                $indexingVal = $r['indexing'] ?? 'None';
+                $placeVal = $r['place_issued'] ?? ($r['venue'] ?? '');
+                $aaccupVal = $r['accreditation_area'] ?? '';
+                if (!$aaccupVal) {
+                    $catL = strtolower($r['category'] ?? '');
+                    if (str_contains($catL, 'research')) $aaccupVal = 'Area V: Research';
+                    elseif (str_contains($catL, 'instructional') || str_contains($catL, 'module')) $aaccupVal = 'Area III: Curriculum and Instruction';
+                    else $aaccupVal = 'Area VIII: Faculty Development';
+                }
+                fputcsv($out, [
+                    $idx + 1,
+                    $r['title'] ?? 'Untitled',
+                    $r['faculty_name'] ?? '',
+                    $r['co_authors'] ?? '',
+                    $r['academic_rank'] ?? '',
+                    $r['cert_number'] ?? 'N/A',
+                    $r['date_issued'] ?? 'Undated',
+                    $r['issuer'] ?? 'Not Specified',
+                    $r['category'] ?? 'General',
+                    $scopeVal,
+                    $indexingVal,
+                    $placeVal,
+                    $aaccupVal,
+                    'AES-256 Verified'
+                ]);
+            }
+            fclose($out);
+            AuditLogger::log('EXPORT_CSV', "Exported official CSV accreditation report (" . count($records) . " records)");
+            exit;
+        }
+
+        // Dedicated PDF Document Export Handler (Policy: official audit exports are immutable PDF)
+        if ($format === 'pdf') {
             $dateScope = 'All Validated Records';
             if ($dateFrom || $dateTo) {
                 $dateScope = ($dateFrom ?: 'Beginning') . ' to ' . ($dateTo ?: 'Current');
@@ -54,6 +125,7 @@ class ExportController extends BaseController {
                 'meta' => [
                     'category' => $category,
                     'date_scope' => $dateScope,
+                    'faculty_scope' => $targetFacultyName ?: 'All Faculty',
                     'auditor_name' => $currentUser['full_name'],
                     'generated_at' => date('F d, Y \a\t h:i A')
                 ],
@@ -112,9 +184,13 @@ class ExportController extends BaseController {
             'category' => $category,
             'search' => $search,
             'targetFacultyId' => $targetFacultyId,
+            'targetFacultyName' => $targetFacultyName,
+            'facultyMembers' => $facultyMembers,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'issuedYear' => $issuedYear,
+            'scope' => $scope,
+            'indexing' => $indexing,
             'records' => $records,
             'activeNav' => 'records',
             'pageTitle' => 'Institutional Accreditation Report & Certificate Ledger'

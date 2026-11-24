@@ -35,6 +35,7 @@ class VaultController extends BaseController {
         $dateFrom = trim($_GET['date_from'] ?? '');
         $dateTo = trim($_GET['date_to'] ?? '');
         $issuedYear = trim($_GET['issued_year'] ?? '');
+        $scope = trim($_GET['scope'] ?? 'All');
         $viewMode = $_GET['view'] ?? 'table';
 
         $profile = UserModel::getProfile($currentUser['id']);
@@ -44,14 +45,15 @@ class VaultController extends BaseController {
         $facultyMembers = $isDean ? UserModel::getFacultyList() : [];
 
         if ($isDean) {
-            $certificates = CertificateModel::getAll($category, $search, $targetFacultyId, $dateFrom, $dateTo, $issuedYear);
+            $certificates = CertificateModel::getAll($category, $search, $targetFacultyId, $dateFrom, $dateTo, $issuedYear, $scope);
         } else {
             $filters = [
                 'category' => $category,
                 'search' => $search,
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
-                'issued_year' => $issuedYear
+                'issued_year' => $issuedYear,
+                'scope' => $scope
             ];
             $certificates = CertificateModel::getForFaculty($currentUser['id'], $filters);
         }
@@ -65,6 +67,7 @@ class VaultController extends BaseController {
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'issuedYear' => $issuedYear,
+            'scope' => $scope,
             'viewMode' => $viewMode,
             'availableYears' => $availableYears,
             'facultyMembers' => $facultyMembers,

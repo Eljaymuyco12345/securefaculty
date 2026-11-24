@@ -36,6 +36,11 @@ CREATE TABLE IF NOT EXISTS `certificates` (
     `issuer` VARCHAR(255),
     `date_issued` VARCHAR(50),
     `category` VARCHAR(100) DEFAULT 'Seminar',
+    `scope` VARCHAR(50) DEFAULT 'Institutional',
+    `indexing` VARCHAR(50) DEFAULT 'None',
+    `place_issued` VARCHAR(255) NULL,
+    `authors` VARCHAR(500) NULL,
+    `accreditation_area` VARCHAR(100) NULL,
     `file_path` VARCHAR(255) NOT NULL,
     `original_filename` VARCHAR(255) NOT NULL,
     `file_type` VARCHAR(10) NOT NULL,
@@ -134,9 +139,9 @@ INSERT INTO `faculty_profiles` (`user_id`, `employee_id`, `academic_rank`, `spec
 ON DUPLICATE KEY UPDATE `employee_id` = VALUES(`employee_id`);
 
 -- Seed Initial Research Publication (Co-Authored by Mikhail, Rae Jan, Eljay)
-INSERT INTO `certificates` (`id`, `faculty_id`, `title`, `issuer`, `date_issued`, `category`, `file_path`, `original_filename`, `file_type`, `file_size`, `ocr_confidence`, `status`) VALUES
-(1, 2, 'SECUREFACULTY: A SYSTEMATIC RECORDS MANAGEMENT PORTAL', 'Iloilo State University of Fisheries Science and Technology', '2026-09-25', 'Research Publication', 'sample_demo_cert.pdf', 'SecureFaculty_Capstone_Manuscript.pdf', 'pdf', 1048576, 0.98, 'approved')
-ON DUPLICATE KEY UPDATE `title` = VALUES(`title`);
+INSERT INTO `certificates` (`id`, `faculty_id`, `title`, `issuer`, `date_issued`, `category`, `scope`, `indexing`, `place_issued`, `authors`, `accreditation_area`, `file_path`, `original_filename`, `file_type`, `file_size`, `ocr_confidence`, `status`) VALUES
+(1, 2, 'SECUREFACULTY: A SYSTEMATIC RECORDS MANAGEMENT PORTAL', 'Iloilo State University of Fisheries Science and Technology', '2026-09-25', 'Research Publication', 'International', 'Scopus', 'Iloilo City, Philippines', 'Prof. Levy Mikhail B. Aguilar, Prof. Rae Jan B. Corneja, Prof. Eljay Muyco', 'Area V: Research', 'sample_demo_cert.pdf', 'SecureFaculty_Capstone_Manuscript.pdf', 'pdf', 1048576, 0.98, 'approved')
+ON DUPLICATE KEY UPDATE `title` = VALUES(`title`), `scope` = VALUES(`scope`), `indexing` = VALUES(`indexing`), `place_issued` = VALUES(`place_issued`), `authors` = VALUES(`authors`), `accreditation_area` = VALUES(`accreditation_area`);
 
 -- Seed Co-Author Mappings
 INSERT INTO `certificate_authors` (`id`, `certificate_id`, `user_id`) VALUES

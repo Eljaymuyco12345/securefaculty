@@ -50,6 +50,8 @@ class Database {
                     ]);
                     // Self-healing: verify tables exist in MySQL
                     self::initializeMySQLSchema(self::$pdo);
+                    // Ensure SQLite Plan B database also receives latest migrations
+                    self::ensureSqliteSchema();
                 }
             } catch (PDOException $e) {
                 // Plan B Disaster Recovery Fallback:
@@ -100,9 +102,57 @@ class Database {
                     $sql = preg_replace('/USE `?[^;`]+`?;/i', '', $sql);
                     $pdo->exec($sql);
                 }
+            } else {
+                // Dynamic safe migrations for MySQL
+                $certCols = $pdo->query("SHOW COLUMNS FROM certificates")->fetchAll(PDO::FETCH_COLUMN, 0);
+                if (!in_array('scope', $certCols)) {
+                    $pdo->exec("ALTER TABLE certificates ADD COLUMN `scope` VARCHAR(50) DEFAULT 'Institutional';");
+                }
+                if (!in_array('indexing', $certCols)) {
+                    $pdo->exec("ALTER TABLE certificates ADD COLUMN `indexing` VARCHAR(50) DEFAULT 'None';");
+                }
+                if (!in_array('place_issued', $certCols)) {
+                    $pdo->exec("ALTER TABLE certificates ADD COLUMN `place_issued` VARCHAR(255) NULL;");
+                }
+                if (!in_array('authors', $certCols)) {
+                    $pdo->exec("ALTER TABLE certificates ADD COLUMN `authors` VARCHAR(500) NULL;");
+                }
+                if (!in_array('accreditation_area', $certCols)) {
+                    $pdo->exec("ALTER TABLE certificates ADD COLUMN `accreditation_area` VARCHAR(100) NULL;");
+                }
+                $pdo->exec("
+                    UPDATE certificates 
+                    SET scope = 'International', 
+                        indexing = 'Scopus', 
+                        accreditation_area = 'Area V: Research',
+                        place_issued = COALESCE(place_issued, 'Iloilo City, Philippines'),
+                        authors = COALESCE(authors, 'Prof. Levy Mikhail B. Aguilar, Prof. Rae Jan B. Corneja, Prof. Eljay Muyco')
+                    WHERE (id = 1 OR title LIKE '%SECUREFACULTY: A SYSTEMATIC%') 
+                      AND (scope IS NULL OR scope = 'Institutional' OR indexing IS NULL OR indexing = 'None');
+                ");
             }
         } catch (Throwable $e) {
             // Non-fatal if schema already initialized or insufficient DDL permissions
+        }
+    }
+
+    /**
+     * Ensure local SQLite database (Plan B fallback) is initialized and migrated cleanly
+     */
+    public static function ensureSqliteSchema(): void {
+        try {
+            if (defined('SQLITE_PATH')) {
+                $sqlitePdo = new PDO('sqlite:' . SQLITE_PATH, null, null, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]);
+                $sqlitePdo->exec('PRAGMA foreign_keys = ON;');
+                $sqlitePdo->exec('PRAGMA busy_timeout = 5000;');
+                self::initializeSchema($sqlitePdo);
+            }
+        } catch (Throwable $e) {
+            // Non-fatal fallback
         }
     }
 
@@ -140,6 +190,11 @@ class Database {
                 issuer TEXT,
                 date_issued TEXT,
                 category TEXT DEFAULT 'Seminar',
+                scope TEXT DEFAULT 'Institutional',
+                indexing TEXT DEFAULT 'None',
+                place_issued TEXT,
+                authors TEXT,
+                accreditation_area TEXT,
                 file_path TEXT NOT NULL,
                 original_filename TEXT NOT NULL,
                 file_type TEXT NOT NULL,
@@ -222,6 +277,33 @@ class Database {
             if (!in_array('batch_id', $certCols)) {
                 $pdo->exec("ALTER TABLE certificates ADD COLUMN batch_id TEXT;");
             }
+            if (!in_array('scope', $certCols)) {
+                $pdo->exec("ALTER TABLE certificates ADD COLUMN scope TEXT DEFAULT 'Institutional';");
+            }
+            if (!in_array('indexing', $certCols)) {
+                $pdo->exec("ALTER TABLE certificates ADD COLUMN indexing TEXT DEFAULT 'None';");
+            }
+            if (!in_array('place_issued', $certCols)) {
+                $pdo->exec("ALTER TABLE certificates ADD COLUMN place_issued TEXT;");
+            }
+            if (!in_array('authors', $certCols)) {
+                $pdo->exec("ALTER TABLE certificates ADD COLUMN authors TEXT;");
+            }
+            if (!in_array('accreditation_area', $certCols)) {
+                $pdo->exec("ALTER TABLE certificates ADD COLUMN accreditation_area TEXT;");
+            }
+
+            // Update demo research publication record with accreditation metadata if needed
+            $pdo->exec("
+                UPDATE certificates 
+                SET scope = 'International', 
+                    indexing = 'Scopus', 
+                    accreditation_area = 'Area V: Research',
+                    place_issued = COALESCE(place_issued, 'Iloilo City, Philippines'),
+                    authors = COALESCE(authors, 'Prof. Levy Mikhail B. Aguilar, Prof. Rae Jan B. Corneja, Prof. Eljay Muyco')
+                WHERE (id = 1 OR title LIKE '%SECUREFACULTY: A SYSTEMATIC%') 
+                  AND (scope IS NULL OR scope = 'Institutional' OR indexing IS NULL OR indexing = 'None');
+            ");
         } catch (Throwable $me) {}
 
         // Ensure indices are established in SQLite
@@ -314,8 +396,8 @@ class Database {
         $certCount = $pdo->query("SELECT COUNT(*) FROM certificates")->fetchColumn();
         if ((int)$certCount === 0) {
             $cStmt = $pdo->prepare("
-                INSERT INTO certificates (id, faculty_id, title, issuer, date_issued, category, file_path, original_filename, file_type, file_size, ocr_confidence, status)
-                VALUES (1, 2, 'SECUREFACULTY: A SYSTEMATIC RECORDS MANAGEMENT PORTAL', 'Iloilo State University of Fisheries Science and Technology', '2026-09-25', 'Research Publication', 'sample_demo_cert.pdf', 'SecureFaculty_Capstone_Manuscript.pdf', 'pdf', 1048576, 0.98, 'approved')
+                INSERT INTO certificates (id, faculty_id, title, issuer, date_issued, category, scope, indexing, place_issued, authors, accreditation_area, file_path, original_filename, file_type, file_size, ocr_confidence, status)
+                VALUES (1, 2, 'SECUREFACULTY: A SYSTEMATIC RECORDS MANAGEMENT PORTAL', 'Iloilo State University of Fisheries Science and Technology', '2026-09-25', 'Research Publication', 'International', 'Scopus', 'Iloilo City, Philippines', 'Prof. Levy Mikhail B. Aguilar, Prof. Rae Jan B. Corneja, Prof. Eljay Muyco', 'Area V: Research', 'sample_demo_cert.pdf', 'SecureFaculty_Capstone_Manuscript.pdf', 'pdf', 1048576, 0.98, 'approved')
             ");
             $cStmt->execute();
 

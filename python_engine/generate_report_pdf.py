@@ -104,12 +104,12 @@ def generate_pdf(data_json_path, output_pdf_path):
     ledger_meta = ParagraphStyle('LedgerMeta', parent=styles['Normal'], fontName='Helvetica', fontSize=7.5, leading=10, textColor=colors.HexColor("#334155"))
     ledger_meta_r = ParagraphStyle('LedgerMetaR', parent=styles['Normal'], fontName='Helvetica', fontSize=7.5, leading=10, alignment=TA_RIGHT, textColor=colors.HexColor("#334155"))
 
-    th_style = ParagraphStyle('TH', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=6.8, leading=8.5, alignment=TA_CENTER, textColor=colors.HexColor("#0f172a"))
-    td_style = ParagraphStyle('TD', parent=styles['Normal'], fontName='Helvetica', fontSize=6.8, leading=8.5, textColor=colors.HexColor("#1e293b"))
-    td_bold = ParagraphStyle('TDBold', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=7, leading=9, textColor=colors.HexColor("#0f172a"))
-    td_center = ParagraphStyle('TDCenter', parent=styles['Normal'], fontName='Helvetica', fontSize=6.8, leading=8.5, alignment=TA_CENTER, textColor=colors.HexColor("#334155"))
-    td_badge = ParagraphStyle('TDBadge', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=6.5, leading=8, alignment=TA_CENTER, textColor=colors.HexColor("#1e40af"))
-    td_crypto = ParagraphStyle('TDCrypto', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=6.5, leading=8, alignment=TA_CENTER, textColor=colors.HexColor("#047857"))
+    th_style = ParagraphStyle('TH', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=6.2, leading=7.8, alignment=TA_CENTER, textColor=colors.HexColor("#0f172a"))
+    td_style = ParagraphStyle('TD', parent=styles['Normal'], fontName='Helvetica', fontSize=6.2, leading=7.8, textColor=colors.HexColor("#1e293b"))
+    td_bold = ParagraphStyle('TDBold', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=6.5, leading=8.2, textColor=colors.HexColor("#0f172a"))
+    td_center = ParagraphStyle('TDCenter', parent=styles['Normal'], fontName='Helvetica', fontSize=6.0, leading=7.5, alignment=TA_CENTER, textColor=colors.HexColor("#334155"))
+    td_badge = ParagraphStyle('TDBadge', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=5.8, leading=7.2, alignment=TA_CENTER, textColor=colors.HexColor("#1e40af"))
+    td_crypto = ParagraphStyle('TDCrypto', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=5.8, leading=7.0, alignment=TA_CENTER, textColor=colors.HexColor("#047857"))
 
     story = []
 
@@ -142,13 +142,16 @@ def generate_pdf(data_json_path, output_pdf_path):
     # 2. Audit Scope & Metadata Header (HTML-escaped for XML safety)
     category_text = html.escape(str(meta.get('category', 'All')))
     date_scope = html.escape(str(meta.get('date_scope', 'All Validated Records')))
+    faculty_scope = html.escape(str(meta.get('faculty_scope', 'All Faculty')))
     auditor = html.escape(str(meta.get('auditor_name', 'Authorized Administrator')))
     generated_at = html.escape(str(meta.get('generated_at', datetime.now().strftime("%B %d, %Y at %I:%M %p"))))
     total_count = len(records)
 
+    faculty_line = f"<br/><font color='#4338ca'>Faculty: <b>{faculty_scope}</b></font>" if faculty_scope and faculty_scope != 'All Faculty' else ""
+
     header_data = [
         [
-            Paragraph(f"<b>OFFICIAL CERTIFICATE &amp; ACCREDITATION LEDGER</b><br/><font color='#64748b'>Scope: <b>{category_text}</b>  |  Period: {date_scope}</font>", ledger_title),
+            Paragraph(f"<b>OFFICIAL CERTIFICATE &amp; ACCREDITATION LEDGER</b><br/><font color='#64748b'>Scope: <b>{category_text}</b>  |  Period: {date_scope}</font>{faculty_line}", ledger_title),
             Paragraph(f"<b>Audited By:</b> {auditor}<br/><b>Generated:</b> {generated_at}<br/><b>Total Records:</b> {total_count}", ledger_meta_r)
         ]
     ]
@@ -164,7 +167,7 @@ def generate_pdf(data_json_path, output_pdf_path):
     story.append(Spacer(1, 4))
 
     # 3. Main Data Table (Portrait Width = 547.27 pt)
-    col_widths = [18, 142, 114, 50, 52, 80, 53, 38.27]
+    col_widths = [16, 102, 86, 40, 40, 56, 48, 36, 42, 48, 33.27]
 
     table_data = [[
         Paragraph("<b>#</b>", th_style),
@@ -174,11 +177,14 @@ def generate_pdf(data_json_path, output_pdf_path):
         Paragraph("<b>ISSUED</b>", th_style),
         Paragraph("<b>ISSUING AUTHORITY</b>", th_style),
         Paragraph("<b>CATEGORY</b>", th_style),
+        Paragraph("<b>SCOPE</b>", th_style),
+        Paragraph("<b>INDEXING</b>", th_style),
+        Paragraph("<b>VENUE / PLACE</b>", th_style),
         Paragraph("<b>STATUS</b>", th_style),
     ]]
 
     if not records:
-        empty_row = [Paragraph("<i>No records match the selected scope.</i>", td_center)] + [''] * 7
+        empty_row = [Paragraph("<i>No records match the selected scope.</i>", td_center)] + [''] * 10
         table_data.append(empty_row)
     else:
         for idx, r in enumerate(records, start=1):
@@ -186,14 +192,14 @@ def generate_pdf(data_json_path, output_pdf_path):
                 continue
             title = html.escape(str(r.get('title', 'Untitled')))
             ftype = html.escape(str(r.get('file_type', 'PDF')).upper())
-            title_p = Paragraph(f"<b>{title}</b><br/><font size=6.5 color='#64748b'>FORMAT: {ftype}</font>", td_style)
+            title_p = Paragraph(f"<b>{title}</b><br/><font size=5.5 color='#64748b'>FORMAT: {ftype}</font>", td_style)
 
             holder = html.escape(str(r.get('faculty_name', 'Faculty Member')))
             rank = html.escape(str(r.get('academic_rank', 'CICI Faculty')))
             coauthors = html.escape(str(r.get('co_authors', ''))) if r.get('co_authors') else ''
-            holder_text = f"<b>{holder}</b><br/><font size=6.5 color='#475569'>{rank}</font>"
+            holder_text = f"<b>{holder}</b><br/><font size=5.5 color='#475569'>{rank}</font>"
             if coauthors:
-                holder_text += f"<br/><font size=6 color='#7c3aed'><b>Co-Authors:</b> {coauthors}</font>"
+                holder_text += f"<br/><font size=5 color='#7c3aed'><b>Co-Authors:</b> {coauthors}</font>"
             holder_p = Paragraph(holder_text, td_style)
 
             ref_no = html.escape(str(r.get('cert_number') or 'N/A'))
@@ -208,7 +214,40 @@ def generate_pdf(data_json_path, output_pdf_path):
             cat = html.escape(str(r.get('category') or 'General'))
             cat_p = Paragraph(cat, td_badge)
 
-            crypto_p = Paragraph("AES-256<br/><font size=6 color='#047857'>VERIFIED</font>", td_crypto)
+            # Scope: Intl / Nat / Reg / Inst
+            scope_raw = str(r.get('scope') or 'Institutional').strip()
+            scope_lower = scope_raw.lower()
+            if 'internat' in scope_lower:
+                scope_markup = "<font color='#3730a3'><b>Intl</b></font>"
+            elif 'nation' in scope_lower:
+                scope_markup = "<font color='#065f46'><b>Natl</b></font>"
+            elif 'region' in scope_lower:
+                scope_markup = "<font color='#92400e'><b>Reg</b></font>"
+            else:
+                scope_markup = "<font color='#475569'><b>Inst</b></font>"
+            scope_p = Paragraph(scope_markup, td_center)
+
+            # Indexing: Scopus / Peer-Rev / None
+            idx_raw = str(r.get('indexing') or 'None').strip()
+            idx_lower = idx_raw.lower()
+            if 'scopus' in idx_lower:
+                idx_markup = "<font color='#b45309'><b>Scopus</b></font>"
+            elif 'web of science' in idx_lower or 'wos' in idx_lower:
+                idx_markup = "<font color='#6b21a8'><b>WoS</b></font>"
+            elif 'peer' in idx_lower:
+                idx_markup = "<font color='#0f766e'><b>Peer-Rev</b></font>"
+            elif idx_raw == '' or idx_lower == 'none':
+                idx_markup = "<font color='#94a3b8'>None</font>"
+            else:
+                idx_markup = f"<font color='#334155'>{html.escape(idx_raw)}</font>"
+            indexing_p = Paragraph(idx_markup, td_center)
+
+            # Venue / Place
+            venue_raw = str(r.get('place_issued') or r.get('venue') or '').strip()
+            venue_markup = html.escape(venue_raw) if venue_raw else "<font color='#94a3b8'>N/A</font>"
+            venue_p = Paragraph(venue_markup, td_center)
+
+            crypto_p = Paragraph("AES-256<br/><font size=5 color='#047857'>VERIFIED</font>", td_crypto)
 
             table_data.append([
                 Paragraph(str(idx), td_center),
@@ -218,6 +257,9 @@ def generate_pdf(data_json_path, output_pdf_path):
                 date_p,
                 issuer_p,
                 cat_p,
+                scope_p,
+                indexing_p,
+                venue_p,
                 crypto_p
             ])
 
@@ -227,10 +269,10 @@ def generate_pdf(data_json_path, output_pdf_path):
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#f1f5f9")),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#cbd5e1")),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 3),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
-        ('LEFTPADDING', (0,0), (-1,-1), 3.5),
-        ('RIGHTPADDING', (0,0), (-1,-1), 3.5),
+        ('TOPPADDING', (0,0), (-1,-1), 2.5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
+        ('LEFTPADDING', (0,0), (-1,-1), 2),
+        ('RIGHTPADDING', (0,0), (-1,-1), 2),
     ]
 
     if not records:
