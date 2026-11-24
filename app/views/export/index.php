@@ -8,6 +8,9 @@ $dateTo = $dateTo ?? '';
 $issuedYear = $issuedYear ?? '';
 $scope = $scope ?? ($_GET['scope'] ?? 'All');
 $indexing = $indexing ?? ($_GET['indexing'] ?? 'All');
+$targetFacultyId = $targetFacultyId ?? (!empty($_GET['faculty_id']) ? (int)$_GET['faculty_id'] : null);
+$targetFacultyName = $targetFacultyName ?? '';
+$facultyMembers = $facultyMembers ?? [];
 $rawIds = $rawIds ?? '';
 $activeNav = $activeNav ?? 'records';
 $pageTitle = $pageTitle ?? 'Institutional Accreditation Report & Certificate Ledger';
@@ -143,13 +146,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <i class="fa-solid fa-arrow-left"></i>
                 <span>Back to Vault</span>
             </a>
-            <a href="export.php?format=csv<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
+            <a href="export.php?format=csv<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= ($isDean && $targetFacultyId) ? '&faculty_id=' . $targetFacultyId : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
                class="px-4 py-2.5 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer"
                title="Export Official Raw Accreditation Ledger in CSV Format">
                 <i class="fa-solid fa-file-csv text-base text-emerald-600 dark:text-emerald-400"></i>
                 <span>Export CSV</span>
             </a>
-            <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
+            <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= ($isDean && $targetFacultyId) ? '&faculty_id=' . $targetFacultyId : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-sm flex items-center gap-2.5 shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
                 <i class="fa-solid fa-file-pdf text-base animate-pulse"></i>
                 <span>Download PDF Report</span>
@@ -164,7 +167,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <input type="hidden" name="ids" value="<?= htmlspecialchars($rawIds) ?>">
             <?php endif; ?>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5 text-xs items-end">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 <?= $isDean ? 'xl:grid-cols-8' : 'xl:grid-cols-7' ?> gap-2.5 text-xs items-end">
                 <!-- Date From -->
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
@@ -199,6 +202,24 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         <?php endforeach; ?>
                     </select>
                 </div>
+
+                <?php if ($isDean): ?>
+                <!-- Faculty Member (Dean Oversight) -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        <i class="fa-solid fa-user-graduate text-indigo-500 mr-1"></i>Faculty Member:
+                    </label>
+                    <select name="faculty_id"
+                            class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:border-blue-500">
+                        <option value="">All Faculty Members</option>
+                        <?php foreach ($facultyMembers as $fm): ?>
+                            <option value="<?= $fm['id'] ?>" <?= (int)$targetFacultyId === (int)$fm['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($fm['full_name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <?php endif; ?>
 
                 <!-- Scope / Level -->
                 <div>
@@ -246,7 +267,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         <i class="fa-solid fa-filter text-[10px]"></i>
                         <span>Apply</span>
                     </button>
-                    <?php if ($dateFrom || $dateTo || $category !== 'All' || $search || ($scope && $scope !== 'All') || ($indexing && $indexing !== 'All')): ?>
+                    <?php if ($dateFrom || $dateTo || $category !== 'All' || $search || ($scope && $scope !== 'All') || ($indexing && $indexing !== 'All') || ($isDean && $targetFacultyId)): ?>
                         <a href="export.php<?= !empty($rawIds) ? '?ids=' . urlencode($rawIds) : '' ?>"
                            class="min-h-[38px] py-2 sm:py-1.5 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all flex items-center justify-center cursor-pointer"
                            title="Reset Filters">
@@ -312,6 +333,11 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800">
                 Category: <?= htmlspecialchars($category) ?>
             </span>
+            <?php if ($isDean && $targetFacultyId): ?>
+                <span class="px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-bold border border-purple-200 dark:border-purple-800">
+                    <i class="fa-solid fa-user-graduate text-[9px] mr-1"></i>Faculty: <?= htmlspecialchars($targetFacultyName ?: 'ID #' . $targetFacultyId) ?>
+                </span>
+            <?php endif; ?>
             <?php if ($scope && $scope !== 'All'): ?>
                 <span class="px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
                     Scope: <?= htmlspecialchars($scope) ?>
@@ -373,6 +399,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <h4 class="font-extrabold text-slate-900 dark:text-white uppercase">OFFICIAL CERTIFICATE &amp; ACCREDITATION LEDGER</h4>
             <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                 Category Scope: <strong class="text-slate-800 dark:text-slate-200"><?= htmlspecialchars($category) ?></strong> &bull;
+                <?php if ($isDean && $targetFacultyId && !empty($targetFacultyName)): ?>
+                    Faculty: <strong class="text-indigo-600 dark:text-indigo-400"><?= htmlspecialchars($targetFacultyName) ?></strong> &bull;
+                <?php endif; ?>
                 <?php if ($dateFrom || $dateTo): ?>
                     Issued Range: <?= htmlspecialchars($dateFrom ?: 'Beginning') ?> to <?= htmlspecialchars($dateTo ?: 'Current') ?>
                 <?php elseif ($issuedYear): ?>
@@ -505,13 +534,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <div class="pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-3 print:hidden">
         <span class="text-xs text-slate-500 dark:text-slate-400">Ready to export official ledger with cryptographic verification?</span>
         <div class="flex items-center gap-2">
-            <a href="export.php?format=csv<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
+            <a href="export.php?format=csv<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= ($isDean && $targetFacultyId) ? '&faculty_id=' . $targetFacultyId : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
                class="px-4 py-2.5 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer"
                title="Export Official Raw Accreditation Ledger in CSV Format">
                 <i class="fa-solid fa-file-csv text-base text-emerald-600 dark:text-emerald-400"></i>
                 <span>Export CSV</span>
             </a>
-            <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
+            <a href="export.php?format=pdf<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $dateFrom ? '&date_from=' . urlencode($dateFrom) : '' ?><?= $dateTo ? '&date_to=' . urlencode($dateTo) : '' ?><?= $issuedYear ? '&issued_year=' . urlencode($issuedYear) : '' ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= ($indexing && $indexing !== 'All') ? '&indexing=' . urlencode($indexing) : '' ?><?= ($isDean && $targetFacultyId) ? '&faculty_id=' . $targetFacultyId : '' ?><?= !empty($rawIds) ? '&ids=' . urlencode($rawIds) : '' ?>"
                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-sm flex items-center gap-2.5 shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
                 <i class="fa-solid fa-file-pdf text-base"></i>
                 <span>Download PDF Report</span>

@@ -24,6 +24,17 @@ class ExportController extends BaseController {
         $scope = trim(substr($_GET['scope'] ?? 'All', 0, 50));
         $indexing = trim(substr($_GET['indexing'] ?? 'All', 0, 50));
 
+        $facultyMembers = $isDean ? UserModel::getFacultyList() : [];
+        $targetFacultyName = '';
+        if ($targetFacultyId) {
+            foreach ($facultyMembers as $fm) {
+                if ((int)$fm['id'] === $targetFacultyId) {
+                    $targetFacultyName = $fm['full_name'];
+                    break;
+                }
+            }
+        }
+
         // Query records based on bulk selected IDs or active filters
         if (!empty($rawIds)) {
             $idList = array_filter(array_map('intval', explode(',', $rawIds)));
@@ -114,6 +125,7 @@ class ExportController extends BaseController {
                 'meta' => [
                     'category' => $category,
                     'date_scope' => $dateScope,
+                    'faculty_scope' => $targetFacultyName ?: 'All Faculty',
                     'auditor_name' => $currentUser['full_name'],
                     'generated_at' => date('F d, Y \a\t h:i A')
                 ],
@@ -172,6 +184,8 @@ class ExportController extends BaseController {
             'category' => $category,
             'search' => $search,
             'targetFacultyId' => $targetFacultyId,
+            'targetFacultyName' => $targetFacultyName,
+            'facultyMembers' => $facultyMembers,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'issuedYear' => $issuedYear,

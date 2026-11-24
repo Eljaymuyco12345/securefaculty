@@ -142,13 +142,16 @@ def generate_pdf(data_json_path, output_pdf_path):
     # 2. Audit Scope & Metadata Header (HTML-escaped for XML safety)
     category_text = html.escape(str(meta.get('category', 'All')))
     date_scope = html.escape(str(meta.get('date_scope', 'All Validated Records')))
+    faculty_scope = html.escape(str(meta.get('faculty_scope', 'All Faculty')))
     auditor = html.escape(str(meta.get('auditor_name', 'Authorized Administrator')))
     generated_at = html.escape(str(meta.get('generated_at', datetime.now().strftime("%B %d, %Y at %I:%M %p"))))
     total_count = len(records)
 
+    faculty_line = f"<br/><font color='#4338ca'>Faculty: <b>{faculty_scope}</b></font>" if faculty_scope and faculty_scope != 'All Faculty' else ""
+
     header_data = [
         [
-            Paragraph(f"<b>OFFICIAL CERTIFICATE &amp; ACCREDITATION LEDGER</b><br/><font color='#64748b'>Scope: <b>{category_text}</b>  |  Period: {date_scope}</font>", ledger_title),
+            Paragraph(f"<b>OFFICIAL CERTIFICATE &amp; ACCREDITATION LEDGER</b><br/><font color='#64748b'>Scope: <b>{category_text}</b>  |  Period: {date_scope}</font>{faculty_line}", ledger_title),
             Paragraph(f"<b>Audited By:</b> {auditor}<br/><b>Generated:</b> {generated_at}<br/><b>Total Records:</b> {total_count}", ledger_meta_r)
         ]
     ]
