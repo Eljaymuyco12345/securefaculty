@@ -11,7 +11,7 @@ $issuedYear = $issuedYear ?? '';
 $viewMode = $viewMode ?? 'table';
 $availableYears = $availableYears ?? [];
 $facultyMembers = $facultyMembers ?? [];
-$allCategories = $allCategories ?? ['All', 'Modules & IMs', 'Research', 'Seminars', 'Trainings', 'Workshops', 'Awards', 'Milestones'];
+$allCategories = $allCategories ?? ['All', 'Modules & IMs', 'Research', 'Seminars', 'Trainings', 'Workshops', 'Awards', 'Milestones', 'Other'];
 $targetFacultyId = $targetFacultyId ?? null;
 $activeNav = $activeNav ?? 'certificates';
 $pageTitle = $pageTitle ?? ($isDean ? 'Institutional Department Vault' : 'Faculty Personal Digital Vault');
@@ -102,7 +102,8 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             'Training' => 'Training / Bootcamp',
             'Workshop' => 'Workshop',
             'Award' => 'Award / Recognition',
-            'Academic Milestone' => 'Academic Milestone / Appointment'
+            'Academic Milestone' => 'Academic Milestone / Appointment',
+            'Other' => 'Other / Custom'
         ];
         foreach ($tabs as $key => $label):
             $isActive = ($category === $key);

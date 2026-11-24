@@ -168,22 +168,6 @@
         </div>
     </div>
 
-    <!-- 4. Floating System Guide & Tutorial Assistant (FAB) - Hidden on Mobile to avoid UI Occlusion, Accessible via Navigation Menu -->
-    <div id="system-tutorial-fab" class="hidden md:block fixed bottom-6 right-6 z-30 print:hidden transition-all duration-300">
-        <button type="button" onclick="openSystemTutorial()"
-                title="Open SecureFaculty System Guide & Interactive Tutorial"
-                class="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-[#0d2342] via-[#14335e] to-[#1e447b] dark:from-blue-600 dark:via-blue-500 dark:to-indigo-600 text-white shadow-2xl hover:shadow-blue-500/30 border-2 border-white/20 hover:border-white/50 hover:scale-105 active:scale-95 transition-all cursor-pointer">
-            <span class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-amber-300 shadow-inner group-hover:rotate-12 transition-transform">
-                <i class="fa-solid fa-graduation-cap text-sm"></i>
-            </span>
-            <div class="text-left hidden sm:block">
-                <span class="block text-xs font-black tracking-tight leading-tight">System Guide</span>
-                <span class="block text-[10px] text-blue-200 font-medium">How-To Tutorial</span>
-            </div>
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping ml-0.5"></span>
-        </button>
-    </div>
-
     <!-- 5. Interactive System Tutorial Modal Dialog -->
     <div id="system-tutorial-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="if(event.target===this)closeSystemTutorial()">
         <div class="modal-card-anim bg-white dark:bg-[#111c36] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">

@@ -194,9 +194,13 @@ class CertificateDAO implements CertificateDAOInterface {
 
         if ($category && $category !== 'All') {
             $normCat = CategoryService::normalize($category);
-            $sql .= " AND (c.category = :category OR c.category = :category_alias)";
-            $params[':category'] = $normCat;
-            $params[':category_alias'] = $category;
+            if ($normCat === 'Other') {
+                $sql .= " AND (c.category = 'Other' OR c.category LIKE 'Other:%' OR c.category LIKE 'Other (%' OR c.category LIKE 'Other%')";
+            } else {
+                $sql .= " AND (c.category = :category OR c.category = :category_alias)";
+                $params[':category'] = $normCat;
+                $params[':category_alias'] = $category;
+            }
         }
 
         if ($search && trim($search) !== '') {
@@ -273,9 +277,13 @@ class CertificateDAO implements CertificateDAOInterface {
 
         if ($category && $category !== 'All') {
             $normCat = CategoryService::normalize($category);
-            $sql .= " AND (c.category = :category OR c.category = :category_alias)";
-            $params[':category'] = $normCat;
-            $params[':category_alias'] = $category;
+            if ($normCat === 'Other') {
+                $sql .= " AND (c.category = 'Other' OR c.category LIKE 'Other:%' OR c.category LIKE 'Other (%' OR c.category LIKE 'Other%')";
+            } else {
+                $sql .= " AND (c.category = :category OR c.category = :category_alias)";
+                $params[':category'] = $normCat;
+                $params[':category_alias'] = $category;
+            }
         }
 
         if ($search && trim($search) !== '') {
