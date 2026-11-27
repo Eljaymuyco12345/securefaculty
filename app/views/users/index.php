@@ -72,8 +72,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <form method="GET" action="users.php" class="flex-1 flex flex-wrap items-center gap-2">
         <div class="relative flex-1 min-w-[200px]">
             <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-3 top-2.5"></i>
-            <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-                   placeholder="Search by name, CICI ID, email, or employee number..."
+            <input type="text" id="usersSearchInput" name="search" value="<?= htmlspecialchars($search) ?>"
+                   oninput="filterUsersLive(this.value)"
+                   placeholder="Live search by name, CICI ID, email, or employee number..."
                    class="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 transition-all">
         </div>
 
@@ -639,6 +640,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     showSystemAlert({ title: 'Error', message: err.message, type: 'error' });
                 });
             }
+        });
+    }
+
+    function filterUsersLive(term) {
+        const query = (term || '').toLowerCase().trim();
+        const tbody = document.getElementById('users-table-body');
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(row => {
+            const text = (row.textContent || '').toLowerCase();
+            row.style.display = (!query || text.includes(query)) ? '' : 'none';
         });
     }
 </script>

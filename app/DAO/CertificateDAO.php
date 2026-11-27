@@ -45,16 +45,25 @@ class CertificateDAO implements CertificateDAOInterface {
         return (int)$stmt->fetchColumn() > 0;
     }
 
+    private static function coAuthorSubquery(PDO $pdo): string {
+        $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $agg = $driver === 'mysql'
+            ? "GROUP_CONCAT(u2.full_name SEPARATOR ', ')"
+            : "GROUP_CONCAT(u2.full_name, ', ')";
+        return "(SELECT {$agg}
+                 FROM certificate_authors ca2
+                 JOIN users u2 ON ca2.user_id = u2.id
+                 WHERE ca2.certificate_id = c.id AND ca2.user_id != c.faculty_id) as co_authors";
+    }
+
     public static function getByIds(array $ids, ?int $facultyId = null): array {
         if (empty($ids)) return [];
         $pdo = Database::getConnection();
         $inPlaceholders = implode(',', array_fill(0, count($ids), '?'));
+        $coAuthorSelect = self::coAuthorSubquery($pdo);
         $sql = "
             SELECT c.*, u.full_name as faculty_name, fp.academic_rank, fp.employee_id,
-                   (SELECT GROUP_CONCAT(u2.full_name, ', ')
-                    FROM certificate_authors ca2
-                    JOIN users u2 ON ca2.user_id = u2.id
-                    WHERE ca2.certificate_id = c.id AND ca2.user_id != c.faculty_id) as co_authors
+                   {$coAuthorSelect}
             FROM certificates c
             JOIN users u ON c.faculty_id = u.id
             LEFT JOIN faculty_profiles fp ON u.id = fp.user_id
@@ -105,8 +114,9 @@ class CertificateDAO implements CertificateDAOInterface {
                     file_path, original_filename, file_type, file_size,
                     ocr_raw_text, ocr_confidence, status,
                     file_hash, cert_number, processing_status, batch_id,
-                    scope, indexing, place_issued, authors, accreditation_area
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    scope, indexing, place_issued, authors, accreditation_area,
+                    folder_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
@@ -130,7 +140,8 @@ class CertificateDAO implements CertificateDAOInterface {
                 $data['indexing'] ?? 'None',
                 $data['place_issued'] ?? null,
                 $data['authors'] ?? null,
-                $data['accreditation_area'] ?? null
+                $data['accreditation_area'] ?? null,
+                !empty($data['folder_id']) ? (int)$data['folder_id'] : null
             ]);
 
             $certId = (int)$pdo->lastInsertId();
@@ -210,6 +221,22 @@ class CertificateDAO implements CertificateDAOInterface {
         }
     }
 
+    private static function appendFolderFilter(string &$sql, array &$params, $folderId): void {
+        if ($folderId === null || $folderId === '') {
+            return;
+        }
+        $val = strtolower(trim((string)$folderId));
+        if ($val === '' || $val === 'all') {
+            return;
+        }
+        if ($val === 'unfiled') {
+            $sql .= " AND c.folder_id IS NULL";
+        } elseif (is_numeric($folderId) && (int)$folderId > 0) {
+            $sql .= " AND c.folder_id = :folder_id";
+            $params[':folder_id'] = (int)$folderId;
+        }
+    }
+
     public static function getForFaculty(int $facultyId, ?array $filters = null): array {
         $pdo = Database::getConnection();
 
@@ -221,13 +248,12 @@ class CertificateDAO implements CertificateDAOInterface {
         $scope = $filters['scope'] ?? null;
         $indexing = $filters['indexing'] ?? null;
         $accreditationArea = $filters['accreditation_area'] ?? null;
+        $folderId = $filters['folder_id'] ?? null;
 
+        $coAuthorSelect = self::coAuthorSubquery($pdo);
         $sql = "
             SELECT c.*, u.full_name as faculty_name, fp.academic_rank, fp.employee_id,
-                   (SELECT GROUP_CONCAT(u2.full_name, ', ')
-                    FROM certificate_authors ca2
-                    JOIN users u2 ON ca2.user_id = u2.id
-                    WHERE ca2.certificate_id = c.id AND ca2.user_id != c.faculty_id) as co_authors
+                   {$coAuthorSelect}
             FROM certificates c
             JOIN users u ON c.faculty_id = u.id
             LEFT JOIN faculty_profiles fp ON u.id = fp.user_id
@@ -300,6 +326,8 @@ class CertificateDAO implements CertificateDAOInterface {
             $params[':issued_year'] = trim($issuedYear) . '%';
         }
 
+        self::appendFolderFilter($sql, $params, $folderId);
+
         $sql .= " ORDER BY c.date_issued DESC, c.created_at DESC";
 
         $stmt = $pdo->prepare($sql);
@@ -307,7 +335,7 @@ class CertificateDAO implements CertificateDAOInterface {
         return $stmt->fetchAll();
     }
 
-    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null, ?string $scope = null, ?string $indexing = null, ?string $accreditationArea = null): array {
+    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null, ?string $scope = null, ?string $indexing = null, ?string $accreditationArea = null, $folderId = null): array {
         $pdo = Database::getConnection();
 
         if (is_array($categoryOrFilters)) {
@@ -320,16 +348,15 @@ class CertificateDAO implements CertificateDAOInterface {
             $scope = $categoryOrFilters['scope'] ?? $scope;
             $indexing = $categoryOrFilters['indexing'] ?? $indexing;
             $accreditationArea = $categoryOrFilters['accreditation_area'] ?? $accreditationArea;
+            $folderId = $categoryOrFilters['folder_id'] ?? $folderId;
         } else {
             $category = $categoryOrFilters;
         }
 
+        $coAuthorSelect = self::coAuthorSubquery($pdo);
         $sql = "
             SELECT c.*, u.full_name as faculty_name, fp.academic_rank, fp.employee_id,
-                   (SELECT GROUP_CONCAT(u2.full_name, ', ')
-                    FROM certificate_authors ca2
-                    JOIN users u2 ON ca2.user_id = u2.id
-                    WHERE ca2.certificate_id = c.id AND ca2.user_id != c.faculty_id) as co_authors
+                   {$coAuthorSelect}
             FROM certificates c
             JOIN users u ON c.faculty_id = u.id
             LEFT JOIN faculty_profiles fp ON u.id = fp.user_id
@@ -403,6 +430,8 @@ class CertificateDAO implements CertificateDAOInterface {
             $sql .= " AND c.date_issued LIKE :issued_year";
             $params[':issued_year'] = trim($issuedYear) . '%';
         }
+
+        self::appendFolderFilter($sql, $params, $folderId);
 
         $sql .= " ORDER BY c.date_issued DESC, c.created_at DESC";
 

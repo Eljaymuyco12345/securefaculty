@@ -256,7 +256,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                         <i class="fa-solid fa-magnifying-glass text-slate-400 mr-1"></i>Keyword Search:
                     </label>
-                    <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Title, cert no, issuer..."
+                    <input type="text" id="exportSearchInput" name="search" value="<?= htmlspecialchars($search) ?>"
+                           oninput="filterExportRowsLive(this.value)"
+                           placeholder="Live search title, cert no, issuer..."
                            class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500">
                 </div>
 
@@ -437,7 +439,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <th class="p-2 text-center">Integrity</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-[11px]">
+            <tbody id="exportTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-[11px]">
                 <?php if (empty($records)): ?>
                     <tr>
                         <td colspan="11" class="p-8 text-center text-slate-400 dark:text-slate-500">No institutional records match the selected scope criteria.</td>
@@ -583,6 +585,16 @@ function setExportDatePreset(type) {
 
     const form = document.getElementById('exportFilterForm');
     if (form) form.submit();
+}
+
+function filterExportRowsLive(term) {
+    const query = (term || '').toLowerCase().trim();
+    const tbody = document.getElementById('exportTableBody');
+    if (!tbody) return;
+    tbody.querySelectorAll('tr').forEach(row => {
+        const text = (row.textContent || '').toLowerCase();
+        row.style.display = (!query || text.includes(query)) ? '' : 'none';
+    });
 }
 </script>
 

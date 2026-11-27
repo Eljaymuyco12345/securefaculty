@@ -38,6 +38,38 @@ class VaultController extends BaseController {
         $scope = trim($_GET['scope'] ?? 'All');
         $viewMode = $_GET['view'] ?? 'table';
 
+        $rawFolder = trim((string)($_GET['folder_id'] ?? 'all'));
+        if ($rawFolder === '' || $rawFolder === 'all') {
+            $folderFilter = 'all';
+        } elseif ($rawFolder === 'unfiled') {
+            $folderFilter = 'unfiled';
+        } elseif (ctype_digit($rawFolder) && (int)$rawFolder > 0) {
+            $folderFilter = (int)$rawFolder;
+        } else {
+            $folderFilter = 'all';
+        }
+
+        $folders = class_exists('FolderDAO') ? FolderDAO::getForUser((int)$currentUser['id']) : [];
+        $currentFolder = null;
+        if (is_int($folderFilter)) {
+            foreach ($folders as $f) {
+                if ((int)$f['id'] === $folderFilter) {
+                    $currentFolder = $f;
+                    break;
+                }
+            }
+            if ($currentFolder === null && class_exists('FolderDAO')) {
+                $found = FolderDAO::find($folderFilter);
+                if ($found && ((int)$found['user_id'] === (int)$currentUser['id'] || $isDean)) {
+                    $currentFolder = $found;
+                } else {
+                    $folderFilter = 'all';
+                }
+            } elseif ($currentFolder === null) {
+                $folderFilter = 'all';
+            }
+        }
+
         $profile = UserModel::getProfile($currentUser['id']);
 
         $availableYears = CertificateModel::getAvailableIssuedYears();
@@ -45,7 +77,16 @@ class VaultController extends BaseController {
         $facultyMembers = $isDean ? UserModel::getFacultyList() : [];
 
         if ($isDean) {
-            $certificates = CertificateModel::getAll($category, $search, $targetFacultyId, $dateFrom, $dateTo, $issuedYear, $scope);
+            $certificates = CertificateModel::getAll([
+                'category' => $category,
+                'search' => $search,
+                'faculty_id' => $targetFacultyId,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+                'issued_year' => $issuedYear,
+                'scope' => $scope,
+                'folder_id' => $folderFilter,
+            ]);
         } else {
             $filters = [
                 'category' => $category,
@@ -53,7 +94,8 @@ class VaultController extends BaseController {
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
                 'issued_year' => $issuedYear,
-                'scope' => $scope
+                'scope' => $scope,
+                'folder_id' => $folderFilter,
             ];
             $certificates = CertificateModel::getForFaculty($currentUser['id'], $filters);
         }
@@ -69,6 +111,9 @@ class VaultController extends BaseController {
             'issuedYear' => $issuedYear,
             'scope' => $scope,
             'viewMode' => $viewMode,
+            'folderFilter' => $folderFilter,
+            'folders' => $folders,
+            'currentFolder' => $currentFolder,
             'availableYears' => $availableYears,
             'facultyMembers' => $facultyMembers,
             'certificates' => $certificates,

@@ -18,36 +18,45 @@ define('TEMP_DIR', STORAGE_DIR . DIRECTORY_SEPARATOR . 'temp');
 define('BACKUP_DIR', STORAGE_DIR . DIRECTORY_SEPARATOR . 'backups');
 define('PYTHON_ENGINE_PATH', BASE_DIR . DIRECTORY_SEPARATOR . 'python_engine' . DIRECTORY_SEPARATOR . 'conversion_gate.py');
 
+// Load Environment Variables from .env (zero-dependency loader; preserves OS/Docker env)
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Env.php';
+Env::load(BASE_DIR . DIRECTORY_SEPARATOR . '.env');
+
 // Database Driver Configuration ('sqlite' or 'mysql')
-define('DB_DRIVER', getenv('DB_DRIVER') ?: 'mysql'); // Connected to XAMPP MySQL or Docker MariaDB
+define('DB_DRIVER', Env::get('DB_DRIVER', 'mysql') ?: 'mysql'); // Connected to XAMPP MySQL or Docker MariaDB
 
 // SQLite Configuration
 define('SQLITE_PATH', STORAGE_DIR . DIRECTORY_SEPARATOR . 'securefaculty.sqlite');
 
 // MySQL Configuration (For XAMPP / Docker / Production)
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_PORT', getenv('DB_PORT') ?: '3306');
-define('DB_NAME', getenv('DB_NAME') ?: 'securefaculty_db');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : '');
+define('DB_HOST', Env::get('DB_HOST', 'localhost') ?: 'localhost');
+define('DB_PORT', Env::get('DB_PORT', '3306') ?: '3306');
+define('DB_NAME', Env::get('DB_NAME', 'securefaculty_db') ?: 'securefaculty_db');
+define('DB_USER', Env::get('DB_USER', 'root') ?: 'root');
+$dbPass = Env::get('DB_PASS', '');
+define('DB_PASS', $dbPass !== null ? (string)$dbPass : '');
 
 // Python Executable Binary
-define('PYTHON_BIN', getenv('PYTHON_BIN') ?: (PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3'));
+define('PYTHON_BIN', Env::get('PYTHON_BIN', PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3') ?: (PHP_OS_FAMILY === 'Windows' ? 'python' : 'python3'));
 
 // Cryptographic Security (AES-256)
-// Key resolution priority: Environment variable SECUREFACULTY_MASTER_KEY -> config constant default
-$envMasterKey = getenv('SECUREFACULTY_MASTER_KEY') ?: ($_ENV['SECUREFACULTY_MASTER_KEY'] ?? null);
-define('AES_KEY_HEX', $envMasterKey ?: 'a4f89d38c114e590f23b7829a9041be5e8f49d21798ec4e1f8d48e89b2c3a501');
+// Loaded from SECUREFACULTY_MASTER_KEY in .env / environment (no hardcoded key in source)
+define('AES_KEY_HEX', (string)Env::get('SECUREFACULTY_MASTER_KEY', ''));
 define('AES_CIPHER', 'aes-256-cbc');
 
-// OCR.space API Configuration
-// Primary: User's dedicated free key (25,000 monthly quota)
-define('OCR_PRIMARY_KEY', 'K85711929288957');
-// Backup: Evaluation key fallback if primary reaches quota or limit
-define('OCR_BACKUP_KEY', 'helloworld');
-// Combined failover chain passed to Python Conversion Gate (Primary -> Backup)
-define('OCR_API_KEY', OCR_PRIMARY_KEY . ',' . OCR_BACKUP_KEY);
-define('OCR_MONTHLY_QUOTA', 25000); // 25,000 monthly threshold as defined in Capstone document
+// OCR.space API Configuration (Loaded from .env / environment)
+define('OCR_PRIMARY_KEY', (string)Env::get('OCR_PRIMARY_KEY', ''));
+define('OCR_BACKUP_KEY', (string)Env::get('OCR_BACKUP_KEY', ''));
+define('OCR_API_KEY', implode(',', array_filter([OCR_PRIMARY_KEY, OCR_BACKUP_KEY], fn($k) => trim($k) !== '')));
+define('OCR_MONTHLY_QUOTA', (int)Env::get('OCR_MONTHLY_QUOTA', 25000));
+
+// Gmail SMTP Configuration (Loaded from .env / environment)
+define('SMTP_HOST', (string)(Env::get('SMTP_HOST', 'smtp.gmail.com') ?: 'smtp.gmail.com'));
+define('SMTP_PORT', (int)(Env::get('SMTP_PORT', 587) ?: 587));
+define('SMTP_USER', (string)Env::get('SMTP_USER', ''));
+define('SMTP_PASS', (string)Env::get('SMTP_PASS', ''));
+define('SMTP_FROM_NAME', (string)(Env::get('SMTP_FROM_NAME', 'SecureFaculty CICI Portal') ?: 'SecureFaculty CICI Portal'));
+define('OTP_EXPIRY_MINUTES', (int)(Env::get('OTP_EXPIRY_MINUTES', 15) ?: 15));
 
 // Ensure critical directories exist
 if (!is_dir(VAULT_DIR)) {

@@ -120,6 +120,13 @@ class Database {
                 if (!in_array('accreditation_area', $certCols)) {
                     $pdo->exec("ALTER TABLE certificates ADD COLUMN `accreditation_area` VARCHAR(100) NULL;");
                 }
+                if (!in_array('folder_id', $certCols)) {
+                    $pdo->exec("ALTER TABLE certificates ADD COLUMN `folder_id` INT NULL;");
+                }
+                $certFolderIdx = $pdo->query("SHOW INDEX FROM certificates WHERE Key_name = 'idx_certificates_folder'")->fetchAll();
+                if (empty($certFolderIdx)) {
+                    $pdo->exec("CREATE INDEX `idx_certificates_folder` ON `certificates` (`folder_id`);");
+                }
                 $pdo->exec("
                     UPDATE certificates 
                     SET scope = 'International', 
@@ -129,6 +136,36 @@ class Database {
                         authors = COALESCE(authors, 'Prof. Levy Mikhail B. Aguilar, Prof. Rae Jan B. Corneja, Prof. Eljay Muyco')
                     WHERE (id = 1 OR title LIKE '%SECUREFACULTY: A SYSTEMATIC%') 
                       AND (scope IS NULL OR scope = 'Institutional' OR indexing IS NULL OR indexing = 'None');
+                ");
+
+                // Ensure password_resets table exists in MySQL
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS `password_resets` (
+                        `id` INT AUTO_INCREMENT PRIMARY KEY,
+                        `user_id` INT NOT NULL,
+                        `email` VARCHAR(150) NOT NULL,
+                        `token_hash` VARCHAR(64) NOT NULL,
+                        `attempts` INT DEFAULT 0,
+                        `expires_at` DATETIME NOT NULL,
+                        `used_at` DATETIME NULL,
+                        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        INDEX `idx_password_resets_user` (`user_id`),
+                        INDEX `idx_password_resets_hash` (`token_hash`),
+                        FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                ");
+
+                // Ensure vault_folders table exists in MySQL
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS `vault_folders` (
+                        `id` INT AUTO_INCREMENT PRIMARY KEY,
+                        `user_id` INT NOT NULL,
+                        `name` VARCHAR(120) NOT NULL,
+                        `color` VARCHAR(32) DEFAULT 'blue',
+                        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        INDEX `idx_vault_folders_user` (`user_id`),
+                        FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
                 ");
             }
         } catch (Throwable $e) {
@@ -186,6 +223,7 @@ class Database {
             CREATE TABLE IF NOT EXISTS certificates (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 faculty_id INTEGER NOT NULL,
+                folder_id INTEGER NULL,
                 title TEXT NOT NULL,
                 issuer TEXT,
                 date_issued TEXT,
@@ -255,6 +293,27 @@ class Database {
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             );
+
+            CREATE TABLE IF NOT EXISTS password_resets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                email TEXT NOT NULL,
+                token_hash TEXT NOT NULL,
+                attempts INTEGER DEFAULT 0,
+                expires_at DATETIME NOT NULL,
+                used_at DATETIME NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS vault_folders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                color TEXT DEFAULT 'blue',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
         ");
 
         // Dynamic safe migrations for SQLite backward compatibility
@@ -292,6 +351,9 @@ class Database {
             if (!in_array('accreditation_area', $certCols)) {
                 $pdo->exec("ALTER TABLE certificates ADD COLUMN accreditation_area TEXT;");
             }
+            if (!in_array('folder_id', $certCols)) {
+                $pdo->exec("ALTER TABLE certificates ADD COLUMN folder_id INTEGER NULL;");
+            }
 
             // Update demo research publication record with accreditation metadata if needed
             $pdo->exec("
@@ -309,6 +371,7 @@ class Database {
         // Ensure indices are established in SQLite
         $pdo->exec("
             CREATE INDEX IF NOT EXISTS idx_certificates_faculty ON certificates(faculty_id);
+            CREATE INDEX IF NOT EXISTS idx_certificates_folder ON certificates(folder_id);
             CREATE INDEX IF NOT EXISTS idx_certificates_hash ON certificates(file_hash);
             CREATE INDEX IF NOT EXISTS idx_certificates_date ON certificates(date_issued);
             CREATE INDEX IF NOT EXISTS idx_cert_authors_cert ON certificate_authors(certificate_id);
@@ -317,6 +380,7 @@ class Database {
             CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action);
             CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id);
             CREATE INDEX IF NOT EXISTS idx_audit_ip ON audit_logs(ip_address);
+            CREATE INDEX IF NOT EXISTS idx_vault_folders_user ON vault_folders(user_id);
         ");
 
         // Seed API quota row if not exists

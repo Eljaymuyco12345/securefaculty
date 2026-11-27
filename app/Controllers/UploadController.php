@@ -20,10 +20,16 @@ class UploadController extends BaseController {
         // When Dean/Admin is uploading, include all academic profiles (Dean + Faculty) so Dean can archive their own certificates or upload for others
         $facultyList = $isDean ? UserModel::getFacultyList() : UserModel::getFacultyOnly();
 
+        if (!class_exists('FolderDAO') && file_exists(__DIR__ . '/../DAO/FolderDAO.php')) {
+            require_once __DIR__ . '/../DAO/FolderDAO.php';
+        }
+        $folders = class_exists('FolderDAO') ? FolderDAO::getForUser((int)$currentUser['id']) : [];
+
         $this->renderView('upload/index.php', [
             'currentUser' => $currentUser,
             'isDean' => $isDean,
             'facultyList' => $facultyList,
+            'folders' => $folders,
             'activeNav' => 'pipeline',
             'pageTitle' => 'Upload & Scan - Certificate Ingestion'
         ]);
@@ -494,6 +500,19 @@ class UploadController extends BaseController {
             $accreditationArea = CategoryService::inferAccreditationArea($category);
         }
 
+        $folderId = (!empty($input['folder_id']) && is_numeric($input['folder_id']) && (int)$input['folder_id'] > 0)
+            ? (int)$input['folder_id']
+            : null;
+        if ($folderId !== null) {
+            if (!class_exists('FolderDAO') && file_exists(__DIR__ . '/../DAO/FolderDAO.php')) {
+                require_once __DIR__ . '/../DAO/FolderDAO.php';
+            }
+            $folder = class_exists('FolderDAO') ? FolderDAO::find($folderId) : null;
+            if (!$folder || (int)$folder['user_id'] !== (int)$currentUser['id']) {
+                $this->jsonResponse(['status' => 'error', 'message' => 'Invalid or unauthorized destination folder.'], 403);
+            }
+        }
+
         $certData = [
             'faculty_id' => $assignedFacultyId,
             'title' => $title,
@@ -515,7 +534,8 @@ class UploadController extends BaseController {
             'indexing' => $indexing,
             'place_issued' => $placeIssued,
             'authors' => $authors,
-            'accreditation_area' => $accreditationArea
+            'accreditation_area' => $accreditationArea,
+            'folder_id' => $folderId
         ];
 
         try {

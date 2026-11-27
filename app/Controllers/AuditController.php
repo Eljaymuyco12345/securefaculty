@@ -35,7 +35,7 @@ class AuditController extends BaseController {
                     'username' => $r['username'] ?? 'Anonymous',
                     'role' => strtoupper($r['role'] ?? 'GUEST'),
                     'action' => $r['action'],
-                    'faculty_display' => $r['faculty_display'] ?: 'Dr. Arlene S. Poblador',
+                    'faculty_display' => $r['faculty_display'] ?: 'System / Institutional',
                     'details' => $r['details'] ?? '',
                     'ip_address' => $r['ip_address'] ?? '127.0.0.1',
                     'integrity' => 'SHA-256 Validated'

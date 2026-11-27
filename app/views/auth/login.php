@@ -257,9 +257,14 @@ $msg = $msg ?? null;
 
                     <!-- Password Field -->
                     <div>
-                        <label for="password" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                            Password
-                        </label>
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="password" class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                                Password
+                            </label>
+                            <a href="forgot_password.php" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                Forgot Password?
+                            </a>
+                        </div>
                         <div class="relative">
                             <input type="password" id="password" name="password" required
                                 placeholder="••••••••••"

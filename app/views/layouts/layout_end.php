@@ -856,6 +856,7 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeSettingsModal();
+                closeChangePasswordModal();
                 document.getElementById('system-alert-modal')?.classList.add('hidden');
                 document.getElementById('system-confirm-modal')?.classList.add('hidden');
                 document.getElementById('notifications-dropdown')?.classList.add('hidden');
@@ -875,6 +876,126 @@
             });
         });
         <?php endif; ?>
+    </script>
+
+    <!-- Change Password Modal (Self-Service for Faculty & Dean) -->
+    <div id="change-password-modal" class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-[#111c36] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-key text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Change Password</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Update your personal account credentials</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="changePasswordForm" onsubmit="submitChangePassword(event)" class="p-5 space-y-3.5 text-xs">
+                <div id="cp-error-box" class="hidden p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs"></div>
+                <div id="cp-success-box" class="hidden p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs"></div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Current Password</label>
+                    <input type="password" id="cp_current" required autocomplete="current-password"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">New Password (min. 6 characters)</label>
+                    <input type="password" id="cp_new" required minlength="6" autocomplete="new-password"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Confirm New Password</label>
+                    <input type="password" id="cp_confirm" required minlength="6" autocomplete="new-password"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeChangePasswordModal()"
+                            class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" id="cp-submit-btn"
+                            class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-sm cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Update Password</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openChangePasswordModal() {
+            const modal = document.getElementById('change-password-modal');
+            const form = document.getElementById('changePasswordForm');
+            const errBox = document.getElementById('cp-error-box');
+            const okBox = document.getElementById('cp-success-box');
+            if (form) form.reset();
+            if (errBox) errBox.classList.add('hidden');
+            if (okBox) okBox.classList.add('hidden');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('change-password-modal')?.classList.add('hidden');
+        }
+
+        async function submitChangePassword(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('cp-error-box');
+            const okBox = document.getElementById('cp-success-box');
+            const btn = document.getElementById('cp-submit-btn');
+            errBox?.classList.add('hidden');
+            okBox?.classList.add('hidden');
+
+            const currentPassword = document.getElementById('cp_current').value;
+            const newPassword = document.getElementById('cp_new').value;
+            const confirmPassword = document.getElementById('cp_confirm').value;
+
+            if (newPassword !== confirmPassword) {
+                errBox.textContent = 'New password and confirmation do not match.';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            if (btn) btn.disabled = true;
+            try {
+                const res = await fetch('api/change_password.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': window.CSRF_TOKEN || ''
+                    },
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword,
+                        csrf_token: window.CSRF_TOKEN || ''
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    okBox.textContent = data.message || 'Password updated successfully.';
+                    okBox.classList.remove('hidden');
+                    document.getElementById('changePasswordForm')?.reset();
+                    setTimeout(() => closeChangePasswordModal(), 1400);
+                } else {
+                    errBox.textContent = data.message || 'Failed to update password.';
+                    errBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                errBox.textContent = 'Network error while updating password.';
+                errBox.classList.remove('hidden');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
     </script>
 </body>
 </html>

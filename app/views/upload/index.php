@@ -1,6 +1,7 @@
 <?php
 $isDean = $isDean ?? false;
 $facultyList = $facultyList ?? [];
+$folders = $folders ?? [];
 $activeNav = $activeNav ?? 'pipeline';
 $pageTitle = $pageTitle ?? 'Upload & Scan - Certificate Ingestion';
 require_once __DIR__ . '/../layouts/layout_start.php';
@@ -364,6 +365,17 @@ Upload a file above to extract metadata.</div>
                             class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                         <p id="field_authors_hint" class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">List primary author and co-authors as printed on the certificate / paper.</p>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Save to Folder (Optional):</label>
+                    <select id="field_folder_id"
+                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
+                        <option value="">— Unfiled (No Folder) —</option>
+                        <?php foreach ($folders as $fld): ?>
+                            <option value="<?= (int)$fld['id'] ?>"><?= htmlspecialchars($fld['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <div>
@@ -1105,6 +1117,8 @@ Upload a file above to extract metadata.</div>
             catSelect.value = 'Research Publication';
             handleHitlCategoryChange('Research Publication');
         }
+        const folderSelect = document.getElementById('field_folder_id');
+        if (folderSelect) folderSelect.value = '';
 
         // 9. Close modal
         document.getElementById('stage-progress-modal').classList.add('hidden');
@@ -2049,6 +2063,11 @@ Upload a file above to extract metadata.</div>
         const coSelect = document.getElementById('form-coauthors');
         if (coSelect) {
             payload.co_authors = Array.from(coSelect.selectedOptions).map(o => parseInt(o.value));
+        }
+
+        const folderSelect = document.getElementById('field_folder_id');
+        if (folderSelect && folderSelect.value) {
+            payload.folder_id = parseInt(folderSelect.value, 10);
         }
 
         // Transition to Stage 4: Cryptographic Encryption

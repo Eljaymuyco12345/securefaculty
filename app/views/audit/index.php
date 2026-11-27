@@ -270,20 +270,42 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 </div>
 
 <script>
+    let auditSearchTimer = null;
+    const currentAuditAction = <?= json_encode($actionFilter ?? '') ?>;
+
     function filterAuditRows(term) {
         const query = (term || '').toLowerCase().trim();
         const rows = document.querySelectorAll('#auditTableBody .audit-log-row');
-        let visible = 0;
         rows.forEach(r => {
             const data = r.dataset.search || '';
-            if (!query || data.includes(query)) {
-                r.style.display = '';
-                visible++;
-            } else {
-                r.style.display = 'none';
-            }
+            r.style.display = (!query || data.includes(query)) ? '' : 'none';
         });
+
+        clearTimeout(auditSearchTimer);
+        auditSearchTimer = setTimeout(() => {
+            const trimmed = (term || '').trim();
+            const currentUrlSearch = new URLSearchParams(window.location.search).get('search') || '';
+            if (trimmed !== currentUrlSearch) {
+                sessionStorage.setItem('sf_focus_audit_search', '1');
+                const params = new URLSearchParams();
+                if (currentAuditAction) params.set('action', currentAuditAction);
+                if (trimmed) params.set('search', trimmed);
+                window.location.href = 'audit_logs.php' + (params.toString() ? '?' + params.toString() : '');
+            }
+        }, 500);
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (sessionStorage.getItem('sf_focus_audit_search') === '1') {
+            sessionStorage.removeItem('sf_focus_audit_search');
+            const input = document.getElementById('auditSearchInput');
+            if (input) {
+                input.focus();
+                const len = input.value.length;
+                input.setSelectionRange(len, len);
+            }
+        }
+    });
 </script>
 
 <?php require_once __DIR__ . '/../layouts/layout_end.php'; ?>

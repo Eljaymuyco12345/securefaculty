@@ -632,6 +632,11 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                                     <i class="fa-solid fa-gear w-4 text-slate-400"></i>
                                     <span>Preferences & Profile Switch</span>
                                 </button>
+                                <button type="button" onclick="openChangePasswordModal(); toggleUserDropdown(false)"
+                                        class="w-full flex items-center gap-2.5 px-4 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors text-left text-sm">
+                                    <i class="fa-solid fa-key w-4 text-slate-400"></i>
+                                    <span>Change Password</span>
+                                </button>
                             </div>
 
                             <div class="pt-1 border-t border-slate-100 dark:border-slate-800">
