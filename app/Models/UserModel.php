@@ -52,6 +52,10 @@ class UserModel {
         return UserDAO::resetPassword($id, $newPassword);
     }
 
+    public static function updateAvatar(int $id, ?string $avatarPath): bool {
+        return UserDAO::updateAvatar($id, $avatarPath);
+    }
+
     public static function updateProfile(int $id, array $data, ?int $currentUserId = null): bool {
         return UserDAO::updateProfile($id, $data, $currentUserId);
     }

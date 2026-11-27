@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `full_name` VARCHAR(150) NOT NULL,
     `email` VARCHAR(150),
     `department` VARCHAR(100) DEFAULT 'CICI',
+    `avatar_path` VARCHAR(255) NULL,
     `is_active` TINYINT(1) DEFAULT 1,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

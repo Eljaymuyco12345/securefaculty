@@ -47,7 +47,7 @@ class AuditController extends BaseController {
                     'action_filter' => $actionFilter ?: 'All Events',
                     'search' => $search,
                     'auditor_name' => $currentUser['full_name'] ?? 'Dr. Arlene S. Poblador',
-                    'generated_at' => date('F d, Y \a\t h:i A')
+                    'generated_at' => date(DateHelper::DATETIME_FORMAT)
                 ],
                 'records' => $formattedRecords
             ];

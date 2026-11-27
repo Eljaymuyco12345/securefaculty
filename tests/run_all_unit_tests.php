@@ -11,6 +11,7 @@ $testFiles = [
     'Core' => [
         __DIR__ . '/Unit/Core/DatabaseTest.php',
         __DIR__ . '/Unit/Core/EnvTest.php',
+        __DIR__ . '/Unit/Core/DateHelperTest.php',
     ],
     'Models' => [
         __DIR__ . '/Unit/Models/CertificateModelTest.php',
@@ -30,6 +31,7 @@ $testFiles = [
         __DIR__ . '/Unit/Services/CertificateServiceTest.php',
         __DIR__ . '/Unit/Services/UserServiceTest.php',
         __DIR__ . '/Unit/Services/PasswordResetServiceTest.php',
+        __DIR__ . '/Unit/Services/AvatarServiceTest.php',
         __DIR__ . '/Unit/Services/BackupServiceTest.php',
     ],
     'Controllers' => [

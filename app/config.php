@@ -58,6 +58,9 @@ define('SMTP_PASS', (string)Env::get('SMTP_PASS', ''));
 define('SMTP_FROM_NAME', (string)(Env::get('SMTP_FROM_NAME', 'SecureFaculty CICI Portal') ?: 'SecureFaculty CICI Portal'));
 define('OTP_EXPIRY_MINUTES', (int)(Env::get('OTP_EXPIRY_MINUTES', 15) ?: 15));
 
+// Session Inactivity Timeout (10 minutes = 600 seconds by default)
+define('SESSION_TIMEOUT_SECONDS', (int)(Env::get('SESSION_TIMEOUT_SECONDS', 600) ?: 600));
+
 // Ensure critical directories exist
 if (!is_dir(VAULT_DIR)) {
     mkdir(VAULT_DIR, 0755, true);

@@ -12,6 +12,12 @@ require_once __DIR__ . '/../Interfaces/AuthServiceInterface.php';
 class AuthService implements AuthServiceInterface {
     private static ?bool $cachedCheckResult = null;
     private static ?int $cachedUserId = null;
+    private static bool $timedOut = false;
+
+    public static function getTimeoutSeconds(): int {
+        $sec = defined('SESSION_TIMEOUT_SECONDS') ? (int)SESSION_TIMEOUT_SECONDS : 600;
+        return $sec > 0 ? $sec : 600;
+    }
 
     public static function initSession(): void {
         if (!headers_sent() && session_status() === PHP_SESSION_NONE) {
@@ -154,15 +160,19 @@ class AuthService implements AuthServiceInterface {
 
         $userId = (int)$_SESSION['user_id'];
 
-        // OWASP A07: Session Inactivity Timeout Guard (30 minutes = 1800s)
+        // OWASP A07: Session Inactivity Timeout Guard (Default: 10 minutes = 600s)
         $now = time();
-        if (isset($_SESSION['last_activity']) && ($now - (int)$_SESSION['last_activity'] > 1800)) {
-            AuditLogger::log('SESSION_TIMEOUT', "User session invalidated after 30 minutes of inactivity", $userId);
+        $timeoutSec = self::getTimeoutSeconds();
+        if (isset($_SESSION['last_activity']) && ($now - (int)$_SESSION['last_activity'] > $timeoutSec)) {
+            $mins = max(1, (int)round($timeoutSec / 60));
+            AuditLogger::log('SESSION_TIMEOUT', "User session invalidated after {$mins} minutes of inactivity", $userId);
             self::logout();
+            self::$timedOut = true;
             self::$cachedCheckResult = false;
             self::$cachedUserId = null;
             return false;
         }
+        self::$timedOut = false;
         $_SESSION['last_activity'] = $now;
 
         if (self::$cachedCheckResult !== null && self::$cachedUserId === $userId) {
@@ -236,7 +246,8 @@ class AuthService implements AuthServiceInterface {
     public static function requireLogin(): void {
         self::initSession();
         if (!self::check()) {
-            header('Location: index.php?msg=auth_required');
+            $msg = self::$timedOut ? 'session_expired' : 'auth_required';
+            header('Location: index.php?msg=' . $msg);
             exit;
         }
     }

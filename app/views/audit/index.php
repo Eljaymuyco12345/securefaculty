@@ -197,7 +197,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         ?>
                         <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors audit-log-row <?= !$isRecordValid ? 'bg-rose-50/30 dark:bg-rose-950/10' : '' ?>"
                             data-search="<?= strtolower($log['created_at'] . ' ' . $userId . ' ' . $actionLabel . ' ' . $affectedRecord . ' ' . $log['ip_address']) ?>">
-                            <td class="py-2.5 px-3 text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap"><?= htmlspecialchars($log['created_at']) ?></td>
+                            <td class="py-2.5 px-3 text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap"><?= htmlspecialchars(DateHelper::formatDateTime($log['created_at'] ?? null)) ?></td>
                             <td class="py-2.5 px-3 font-bold text-slate-900 dark:text-white font-mono"><?= htmlspecialchars($userId) ?></td>
                             <td class="py-2.5 px-3">
                                 <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border <?= $actionColor ?>">

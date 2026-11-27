@@ -29,6 +29,7 @@ spl_autoload_register(function ($class) {
 
 // Load core services
 require_once __DIR__ . '/Core/Database.php';
+require_once __DIR__ . '/Core/DateHelper.php';
 require_once __DIR__ . '/Services/AuditLogger.php';
 require_once __DIR__ . '/Services/AuthService.php';
 require_once __DIR__ . '/Services/CryptoService.php';

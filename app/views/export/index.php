@@ -173,8 +173,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                         <i class="fa-regular fa-calendar-check text-blue-600 dark:text-blue-400 mr-1"></i>Date From:
                     </label>
-                    <input type="date" id="date_from" name="date_from" value="<?= htmlspecialchars($dateFrom) ?>"
-                           class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500 font-mono">
+                    <input type="text" id="date_from" name="date_from" value="<?= htmlspecialchars($dateFrom) ?>"
+                           placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" autocomplete="off"
+                           class="sf-datepicker w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500 font-mono">
                 </div>
 
                 <!-- Date To -->
@@ -182,8 +183,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                         <i class="fa-regular fa-calendar-check text-blue-600 dark:text-blue-400 mr-1"></i>Date To:
                     </label>
-                    <input type="date" id="date_to" name="date_to" value="<?= htmlspecialchars($dateTo) ?>"
-                           class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500 font-mono">
+                    <input type="text" id="date_to" name="date_to" value="<?= htmlspecialchars($dateTo) ?>"
+                           placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" autocomplete="off"
+                           class="sf-datepicker w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500 font-mono">
                 </div>
 
                 <!-- Category -->
@@ -416,7 +418,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </div>
         <div class="text-right text-[11px] mt-2 sm:mt-0 font-mono text-slate-600 dark:text-slate-400">
             <p><strong>Audited By:</strong> <?= htmlspecialchars($currentUser['full_name']) ?></p>
-            <p><strong>Generated On:</strong> <?= date('F d, Y \a\t h:i A') ?></p>
+            <p><strong>Generated On:</strong> <?= date(DateHelper::DATETIME_FORMAT) ?></p>
             <p><strong>Total Records:</strong> <?= count($records) ?></p>
         </div>
     </div>
@@ -474,7 +476,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 <?= !empty($r['cert_number']) ? htmlspecialchars($r['cert_number']) : '<span class="text-slate-400 dark:text-slate-600 italic">N/A</span>' ?>
                             </td>
                             <td class="p-2 border-r border-slate-100 dark:border-slate-800 font-mono text-slate-800 dark:text-slate-200 font-semibold whitespace-nowrap">
-                                <?= htmlspecialchars($r['date_issued']) ?>
+                                <?= htmlspecialchars(DateHelper::formatDate($r['date_issued'] ?? null)) ?>
                             </td>
                             <td class="p-2 border-r border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 max-w-[130px] truncate" title="<?= htmlspecialchars($r['issuer']) ?>">
                                 <?= htmlspecialchars($r['issuer']) ?>

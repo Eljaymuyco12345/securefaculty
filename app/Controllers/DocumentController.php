@@ -29,13 +29,58 @@ class DocumentController extends BaseController {
         $decryptedBytes = $result['bytes'];
 
         $isDownload = isset($_GET['download']) && $_GET['download'] == '1';
+        $requestedFormat = strtolower(trim((string)($_GET['format'] ?? '')));
+
+        $delivery = $this->resolveDeliveryPayload($cert, $decryptedBytes, $isDownload, $requestedFormat);
+        if (!$delivery['success']) {
+            if (!headers_sent()) {
+                http_response_code($delivery['code']);
+                header('Content-Type: text/html; charset=UTF-8');
+            }
+            echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Error | SecureFaculty</title></head><body style="font-family:sans-serif;padding:2rem;background:#081225;color:#e2e8f0;"><div style="max-width:32rem;margin:auto;background:#111c36;padding:2rem;border-radius:0.75rem;border:1px solid #1e293b;"><h2 style="color:#f43f5e;">Unsupported Format</h2><p>' . htmlspecialchars($delivery['message'], ENT_QUOTES, 'UTF-8') . '</p><p><a href="vault.php" style="color:#38bdf8;">Return to Vault</a></p></div></body></html>';
+            exit;
+        }
+
         $action = $isDownload ? 'DOWNLOAD_DOCUMENT' : 'VIEW_DOCUMENT';
-        AuditLogger::log($action, "Just-in-Time Decryption executed for certificate #{$id}: '{$cert['title']}'", (int)($cert['faculty_id'] ?? $id));
+        AuditLogger::log($action, "Just-in-Time Decryption ({$delivery['format_label']}) executed for certificate #{$id}: '{$cert['title']}'", (int)($cert['faculty_id'] ?? $id));
 
-        $ext = strtolower(ltrim($cert['file_type'] ?? '', '.'));
+        // Clean any active output buffers to guarantee binary stream integrity
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
 
-        // Policy: ALL documents viewed or downloaded must be delivered as PDF to prevent tampering & ensure inline preview
-        if ($ext !== 'pdf') {
+        header('Content-Type: ' . $delivery['mime_type']);
+        header('Content-Length: ' . strlen($delivery['bytes']));
+        header("Content-Disposition: {$delivery['disposition']}; filename=\"{$delivery['ascii_filename']}\"; filename*=UTF-8''" . rawurlencode($delivery['filename']));
+        header('Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('X-Content-Type-Options: nosniff');
+
+        echo $delivery['bytes'];
+        exit;
+    }
+
+    /**
+     * Resolves the output bytes, MIME type, disposition, and sanitized filename
+     * for PDF preview/download or original DOCX download.
+     */
+    public function resolveDeliveryPayload(array $cert, string $decryptedBytes, bool $isDownload, string $requestedFormat = ''): array {
+        $id = (int)($cert['id'] ?? 0);
+        $ext = strtolower(ltrim((string)($cert['file_type'] ?? ''), '.'));
+        $requestedFormat = strtolower(trim($requestedFormat));
+
+        if ($requestedFormat === 'docx' && $ext !== 'docx') {
+            return [
+                'success' => false,
+                'code'    => 400,
+                'message' => 'DOCX download is only available for records originally uploaded as Word (.docx) documents.'
+            ];
+        }
+
+        $serveOriginalDocx = ($requestedFormat === 'docx' && $ext === 'docx');
+        $bytes = $decryptedBytes;
+
+        if (!$serveOriginalDocx && $ext !== 'pdf') {
             $pythonBin = $this->getPythonBinary();
             $tempIn = TEMP_DIR . DIRECTORY_SEPARATOR . 'jit_in_' . bin2hex(random_bytes(8)) . '.' . ($ext ?: 'tmp');
             $tempOut = TEMP_DIR . DIRECTORY_SEPARATOR . 'jit_out_' . bin2hex(random_bytes(8)) . '.pdf';
@@ -52,8 +97,7 @@ class DocumentController extends BaseController {
                 shell_exec($cmd);
 
                 if (file_exists($tempOut) && filesize($tempOut) > 0) {
-                    $decryptedBytes = file_get_contents($tempOut);
-                    $ext = 'pdf';
+                    $bytes = file_get_contents($tempOut);
                 }
             } finally {
                 if (file_exists($tempIn)) @unlink($tempIn);
@@ -61,35 +105,32 @@ class DocumentController extends BaseController {
             }
         }
 
-        $mimeType = 'application/pdf';
-        $disposition = $isDownload ? 'attachment' : 'inline';
+        $targetExt = $serveOriginalDocx ? 'docx' : 'pdf';
+        $mimeType = $serveOriginalDocx
+            ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            : 'application/pdf';
+        $disposition = ($isDownload || $serveOriginalDocx) ? 'attachment' : 'inline';
 
-        // Safe filename sanitization enforced with .pdf extension
         $rawFilename = basename(str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $cert['original_filename'] ?? 'document'));
         $safeBase = pathinfo($rawFilename, PATHINFO_FILENAME);
-        $safeFilename = preg_replace('/[\x00-\x1F\x7F"\';\\\]/', '_', $safeBase) . '.pdf';
+        $safeFilename = preg_replace('/[\x00-\x1F\x7F"\';\\\]/', '_', $safeBase) . '.' . $targetExt;
         $safeFilename = trim($safeFilename, " .");
-        if ($safeFilename === '' || $safeFilename === '.pdf') {
-            $safeFilename = "certificate_{$id}.pdf";
+        if ($safeFilename === '' || $safeFilename === '.' . $targetExt) {
+            $safeFilename = "certificate_{$id}.{$targetExt}";
         }
         $asciiFilename = preg_replace('/[^\x20-\x7E]/', '_', $safeFilename);
-        if ($asciiFilename === '' || $asciiFilename === '.pdf') {
-            $asciiFilename = "certificate_{$id}.pdf";
+        if ($asciiFilename === '' || $asciiFilename === '.' . $targetExt) {
+            $asciiFilename = "certificate_{$id}.{$targetExt}";
         }
 
-        // Clean any active output buffers to guarantee binary stream integrity
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
-
-        header('Content-Type: ' . $mimeType);
-        header('Content-Length: ' . strlen($decryptedBytes));
-        header("Content-Disposition: {$disposition}; filename=\"{$asciiFilename}\"; filename*=UTF-8''" . rawurlencode($safeFilename));
-        header('Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0');
-        header('Pragma: no-cache');
-        header('X-Content-Type-Options: nosniff');
-
-        echo $decryptedBytes;
-        exit;
+        return [
+            'success'        => true,
+            'bytes'          => $bytes,
+            'mime_type'      => $mimeType,
+            'filename'       => $safeFilename,
+            'ascii_filename' => $asciiFilename,
+            'disposition'    => $disposition,
+            'format_label'   => $serveOriginalDocx ? 'DOCX' : 'PDF',
+        ];
     }
 }

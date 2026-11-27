@@ -104,6 +104,11 @@ class Database {
                 }
             } else {
                 // Dynamic safe migrations for MySQL
+                $userCols = $pdo->query("SHOW COLUMNS FROM users")->fetchAll(PDO::FETCH_COLUMN, 0);
+                if (!in_array('avatar_path', $userCols)) {
+                    $pdo->exec("ALTER TABLE users ADD COLUMN `avatar_path` VARCHAR(255) NULL;");
+                }
+
                 $certCols = $pdo->query("SHOW COLUMNS FROM certificates")->fetchAll(PDO::FETCH_COLUMN, 0);
                 if (!in_array('scope', $certCols)) {
                     $pdo->exec("ALTER TABLE certificates ADD COLUMN `scope` VARCHAR(50) DEFAULT 'Institutional';");
@@ -207,6 +212,7 @@ class Database {
                 full_name TEXT NOT NULL,
                 email TEXT,
                 department TEXT DEFAULT 'CICI',
+                avatar_path TEXT,
                 is_active INTEGER DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
@@ -321,6 +327,9 @@ class Database {
             $userCols = $pdo->query("PRAGMA table_info(users)")->fetchAll(PDO::FETCH_COLUMN, 1);
             if (!in_array('is_active', $userCols)) {
                 $pdo->exec("ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1;");
+            }
+            if (!in_array('avatar_path', $userCols)) {
+                $pdo->exec("ALTER TABLE users ADD COLUMN avatar_path TEXT;");
             }
 
             $certCols = $pdo->query("PRAGMA table_info(certificates)")->fetchAll(PDO::FETCH_COLUMN, 1);

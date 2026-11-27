@@ -304,14 +304,19 @@ class UploadController extends BaseController {
             CertificateModel::incrementQuota();
         }
 
-        // Enforce Policy: Staged assets are converted to locked PDF format
+        // Enforce Policy: Non-DOCX assets (e.g. images) are converted to locked PDF format.
+        // Original DOCX files are preserved so users can download either editable DOCX or JIT-converted PDF.
         $stagedFilename = $tempFilename;
         $stagedFilePath = $tempFilePath;
         $effectiveType = $extension;
 
         if (!empty($result['converted_pdf'])) {
             $convertedCandidate = TEMP_DIR . DIRECTORY_SEPARATOR . basename($result['converted_pdf']);
-            if (file_exists($convertedCandidate) && filesize($convertedCandidate) > 0) {
+            if ($extension === 'docx') {
+                if ($convertedCandidate !== $tempFilePath && file_exists($convertedCandidate)) {
+                    @unlink($convertedCandidate);
+                }
+            } elseif (file_exists($convertedCandidate) && filesize($convertedCandidate) > 0) {
                 if ($convertedCandidate !== $tempFilePath && file_exists($tempFilePath)) {
                     @unlink($tempFilePath);
                 }

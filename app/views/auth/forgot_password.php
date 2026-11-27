@@ -62,13 +62,6 @@ $csrfToken = AuthService::getCsrfToken();
             </p>
         </div>
 
-        <?php if (!$smtpConfigured): ?>
-            <div class="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-[11px] flex items-start gap-2">
-                <i class="fa-solid fa-triangle-exclamation mt-0.5 flex-shrink-0"></i>
-                <span><strong>SMTP Placeholders Active:</strong> Gmail SMTP credentials in <code>app/config.php</code> are still set to placeholders. Configure <code>SMTP_USER</code> and <code>SMTP_PASS</code> to send live emails.</span>
-            </div>
-        <?php endif; ?>
-
         <div id="fp-alert" class="hidden p-3 rounded-lg text-xs"></div>
 
         <!-- Step 1: Request 6-Digit OTP -->

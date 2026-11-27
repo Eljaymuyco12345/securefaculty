@@ -81,8 +81,15 @@ class AuthController extends BaseController {
      * Terminate user session
      */
     public function logout(): void {
+        $reason = $_GET['reason'] ?? '';
+        AuthService::initSession();
+        if ($reason === 'timeout' && isset($_SESSION['user_id'])) {
+            $mins = max(1, (int)round(AuthService::getTimeoutSeconds() / 60));
+            AuditLogger::log('SESSION_TIMEOUT', "User session automatically signed out after {$mins} minutes of inactivity", (int)$_SESSION['user_id']);
+        }
         AuthService::logout();
-        $this->redirect('index.php?msg=logged_out');
+        $msg = ($reason === 'timeout') ? 'session_expired' : 'logged_out';
+        $this->redirect('index.php?msg=' . $msg);
     }
 
     /**

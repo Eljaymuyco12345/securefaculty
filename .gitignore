@@ -14,6 +14,10 @@ bin/*.exe
 storage/vault/*.enc
 !storage/vault/.gitkeep
 
+# User Uploaded Profile Avatars (keep directory)
+public/assets/uploads/avatars/*
+!public/assets/uploads/avatars/.gitkeep
+
 # Temporary upload & conversion staging
 storage/temp/*
 !storage/temp/.gitkeep

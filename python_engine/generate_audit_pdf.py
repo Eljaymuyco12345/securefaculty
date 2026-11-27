@@ -141,7 +141,7 @@ def generate_audit_pdf(data_json_path, output_pdf_path):
     action_scope = html.escape(str(meta.get('action_filter', 'All Events')))
     search_scope = html.escape(str(meta.get('search', 'None'))) if meta.get('search') else 'All Logs'
     auditor = html.escape(str(meta.get('auditor_name', 'Authorized Administrator')))
-    generated_at = html.escape(str(meta.get('generated_at', datetime.now().strftime("%B %d, %Y at %I:%M %p"))))
+    generated_at = html.escape(str(meta.get('generated_at', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))))
     total_count = len(records)
 
     header_data = [

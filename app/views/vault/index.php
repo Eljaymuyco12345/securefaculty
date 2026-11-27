@@ -358,8 +358,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                     <i class="fa-regular fa-calendar-check text-blue-600 dark:text-blue-400 mr-1"></i>Issued From:
                 </label>
-                <input type="date" name="date_from" value="<?= htmlspecialchars($dateFrom) ?>"
-                       class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                <input type="text" name="date_from" value="<?= htmlspecialchars($dateFrom) ?>"
+                       placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" autocomplete="off"
+                       class="sf-datepicker w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
             </div>
 
             <!-- Date Issued To -->
@@ -367,8 +368,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                     <i class="fa-regular fa-calendar-check text-blue-600 dark:text-blue-400 mr-1"></i>Issued To:
                 </label>
-                <input type="date" name="date_to" value="<?= htmlspecialchars($dateTo) ?>"
-                       class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                <input type="text" name="date_to" value="<?= htmlspecialchars($dateTo) ?>"
+                       placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" autocomplete="off"
+                       class="sf-datepicker w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
             </div>
 
             <!-- Issued Year (Quick Filter) -->
@@ -614,7 +616,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 <?= !empty($cert['cert_number']) ? htmlspecialchars($cert['cert_number']) : '<span class="text-slate-300 dark:text-slate-600 italic">N/A</span>' ?>
                             </td>
                             <td class="p-3 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                                <span class="font-bold text-blue-950 dark:text-blue-300"><?= htmlspecialchars($cert['date_issued']) ?></span>
+                                <span class="font-bold text-blue-950 dark:text-blue-300"><?= htmlspecialchars(DateHelper::formatDate($cert['date_issued'] ?? null)) ?></span>
                             </td>
                             <td class="p-3 text-slate-600 dark:text-slate-400 max-w-[150px]">
                                 <div class="truncate font-medium" title="<?= htmlspecialchars($cert['issuer']) ?>"><?= htmlspecialchars($cert['issuer']) ?></div>
@@ -647,17 +649,24 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             <td class="p-3 text-right whitespace-nowrap">
                                 <div class="inline-flex items-center gap-1">
                                     <button type="button"
-                                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>)"
+                                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(strtolower(ltrim($cert['file_type'] ?? 'pdf', '.'))), ENT_QUOTES, 'UTF-8') ?>)"
                                             class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[10px] font-bold inline-flex items-center gap-1 shadow-sm border border-transparent dark:border-slate-700 transition-all cursor-pointer"
                                             title="Preview Document In-App">
                                         <i class="fa-regular fa-eye"></i>
                                         <span>View</span>
                                     </button>
-                                    <a href="view_document.php?id=<?= $cert['id'] ?>&download=1"
-                                       class="touch-target p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs transition-all"
-                                       title="Volatile Download">
-                                        <i class="fa-solid fa-download"></i>
+                                    <a href="view_document.php?id=<?= $cert['id'] ?>&download=1&format=pdf"
+                                       class="touch-target p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 text-xs transition-all"
+                                       title="Download PDF">
+                                        <i class="fa-solid fa-file-pdf"></i>
                                     </a>
+                                    <?php if (strtolower(ltrim($cert['file_type'] ?? '', '.')) === 'docx'): ?>
+                                    <a href="view_document.php?id=<?= $cert['id'] ?>&download=1&format=docx"
+                                       class="touch-target p-1 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/70 text-blue-600 dark:text-blue-400 text-xs transition-all"
+                                       title="Download Editable Word (.docx)">
+                                        <i class="fa-solid fa-file-word"></i>
+                                    </a>
+                                    <?php endif; ?>
                                     <button type="button"
                                             onclick="openMoveModal([<?= (int)$cert['id'] ?>], <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= !empty($cert['folder_id']) ? (int)$cert['folder_id'] : 'null' ?>)"
                                             class="touch-target p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/60 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs transition-all cursor-pointer"
@@ -789,14 +798,14 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <!-- Date Issued -->
                     <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5 font-mono">
                         <i class="fa-regular fa-calendar-check text-[10px] text-blue-600"></i>
-                        <span>Date Issued: <strong class="text-slate-800 dark:text-slate-200"><?= htmlspecialchars($cert['date_issued']) ?></strong></span>
+                        <span>Date Issued: <strong class="text-slate-800 dark:text-slate-200 font-mono"><?= htmlspecialchars(DateHelper::formatDate($cert['date_issued'] ?? null)) ?></strong></span>
                     </p>
                 </div>
 
                 <!-- Card Actions matching Figure D.2 -->
                 <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                     <button type="button"
-                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>)"
+                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(strtolower(ltrim($cert['file_type'] ?? 'pdf', '.'))), ENT_QUOTES, 'UTF-8') ?>)"
                             class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                             title="Preview Document In-App">
                         <i class="fa-regular fa-eye text-[10px]"></i>
@@ -804,11 +813,18 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     </button>
 
                     <div class="flex items-center gap-1.5">
-                        <a href="view_document.php?id=<?= $cert['id'] ?>&download=1"
-                           class="p-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs transition-all"
-                           title="Secure Volatile Download">
-                            <i class="fa-solid fa-download"></i>
+                        <a href="view_document.php?id=<?= $cert['id'] ?>&download=1&format=pdf"
+                           class="p-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 text-xs transition-all"
+                           title="Download PDF">
+                            <i class="fa-solid fa-file-pdf"></i>
                         </a>
+                        <?php if (strtolower(ltrim($cert['file_type'] ?? '', '.')) === 'docx'): ?>
+                        <a href="view_document.php?id=<?= $cert['id'] ?>&download=1&format=docx"
+                           class="p-1.5 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/70 text-blue-600 dark:text-blue-400 text-xs transition-all"
+                           title="Download Editable Word (.docx)">
+                            <i class="fa-solid fa-file-word"></i>
+                        </a>
+                        <?php endif; ?>
 
                         <button type="button"
                                 onclick="openMoveModal([<?= (int)$cert['id'] ?>], <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= !empty($cert['folder_id']) ? (int)$cert['folder_id'] : 'null' ?>)"
@@ -1003,7 +1019,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <?php endif; ?>
 
     // --- In-App PDF Document Preview Controller ---
-    function openDocPreview(id, title, issuer, date, category, certNo, scope, indexing, venue, aaccupArea) {
+    function openDocPreview(id, title, issuer, date, category, certNo, scope, indexing, venue, aaccupArea, fileType) {
         const dialog = document.getElementById('docPreviewModal');
         const iframe = document.getElementById('docPreviewIframe');
         const spinner = document.getElementById('docPreviewSpinner');
@@ -1012,6 +1028,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         const accProfileEl = document.getElementById('docPreviewAccreditationProfile');
         const newTabLink = document.getElementById('docPreviewNewTab');
         const downloadLink = document.getElementById('docPreviewDownload');
+        const downloadDocxLink = document.getElementById('docPreviewDownloadDocx');
 
         if (!dialog || !iframe) return;
 
@@ -1084,10 +1101,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         }
 
         const docUrl = 'view_document.php?id=' + encodeURIComponent(id);
-        const downloadUrl = 'view_document.php?id=' + encodeURIComponent(id) + '&download=1';
+        const downloadPdfUrl = 'view_document.php?id=' + encodeURIComponent(id) + '&download=1&format=pdf';
+        const downloadDocxUrl = 'view_document.php?id=' + encodeURIComponent(id) + '&download=1&format=docx';
 
         if (newTabLink) newTabLink.href = docUrl;
-        if (downloadLink) downloadLink.href = downloadUrl;
+        if (downloadLink) downloadLink.href = downloadPdfUrl;
+        if (downloadDocxLink) {
+            const isDocx = String(fileType || '').toLowerCase() === 'docx';
+            downloadDocxLink.href = downloadDocxUrl;
+            downloadDocxLink.classList.toggle('hidden', !isDocx);
+        }
 
         if (spinner) spinner.style.display = 'flex';
         iframe.src = docUrl;
@@ -1184,6 +1207,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <span class="inline">Open in Tab</span>
             </a>
             <div class="flex items-center gap-1.5">
+                <a id="docPreviewDownloadDocx" href="#"
+                   class="hidden px-3.5 py-1.5 min-h-[38px] sm:min-h-0 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+                   title="Download Original Editable Word (.docx)">
+                    <i class="fa-solid fa-file-word text-xs"></i>
+                    <span>Download DOCX</span>
+                </a>
                 <a id="docPreviewDownload" href="#"
                    class="px-3.5 py-1.5 min-h-[38px] sm:min-h-0 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
                    title="Download Decrypted PDF Copy">

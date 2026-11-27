@@ -62,4 +62,49 @@ class DocumentControllerTest extends TestCase {
         if (file_exists($tempDocx)) @unlink($tempDocx);
         if (file_exists($tempPdf)) @unlink($tempPdf);
     }
+
+    public function testResolveDeliveryPayloadSupportsDocxAndPdfForDocxOrigin(): void {
+        $controller = new DocumentController();
+        $sampleDocxPath = __DIR__ . '/../../../sample_certificate_anjo_cabalum.docx';
+        $this->assertTrue(file_exists($sampleDocxPath), "Sample DOCX fixture must exist");
+        $docxBytes = file_get_contents($sampleDocxPath);
+
+        $cert = [
+            'id' => 42,
+            'file_type' => 'docx',
+            'original_filename' => 'faculty_award.docx',
+            'title' => 'Faculty Award'
+        ];
+
+        // 1. Download as original DOCX
+        $docxRes = $controller->resolveDeliveryPayload($cert, $docxBytes, true, 'docx');
+        $this->assertTrue($docxRes['success']);
+        $this->assertEquals('DOCX', $docxRes['format_label']);
+        $this->assertEquals('application/vnd.openxmlformats-officedocument.wordprocessingml.document', $docxRes['mime_type']);
+        $this->assertEquals('faculty_award.docx', $docxRes['filename']);
+        $this->assertEquals('attachment', $docxRes['disposition']);
+        $this->assertEquals($docxBytes, $docxRes['bytes'], "Original DOCX bytes must be preserved untouched");
+
+        // 2. Download/view as JIT-converted PDF
+        $pdfRes = $controller->resolveDeliveryPayload($cert, $docxBytes, true, 'pdf');
+        $this->assertTrue($pdfRes['success']);
+        $this->assertEquals('PDF', $pdfRes['format_label']);
+        $this->assertEquals('application/pdf', $pdfRes['mime_type']);
+        $this->assertEquals('faculty_award.pdf', $pdfRes['filename']);
+        $this->assertEquals('%PDF-', substr($pdfRes['bytes'], 0, 5), "PDF delivery must produce valid PDF header");
+    }
+
+    public function testResolveDeliveryPayloadRejectsDocxForPdfOrigin(): void {
+        $controller = new DocumentController();
+        $cert = [
+            'id' => 99,
+            'file_type' => 'pdf',
+            'original_filename' => 'scanned_cert.pdf',
+            'title' => 'Scanned Cert'
+        ];
+
+        $res = $controller->resolveDeliveryPayload($cert, '%PDF-1.4 dummy', true, 'docx');
+        $this->assertFalse($res['success'], "PDF-origin records must reject DOCX download");
+        $this->assertEquals(400, $res['code']);
+    }
 }

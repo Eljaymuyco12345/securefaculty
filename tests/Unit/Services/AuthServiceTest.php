@@ -80,9 +80,17 @@ class AuthServiceTest extends TestCase {
         AuthService::attempt('dean', 'admin123');
         $this->assertTrue(AuthService::check());
 
-        // Simulate 31 minutes of idle time (OWASP A07)
-        $_SESSION['last_activity'] = time() - 1860;
-        $this->assertFalse(AuthService::check(), "check() must return false after 30 minutes of inactivity");
+        $timeout = AuthService::getTimeoutSeconds();
+        $this->assertEquals(600, $timeout, "Configured inactivity timeout must default to 600 seconds (10 minutes)");
+
+        // Active session within timeout window stays valid and refreshes last_activity
+        $_SESSION['last_activity'] = time() - ($timeout - 60);
+        $this->assertTrue(AuthService::check(), "check() must remain true while within inactivity window");
+        $this->assertTrue((time() - $_SESSION['last_activity']) <= 2, "check() must refresh last_activity on active request");
+
+        // Simulate idle time exceeding configured timeout
+        $_SESSION['last_activity'] = time() - ($timeout + 5);
+        $this->assertFalse(AuthService::check(), "check() must return false after inactivity timeout");
         $this->assertNull(AuthService::user(), "user() must be null after session timeout");
     }
 }
