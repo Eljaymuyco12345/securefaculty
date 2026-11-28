@@ -13,7 +13,7 @@ class UserDAO implements UserDAOInterface {
     public static function getAllWithProfiles(): array {
         $pdo = Database::getConnection();
         $stmt = $pdo->query("
-            SELECT u.id, u.username, u.role, u.full_name, u.email, u.department, u.created_at,
+            SELECT u.id, u.username, u.role, u.full_name, u.email, u.department, u.avatar_path, u.created_at,
                    COALESCE(u.is_active, 1) as is_active,
                    fp.employee_id, fp.academic_rank, fp.specialization,
                    (SELECT COUNT(DISTINCT c.id) FROM certificates c LEFT JOIN certificate_authors ca ON c.id = ca.certificate_id WHERE c.faculty_id = u.id OR ca.user_id = u.id) as cert_count,
@@ -159,6 +159,12 @@ class UserDAO implements UserDAOInterface {
         $hash = password_hash($newPassword, PASSWORD_BCRYPT);
         $stmt = $pdo->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
         return $stmt->execute([$hash, $id]);
+    }
+
+    public static function updateAvatar(int $id, ?string $avatarPath): bool {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE users SET avatar_path = ? WHERE id = ?");
+        return $stmt->execute([$avatarPath, $id]);
     }
 
     public static function updateProfile(int $id, array $data, ?int $currentUserId = null): bool {

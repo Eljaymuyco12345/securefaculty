@@ -97,7 +97,7 @@ class ExportController extends BaseController {
                     $r['co_authors'] ?? '',
                     $r['academic_rank'] ?? '',
                     $r['cert_number'] ?? 'N/A',
-                    $r['date_issued'] ?? 'Undated',
+                    DateHelper::formatDate($r['date_issued'] ?? null, 'Undated'),
                     $r['issuer'] ?? 'Not Specified',
                     $r['category'] ?? 'General',
                     $scopeVal,
@@ -127,7 +127,7 @@ class ExportController extends BaseController {
                     'date_scope' => $dateScope,
                     'faculty_scope' => $targetFacultyName ?: 'All Faculty',
                     'auditor_name' => $currentUser['full_name'],
-                    'generated_at' => date('F d, Y \a\t h:i A')
+                    'generated_at' => date(DateHelper::DATETIME_FORMAT)
                 ],
                 'records' => $records
             ];

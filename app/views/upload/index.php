@@ -1,6 +1,7 @@
 <?php
 $isDean = $isDean ?? false;
 $facultyList = $facultyList ?? [];
+$folders = $folders ?? [];
 $activeNav = $activeNav ?? 'pipeline';
 $pageTitle = $pageTitle ?? 'Upload & Scan - Certificate Ingestion';
 require_once __DIR__ . '/../layouts/layout_start.php';
@@ -142,23 +143,19 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </div>
     </div>
 
-    <!-- Ingestion Trigger Banner with Obvious Action Buttons -->
-    <div id="upload-banner"
-        class="p-6 rounded-xl border-2 border-dashed border-blue-400 dark:border-blue-700/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-center transition-all group">
+    <!-- Ingestion Trigger Banner (Clickable Upload Icon & Dropzone) -->
+    <div id="upload-banner" onclick="document.getElementById('file-input').click()"
+        class="p-6 rounded-xl border-2 border-dashed border-blue-400 dark:border-blue-700/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-center transition-all group cursor-pointer">
         <div class="max-w-md mx-auto space-y-3">
-            <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 mx-auto flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-inner">
+            <button type="button" onclick="event.stopPropagation(); document.getElementById('file-input').click();"
+                aria-label="Upload Document or ZIP Archive"
+                title="Click to Upload Document or ZIP Archive"
+                class="w-16 h-16 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white mx-auto flex items-center justify-center text-2xl group-hover:scale-110 active:scale-95 transition-all shadow-lg shadow-blue-600/30 ring-4 ring-blue-500/20 cursor-pointer">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
-            </div>
+            </button>
             <div>
-                <p class="text-sm font-bold text-slate-900 dark:text-white">Select or Drag & Drop Documents Here</p>
+                <p class="text-sm font-bold text-slate-900 dark:text-white">Click the Upload Icon or Drag &amp; Drop Documents Here</p>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Supports PDF &amp; DOCX (1 at a time), PNG &amp; JPG (single or multi-page), &amp; <strong>ZIP Archives</strong></p>
-            </div>
-            <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
-                <button type="button" onclick="document.getElementById('file-input').click()"
-                    class="px-4 py-2 rounded-lg bg-[#0d2342] hover:bg-[#14335e] text-white font-bold text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer">
-                    <i class="fa-regular fa-folder-open"></i>
-                    <span>Browse Document / ZIP Archive</span>
-                </button>
             </div>
         </div>
     </div>
@@ -269,8 +266,9 @@ Upload a file above to extract metadata.</div>
                             <label id="field_date_label" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Date Issued (on Certificate):</label>
                             <span id="date-detect-status" class="text-[9px] font-semibold text-slate-400"></span>
                         </div>
-                        <input type="date" id="field_date" value=""
-                            class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500 transition-colors">
+                        <input type="text" id="field_date" value=""
+                            placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" autocomplete="off"
+                            class="sf-datepicker w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs font-mono text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500 transition-colors">
                         <div id="date-warning-msg" class="hidden mt-1 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-[11px] text-amber-900 dark:text-amber-200 flex items-start gap-1.5">
                             <i class="fa-solid fa-triangle-exclamation text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"></i>
                             <span><strong>Issued Date Unverified:</strong> Could not detect authentic date on document. Please verify the physical certificate and specify the date before approving.</span>
@@ -364,6 +362,17 @@ Upload a file above to extract metadata.</div>
                             class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:border-blue-500">
                         <p id="field_authors_hint" class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">List primary author and co-authors as printed on the certificate / paper.</p>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">Save to Folder (Optional):</label>
+                    <select id="field_folder_id"
+                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-blue-500">
+                        <option value="">— Unfiled (No Folder) —</option>
+                        <?php foreach ($folders as $fld): ?>
+                            <option value="<?= (int)$fld['id'] ?>"><?= htmlspecialchars($fld['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <div>
@@ -939,6 +948,9 @@ Upload a file above to extract metadata.</div>
         const warnBox = document.getElementById('date-warning-msg');
         const dateInput = document.getElementById('field_date');
         if (!statusEl || !warnBox || !dateInput) return;
+        if (dateInput._flatpickr) {
+            dateInput._flatpickr.setDate(dateVal || '', false);
+        }
 
         if (dateVal && dateVal.trim() !== '') {
             statusEl.innerHTML = '<span class="text-emerald-600 dark:text-emerald-400 font-bold">✓ OCR Extracted</span>';
@@ -1105,6 +1117,8 @@ Upload a file above to extract metadata.</div>
             catSelect.value = 'Research Publication';
             handleHitlCategoryChange('Research Publication');
         }
+        const folderSelect = document.getElementById('field_folder_id');
+        if (folderSelect) folderSelect.value = '';
 
         // 9. Close modal
         document.getElementById('stage-progress-modal').classList.add('hidden');
@@ -2049,6 +2063,11 @@ Upload a file above to extract metadata.</div>
         const coSelect = document.getElementById('form-coauthors');
         if (coSelect) {
             payload.co_authors = Array.from(coSelect.selectedOptions).map(o => parseInt(o.value));
+        }
+
+        const folderSelect = document.getElementById('field_folder_id');
+        if (folderSelect && folderSelect.value) {
+            payload.folder_id = parseInt(folderSelect.value, 10);
         }
 
         // Transition to Stage 4: Cryptographic Encryption

@@ -10,6 +10,9 @@ $dateTo = $dateTo ?? '';
 $issuedYear = $issuedYear ?? '';
 $scope = $scope ?? ($_GET['scope'] ?? 'All');
 $viewMode = $viewMode ?? 'table';
+$folderFilter = $folderFilter ?? 'all';
+$folders = $folders ?? [];
+$currentFolder = $currentFolder ?? null;
 $availableYears = $availableYears ?? [];
 $facultyMembers = $facultyMembers ?? [];
 $allCategories = $allCategories ?? ['All', 'Modules & IMs', 'Research', 'Seminars', 'Trainings', 'Workshops', 'Awards', 'Milestones', 'Other'];
@@ -59,6 +62,58 @@ if (!function_exists('resolveAaccupArea')) {
     }
 }
 
+if (!function_exists('getFolderColorClasses')) {
+    function getFolderColorClasses(string $color): array {
+        return match (strtolower(trim($color))) {
+            'emerald', 'green' => [
+                'icon' => 'text-emerald-500 dark:text-emerald-400',
+                'bg' => 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800/70',
+                'badge' => 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300',
+            ],
+            'amber', 'yellow' => [
+                'icon' => 'text-amber-500 dark:text-amber-400',
+                'bg' => 'bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800/70',
+                'badge' => 'bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300',
+            ],
+            'rose', 'red' => [
+                'icon' => 'text-rose-500 dark:text-rose-400',
+                'bg' => 'bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800/70',
+                'badge' => 'bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300',
+            ],
+            'purple', 'violet' => [
+                'icon' => 'text-violet-500 dark:text-violet-400',
+                'bg' => 'bg-violet-50 dark:bg-violet-950/50 border-violet-200 dark:border-violet-800/70',
+                'badge' => 'bg-violet-100 dark:bg-violet-900/60 text-violet-700 dark:text-violet-300',
+            ],
+            'cyan' => [
+                'icon' => 'text-cyan-500 dark:text-cyan-400',
+                'bg' => 'bg-cyan-50 dark:bg-cyan-950/50 border-cyan-200 dark:border-cyan-800/70',
+                'badge' => 'bg-cyan-100 dark:bg-cyan-900/60 text-cyan-700 dark:text-cyan-300',
+            ],
+            'indigo' => [
+                'icon' => 'text-indigo-500 dark:text-indigo-400',
+                'bg' => 'bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800/70',
+                'badge' => 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300',
+            ],
+            'teal' => [
+                'icon' => 'text-teal-500 dark:text-teal-400',
+                'bg' => 'bg-teal-50 dark:bg-teal-950/50 border-teal-200 dark:border-teal-800/70',
+                'badge' => 'bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300',
+            ],
+            'slate', 'gray' => [
+                'icon' => 'text-slate-500 dark:text-slate-400',
+                'bg' => 'bg-slate-100 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700',
+                'badge' => 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300',
+            ],
+            default => [
+                'icon' => 'text-blue-500 dark:text-blue-400',
+                'bg' => 'bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800/70',
+                'badge' => 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300',
+            ],
+        };
+    }
+}
+
 require_once __DIR__ . '/../layouts/layout_start.php';
 ?>
 
@@ -105,14 +160,15 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </span>
 
         <!-- View Mode Switcher -->
+        <?php $folderQuerySuffix = ($folderFilter !== 'all') ? '&folder_id=' . urlencode((string)$folderFilter) : ''; ?>
         <div class="inline-flex rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111c36] p-0.5 shadow-sm">
-            <a href="vault.php?view=table&category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?>"
+            <a href="vault.php?view=table&category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?><?= $folderQuerySuffix ?>"
                class="px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 <?= $viewMode === 'table' ? 'bg-[#0d2342] text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200' ?>"
                title="Table List View">
                 <i class="fa-solid fa-table-list"></i>
                 <span class="hidden sm:inline">Table View</span>
             </a>
-            <a href="vault.php?view=grid&category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?>"
+            <a href="vault.php?view=grid&category=<?= urlencode($category) ?>&search=<?= urlencode($search) ?>&date_from=<?= urlencode($dateFrom) ?>&date_to=<?= urlencode($dateTo) ?>&issued_year=<?= urlencode($issuedYear) ?><?= ($scope && $scope !== 'All') ? '&scope=' . urlencode($scope) : '' ?><?= $isDean && $targetFacultyId ? '&faculty_id=' . $targetFacultyId : '' ?><?= $folderQuerySuffix ?>"
                class="px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 <?= $viewMode === 'grid' ? 'bg-[#0d2342] text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200' ?>"
                title="Card Grid View">
                 <i class="fa-solid fa-grip"></i>
@@ -132,6 +188,109 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <span>Ingest Document</span>
         </a>
     </div>
+</div>
+
+<!-- Folders & Breadcrumb Bar -->
+<div class="bg-white dark:bg-[#111c36] rounded-xl border border-slate-200 dark:border-slate-800 p-3 shadow-sm space-y-3 transition-colors">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <!-- Breadcrumb -->
+        <nav aria-label="Vault Folder Breadcrumb" class="flex items-center gap-1.5 text-xs font-semibold flex-wrap">
+            <a href="vault.php?view=<?= urlencode($viewMode) ?>&folder_id=all<?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?>"
+               class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all <?= $folderFilter === 'all' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400' ?>">
+                <i class="fa-solid fa-vault text-blue-600 dark:text-blue-400 text-[11px]"></i>
+                <span>All Vault Files</span>
+            </a>
+            <?php if ($currentFolder): ?>
+                <?php $cfColors = getFolderColorClasses($currentFolder['color'] ?? 'blue'); ?>
+                <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border <?= $cfColors['bg'] ?> text-slate-900 dark:text-white font-bold">
+                    <i class="fa-solid fa-folder-open <?= $cfColors['icon'] ?> text-xs"></i>
+                    <span><?= htmlspecialchars($currentFolder['name']) ?></span>
+                </span>
+            <?php elseif ($folderFilter === 'unfiled'): ?>
+                <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 font-bold">
+                    <i class="fa-regular fa-folder text-xs"></i>
+                    <span>Unfiled Only</span>
+                </span>
+            <?php endif; ?>
+        </nav>
+
+        <!-- Quick Actions: Unfiled Only Pill & + New Folder -->
+        <div class="flex items-center gap-2">
+            <?php
+                $unfiledToggleUrl = 'vault.php?view=' . urlencode($viewMode) . '&folder_id=' . ($folderFilter === 'unfiled' ? 'all' : 'unfiled');
+                if ($category !== 'All') $unfiledToggleUrl .= '&category=' . urlencode($category);
+                if ($isDean && $targetFacultyId) $unfiledToggleUrl .= '&faculty_id=' . $targetFacultyId;
+            ?>
+            <a href="<?= $unfiledToggleUrl ?>"
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all <?= $folderFilter === 'unfiled' ? 'bg-amber-500 text-white border-amber-600 shadow-sm' : 'bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:border-amber-300 dark:hover:border-amber-700' ?>">
+                <i class="fa-regular fa-folder text-[11px]"></i>
+                <span>Unfiled Only</span>
+            </a>
+
+            <button type="button" onclick="openFolderModal('create')"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all cursor-pointer">
+                <i class="fa-solid fa-folder-plus text-[11px]"></i>
+                <span>+ New Folder</span>
+            </button>
+        </div>
+    </div>
+
+    <?php if ($folderFilter === 'all'): ?>
+        <?php if (!empty($folders)): ?>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <?php foreach ($folders as $folder): ?>
+                    <?php
+                        $fId = (int)$folder['id'];
+                        $fName = $folder['name'] ?? 'Untitled Folder';
+                        $fColor = $folder['color'] ?? 'blue';
+                        $fCount = (int)($folder['item_count'] ?? 0);
+                        $fClasses = getFolderColorClasses($fColor);
+                        $folderOpenUrl = 'vault.php?folder_id=' . $fId . '&view=' . urlencode($viewMode);
+                        if ($category !== 'All') $folderOpenUrl .= '&category=' . urlencode($category);
+                        if ($isDean && $targetFacultyId) $folderOpenUrl .= '&faculty_id=' . $targetFacultyId;
+                    ?>
+                    <div class="group flex items-center justify-between gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800/80 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all">
+                        <a href="<?= $folderOpenUrl ?>" class="flex items-center gap-2.5 min-w-0 flex-1">
+                            <div class="w-9 h-9 rounded-lg border <?= $fClasses['bg'] ?> flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-folder <?= $fClasses['icon'] ?> text-base"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" title="<?= htmlspecialchars($fName) ?>">
+                                    <?= htmlspecialchars($fName) ?>
+                                </div>
+                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold tabular-nums <?= $fClasses['badge'] ?> mt-0.5">
+                                    <?= $fCount ?> <?= $fCount === 1 ? 'file' : 'files' ?>
+                                </span>
+                            </div>
+                        </a>
+                        <div class="flex items-center gap-1 flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                            <button type="button"
+                                    onclick="openFolderModal('rename', <?= $fId ?>, <?= htmlspecialchars(json_encode($fName), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($fColor), ENT_QUOTES, 'UTF-8') ?>)"
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 transition-colors cursor-pointer"
+                                    title="Rename Folder">
+                                <i class="fa-solid fa-pen text-[11px]"></i>
+                            </button>
+                            <button type="button"
+                                    onclick="confirmDeleteFolder(<?= $fId ?>, <?= htmlspecialchars(json_encode($fName), ENT_QUOTES, 'UTF-8') ?>, <?= $fCount ?>)"
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
+                                    title="Delete Folder">
+                                <i class="fa-regular fa-trash-can text-[11px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span class="flex items-center gap-1.5">
+                    <i class="fa-regular fa-folder-open text-slate-400"></i>
+                    <span>No virtual folders yet. Create a folder to organize your certificates (1-level folders).</span>
+                </span>
+            </div>
+        <?php endif; ?>
+    <?php endif; ?>
 </div>
 
 <!-- Category Tabs Filter -->
@@ -158,6 +317,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             if ($dateTo) $tabUrl .= '&date_to=' . urlencode($dateTo);
             if ($issuedYear) $tabUrl .= '&issued_year=' . urlencode($issuedYear);
             if ($scope && $scope !== 'All') $tabUrl .= '&scope=' . urlencode($scope);
+            if ($folderFilter !== 'all') $tabUrl .= '&folder_id=' . urlencode((string)$folderFilter);
         ?>
             <a href="<?= $tabUrl ?>"
                class="px-3 py-1.5 rounded-lg text-xs transition-all <?= $isActive ? 'bg-[#0d2342] dark:bg-blue-600 text-white font-bold shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' ?>">
@@ -188,6 +348,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <?php if ($category !== 'All'): ?>
             <input type="hidden" name="category" value="<?= htmlspecialchars($category) ?>">
         <?php endif; ?>
+        <?php if ($folderFilter !== 'all'): ?>
+            <input type="hidden" name="folder_id" value="<?= htmlspecialchars((string)$folderFilter) ?>">
+        <?php endif; ?>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5 text-xs items-end">
             <!-- Date Issued From -->
@@ -195,8 +358,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                     <i class="fa-regular fa-calendar-check text-blue-600 dark:text-blue-400 mr-1"></i>Issued From:
                 </label>
-                <input type="date" name="date_from" value="<?= htmlspecialchars($dateFrom) ?>"
-                       class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                <input type="text" name="date_from" value="<?= htmlspecialchars($dateFrom) ?>"
+                       placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" autocomplete="off"
+                       class="sf-datepicker w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
             </div>
 
             <!-- Date Issued To -->
@@ -204,8 +368,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                     <i class="fa-regular fa-calendar-check text-blue-600 dark:text-blue-400 mr-1"></i>Issued To:
                 </label>
-                <input type="date" name="date_to" value="<?= htmlspecialchars($dateTo) ?>"
-                       class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                <input type="text" name="date_to" value="<?= htmlspecialchars($dateTo) ?>"
+                       placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" autocomplete="off"
+                       class="sf-datepicker w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500">
             </div>
 
             <!-- Issued Year (Quick Filter) -->
@@ -264,7 +429,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
                     <i class="fa-solid fa-magnifying-glass text-slate-400 mr-1"></i>Search Keyword:
                 </label>
-                <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Title, cert no, issuer..."
+                <input type="text" id="vaultSearchInput" name="search" value="<?= htmlspecialchars($search) ?>"
+                       oninput="filterVaultRecordsLive(this.value)"
+                       placeholder="Live search title, cert no, issuer..."
                        class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500">
             </div>
 
@@ -276,7 +443,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <span>Apply</span>
                 </button>
                 <?php if ($search || $dateFrom || $dateTo || $issuedYear || ($scope && $scope !== 'All') || ($isDean && $targetFacultyId)): ?>
-                    <a href="vault.php?view=<?= urlencode($viewMode) ?><?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?>"
+                    <a href="vault.php?view=<?= urlencode($viewMode) ?><?= $category !== 'All' ? '&category=' . urlencode($category) : '' ?><?= $folderFilter !== 'all' ? '&folder_id=' . urlencode((string)$folderFilter) : '' ?>"
                        class="py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all flex items-center justify-center cursor-pointer"
                        title="Reset Filters">
                         <i class="fa-solid fa-xmark"></i>
@@ -307,7 +474,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <span class="text-white/40">|</span>
         <span class="text-slate-300 text-[11px]">Select records for batch actions</span>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
+        <button type="button" onclick="openBulkMoveModal()"
+                class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>Move to Folder</span>
+        </button>
         <button type="button" onclick="exportSelected()"
                 class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-rose-600/40 ring-2 ring-rose-400/40 hover:ring-rose-300 transition-all flex items-center gap-2 cursor-pointer active:scale-95">
             <i class="fa-solid fa-file-pdf text-sm animate-pulse"></i>
@@ -335,7 +507,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         </div>
         <div class="pt-2 flex items-center justify-center gap-2">
             <?php if ($search || $dateFrom || $dateTo || $issuedYear): ?>
-                <a href="vault.php?view=<?= urlencode($viewMode) ?>" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                <a href="vault.php?view=<?= urlencode($viewMode) ?><?= $folderFilter !== 'all' ? '&folder_id=' . urlencode((string)$folderFilter) : '' ?>" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
                     Reset Date &amp; Keyword Filters
                 </a>
             <?php endif; ?>
@@ -366,7 +538,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         <th class="p-3 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-[11px]">
+                <tbody id="vaultTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-[11px]">
                     <?php foreach ($records as $idx => $cert): ?>
                         <?php
                             $isOwner = ((int)$cert['faculty_id'] === (int)$currentUser['id']);
@@ -444,7 +616,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 <?= !empty($cert['cert_number']) ? htmlspecialchars($cert['cert_number']) : '<span class="text-slate-300 dark:text-slate-600 italic">N/A</span>' ?>
                             </td>
                             <td class="p-3 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                                <span class="font-bold text-blue-950 dark:text-blue-300"><?= htmlspecialchars($cert['date_issued']) ?></span>
+                                <span class="font-bold text-blue-950 dark:text-blue-300"><?= htmlspecialchars(DateHelper::formatDate($cert['date_issued'] ?? null)) ?></span>
                             </td>
                             <td class="p-3 text-slate-600 dark:text-slate-400 max-w-[150px]">
                                 <div class="truncate font-medium" title="<?= htmlspecialchars($cert['issuer']) ?>"><?= htmlspecialchars($cert['issuer']) ?></div>
@@ -477,17 +649,30 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                             <td class="p-3 text-right whitespace-nowrap">
                                 <div class="inline-flex items-center gap-1">
                                     <button type="button"
-                                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>)"
+                                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(strtolower(ltrim($cert['file_type'] ?? 'pdf', '.'))), ENT_QUOTES, 'UTF-8') ?>)"
                                             class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[10px] font-bold inline-flex items-center gap-1 shadow-sm border border-transparent dark:border-slate-700 transition-all cursor-pointer"
                                             title="Preview Document In-App">
                                         <i class="fa-regular fa-eye"></i>
                                         <span>View</span>
                                     </button>
-                                    <a href="view_document.php?id=<?= $cert['id'] ?>&download=1"
-                                       class="touch-target p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs transition-all"
-                                       title="Volatile Download">
-                                        <i class="fa-solid fa-download"></i>
+                                    <a href="view_document.php?id=<?= $cert['id'] ?>&download=1&format=pdf"
+                                       class="touch-target p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 text-xs transition-all"
+                                       title="Download PDF">
+                                        <i class="fa-solid fa-file-pdf"></i>
                                     </a>
+                                    <?php if (strtolower(ltrim($cert['file_type'] ?? '', '.')) === 'docx'): ?>
+                                    <a href="view_document.php?id=<?= $cert['id'] ?>&download=1&format=docx"
+                                       class="touch-target p-1 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/70 text-blue-600 dark:text-blue-400 text-xs transition-all"
+                                       title="Download Editable Word (.docx)">
+                                        <i class="fa-solid fa-file-word"></i>
+                                    </a>
+                                    <?php endif; ?>
+                                    <button type="button"
+                                            onclick="openMoveModal([<?= (int)$cert['id'] ?>], <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= !empty($cert['folder_id']) ? (int)$cert['folder_id'] : 'null' ?>)"
+                                            class="touch-target p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/60 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs transition-all cursor-pointer"
+                                            title="Move to Folder">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                    </button>
                                     <button type="button" onclick="confirmDelete(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= $isCoAuthor ? 'true' : 'false' ?>, <?= htmlspecialchars(json_encode($cert['faculty_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>)"
                                             class="touch-target p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/60 <?= $isCoAuthor ? 'text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300' : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400' ?> transition-colors cursor-pointer"
                                             title="<?= $isCoAuthor ? 'Remove from My Vault (Disassociate Co-Authorship)' : 'Permanently Delete Record' ?>">
@@ -503,7 +688,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     </div>
 <?php else: ?>
     <!-- Grid View -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div id="vaultGridBody" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <?php foreach ($records as $cardIdx => $cert): ?>
             <?php
                 $isOwner = ((int)$cert['faculty_id'] === (int)$currentUser['id']);
@@ -613,14 +798,14 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     <!-- Date Issued -->
                     <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5 font-mono">
                         <i class="fa-regular fa-calendar-check text-[10px] text-blue-600"></i>
-                        <span>Date Issued: <strong class="text-slate-800 dark:text-slate-200"><?= htmlspecialchars($cert['date_issued']) ?></strong></span>
+                        <span>Date Issued: <strong class="text-slate-800 dark:text-slate-200 font-mono"><?= htmlspecialchars(DateHelper::formatDate($cert['date_issued'] ?? null)) ?></strong></span>
                     </p>
                 </div>
 
                 <!-- Card Actions matching Figure D.2 -->
                 <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                     <button type="button"
-                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>)"
+                            onclick="openDocPreview(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['issuer'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['date_issued'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['category'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['cert_number'] ?? ''), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['scope'] ?? 'Institutional'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['indexing'] ?? 'None'), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode($cert['place_issued'] ?? ($cert['venue'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(resolveAaccupArea($cert['accreditation_area'] ?? '', $cert['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode(strtolower(ltrim($cert['file_type'] ?? 'pdf', '.'))), ENT_QUOTES, 'UTF-8') ?>)"
                             class="px-2.5 py-1 rounded bg-[#0d2342] dark:bg-slate-800 hover:bg-[#14335e] dark:hover:bg-slate-700 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
                             title="Preview Document In-App">
                         <i class="fa-regular fa-eye text-[10px]"></i>
@@ -628,11 +813,25 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     </button>
 
                     <div class="flex items-center gap-1.5">
-                        <a href="view_document.php?id=<?= $cert['id'] ?>&download=1"
-                           class="p-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs transition-all"
-                           title="Secure Volatile Download">
-                            <i class="fa-solid fa-download"></i>
+                        <a href="view_document.php?id=<?= $cert['id'] ?>&download=1&format=pdf"
+                           class="p-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/60 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 text-xs transition-all"
+                           title="Download PDF">
+                            <i class="fa-solid fa-file-pdf"></i>
                         </a>
+                        <?php if (strtolower(ltrim($cert['file_type'] ?? '', '.')) === 'docx'): ?>
+                        <a href="view_document.php?id=<?= $cert['id'] ?>&download=1&format=docx"
+                           class="p-1.5 rounded bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/70 text-blue-600 dark:text-blue-400 text-xs transition-all"
+                           title="Download Editable Word (.docx)">
+                            <i class="fa-solid fa-file-word"></i>
+                        </a>
+                        <?php endif; ?>
+
+                        <button type="button"
+                                onclick="openMoveModal([<?= (int)$cert['id'] ?>], <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= !empty($cert['folder_id']) ? (int)$cert['folder_id'] : 'null' ?>)"
+                                class="p-1.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/60 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs transition-all cursor-pointer"
+                                title="Move to Folder">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </button>
 
                         <button type="button" onclick="confirmDelete(<?= (int)$cert['id'] ?>, <?= htmlspecialchars(json_encode($cert['title']), ENT_QUOTES, 'UTF-8') ?>, <?= $isCoAuthor ? 'true' : 'false' ?>, <?= htmlspecialchars(json_encode($cert['faculty_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>)"
                                 class="p-1.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/60 <?= $isCoAuthor ? 'text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300' : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400' ?> transition-colors cursor-pointer"
@@ -820,7 +1019,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <?php endif; ?>
 
     // --- In-App PDF Document Preview Controller ---
-    function openDocPreview(id, title, issuer, date, category, certNo, scope, indexing, venue, aaccupArea) {
+    function openDocPreview(id, title, issuer, date, category, certNo, scope, indexing, venue, aaccupArea, fileType) {
         const dialog = document.getElementById('docPreviewModal');
         const iframe = document.getElementById('docPreviewIframe');
         const spinner = document.getElementById('docPreviewSpinner');
@@ -829,6 +1028,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         const accProfileEl = document.getElementById('docPreviewAccreditationProfile');
         const newTabLink = document.getElementById('docPreviewNewTab');
         const downloadLink = document.getElementById('docPreviewDownload');
+        const downloadDocxLink = document.getElementById('docPreviewDownloadDocx');
 
         if (!dialog || !iframe) return;
 
@@ -901,10 +1101,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         }
 
         const docUrl = 'view_document.php?id=' + encodeURIComponent(id);
-        const downloadUrl = 'view_document.php?id=' + encodeURIComponent(id) + '&download=1';
+        const downloadPdfUrl = 'view_document.php?id=' + encodeURIComponent(id) + '&download=1&format=pdf';
+        const downloadDocxUrl = 'view_document.php?id=' + encodeURIComponent(id) + '&download=1&format=docx';
 
         if (newTabLink) newTabLink.href = docUrl;
-        if (downloadLink) downloadLink.href = downloadUrl;
+        if (downloadLink) downloadLink.href = downloadPdfUrl;
+        if (downloadDocxLink) {
+            const isDocx = String(fileType || '').toLowerCase() === 'docx';
+            downloadDocxLink.href = downloadDocxUrl;
+            downloadDocxLink.classList.toggle('hidden', !isDocx);
+        }
 
         if (spinner) spinner.style.display = 'flex';
         iframe.src = docUrl;
@@ -1001,6 +1207,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                 <span class="inline">Open in Tab</span>
             </a>
             <div class="flex items-center gap-1.5">
+                <a id="docPreviewDownloadDocx" href="#"
+                   class="hidden px-3.5 py-1.5 min-h-[38px] sm:min-h-0 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+                   title="Download Original Editable Word (.docx)">
+                    <i class="fa-solid fa-file-word text-xs"></i>
+                    <span>Download DOCX</span>
+                </a>
                 <a id="docPreviewDownload" href="#"
                    class="px-3.5 py-1.5 min-h-[38px] sm:min-h-0 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
                    title="Download Decrypted PDF Copy">
@@ -1030,6 +1242,290 @@ require_once __DIR__ . '/../layouts/layout_start.php';
         <iframe id="docPreviewIframe" src="" class="w-full h-full border-0 rounded-b-2xl bg-slate-900" title="Secure In-App PDF Preview" onload="const sp = document.getElementById('docPreviewSpinner'); if(sp) sp.style.display='none';"></iframe>
     </div>
 </dialog>
+
+<script>
+    function filterVaultRecordsLive(term) {
+        const query = (term || '').toLowerCase().trim();
+        const tableBody = document.getElementById('vaultTableBody');
+        if (tableBody) {
+            tableBody.querySelectorAll('tr').forEach(row => {
+                const text = (row.textContent || '').toLowerCase();
+                row.style.display = (!query || text.includes(query)) ? '' : 'none';
+            });
+        }
+        const gridBody = document.getElementById('vaultGridBody');
+        if (gridBody) {
+            Array.from(gridBody.children).forEach(card => {
+                const text = (card.textContent || '').toLowerCase();
+                card.style.display = (!query || text.includes(query)) ? '' : 'none';
+            });
+        }
+    }
+</script>
+
+<!-- Create / Rename Folder Modal -->
+<div id="folderModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs" role="dialog" aria-modal="true" aria-labelledby="folderModalTitle">
+    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-[#111c36] border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden">
+        <div class="px-5 py-3.5 bg-slate-50 dark:bg-[#0c1830] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <h3 id="folderModalTitle" class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-folder-plus text-blue-600 dark:text-blue-400"></i>
+                <span>New Virtual Folder</span>
+            </h3>
+            <button type="button" onclick="closeFolderModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form id="folderModalForm" onsubmit="submitFolderModal(event)" class="p-5 space-y-4 text-xs">
+            <input type="hidden" id="folderModalMode" value="create">
+            <input type="hidden" id="folderModalId" value="">
+            <div>
+                <label for="folderModalName" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">Folder Name</label>
+                <input type="text" id="folderModalName" required maxlength="120" placeholder="e.g., AACCUP 2026 Area V, Scopus Publications"
+                       class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-blue-500">
+            </div>
+            <div id="folderColorPickerWrap">
+                <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">Folder Color</label>
+                <div class="flex flex-wrap gap-2">
+                    <?php
+                    $colorOptions = [
+                        'blue' => 'bg-blue-500',
+                        'emerald' => 'bg-emerald-500',
+                        'amber' => 'bg-amber-500',
+                        'rose' => 'bg-rose-500',
+                        'violet' => 'bg-violet-500',
+                        'indigo' => 'bg-indigo-500',
+                        'cyan' => 'bg-cyan-500',
+                        'teal' => 'bg-teal-500',
+                        'slate' => 'bg-slate-500',
+                    ];
+                    foreach ($colorOptions as $cKey => $cBg):
+                    ?>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="folder_color" value="<?= $cKey ?>" class="sr-only peer" <?= $cKey === 'blue' ? 'checked' : '' ?>>
+                            <span class="w-7 h-7 rounded-full <?= $cBg ?> block ring-2 ring-transparent peer-checked:ring-slate-900 dark:peer-checked:ring-white peer-checked:ring-offset-2 dark:peer-checked:ring-offset-[#111c36] transition-all" title="<?= ucfirst($cKey) ?>"></span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div id="folderModalError" class="hidden p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-[11px] font-semibold"></div>
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeFolderModal()" class="px-3.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <button type="submit" id="folderModalSubmitBtn" class="px-4 py-1.5 rounded-lg bg-[#0d2342] dark:bg-blue-600 hover:bg-[#14335e] dark:hover:bg-blue-500 text-white font-bold shadow-sm transition-colors cursor-pointer">
+                    Create Folder
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Move Certificates to Folder Modal -->
+<div id="moveFolderModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs" role="dialog" aria-modal="true" aria-labelledby="moveFolderModalTitle">
+    <div class="w-full max-w-md rounded-2xl bg-white dark:bg-[#111c36] border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden">
+        <div class="px-5 py-3.5 bg-slate-50 dark:bg-[#0c1830] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <h3 id="moveFolderModalTitle" class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-folder-open text-blue-600 dark:text-blue-400"></i>
+                <span>Move to Folder</span>
+            </h3>
+            <button type="button" onclick="closeMoveModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form id="moveFolderForm" onsubmit="submitMoveModal(event)" class="p-5 space-y-4 text-xs">
+            <p id="moveFolderSubtitle" class="text-slate-600 dark:text-slate-300 text-[11px]"></p>
+            <div>
+                <label for="moveTargetFolderSelect" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">Destination Folder</label>
+                <select id="moveTargetFolderSelect" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-medium focus:outline-none focus:border-blue-500">
+                    <option value="">-- Unfiled (Remove from Folder) --</option>
+                    <?php foreach ($folders as $f): ?>
+                        <option value="<?= (int)$f['id'] ?>">
+                            <?= htmlspecialchars($f['name']) ?> (<?= (int)($f['item_count'] ?? 0) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div id="moveFolderError" class="hidden p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-[11px] font-semibold"></div>
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="closeMoveModal()" class="px-3.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <button type="submit" id="moveFolderSubmitBtn" class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-sm transition-colors cursor-pointer">
+                    Move Certificates
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let moveTargetCertIds = [];
+
+    async function callFoldersApi(payload) {
+        const res = await fetch('api/folders.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.CSRF_TOKEN || ''
+            },
+            body: JSON.stringify(Object.assign({}, payload, { csrf_token: window.CSRF_TOKEN || '' }))
+        });
+        const data = await res.json();
+        if (!res.ok || data.status !== 'success') {
+            throw new Error(data.message || 'Folder operation failed.');
+        }
+        return data;
+    }
+
+    function openFolderModal(mode, folderId = null, currentName = '', currentColor = 'blue') {
+        const modal = document.getElementById('folderModal');
+        const titleEl = document.getElementById('folderModalTitle');
+        const modeEl = document.getElementById('folderModalMode');
+        const idEl = document.getElementById('folderModalId');
+        const nameEl = document.getElementById('folderModalName');
+        const colorWrap = document.getElementById('folderColorPickerWrap');
+        const submitBtn = document.getElementById('folderModalSubmitBtn');
+        const errEl = document.getElementById('folderModalError');
+
+        if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+        modeEl.value = mode;
+        idEl.value = folderId ? String(folderId) : '';
+        nameEl.value = currentName || '';
+
+        if (mode === 'rename') {
+            titleEl.innerHTML = '<i class="fa-solid fa-pen text-blue-600 dark:text-blue-400"></i><span>Rename Folder</span>';
+            submitBtn.textContent = 'Save Name';
+            if (colorWrap) colorWrap.classList.add('hidden');
+        } else {
+            titleEl.innerHTML = '<i class="fa-solid fa-folder-plus text-blue-600 dark:text-blue-400"></i><span>New Virtual Folder</span>';
+            submitBtn.textContent = 'Create Folder';
+            if (colorWrap) colorWrap.classList.remove('hidden');
+            const colorRadio = document.querySelector(`input[name="folder_color"][value="${currentColor || 'blue'}"]`);
+            if (colorRadio) colorRadio.checked = true;
+        }
+
+        modal.classList.remove('hidden');
+        setTimeout(() => nameEl.focus(), 50);
+    }
+
+    function closeFolderModal() {
+        const modal = document.getElementById('folderModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    async function submitFolderModal(event) {
+        event.preventDefault();
+        const mode = document.getElementById('folderModalMode').value;
+        const folderId = parseInt(document.getElementById('folderModalId').value || '0', 10);
+        const name = (document.getElementById('folderModalName').value || '').trim();
+        const colorInput = document.querySelector('input[name="folder_color"]:checked');
+        const color = colorInput ? colorInput.value : 'blue';
+        const errEl = document.getElementById('folderModalError');
+        const submitBtn = document.getElementById('folderModalSubmitBtn');
+
+        if (!name) {
+            errEl.textContent = 'Please enter a folder name.';
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        try {
+            if (mode === 'rename') {
+                await callFoldersApi({ action: 'rename', folder_id: folderId, name });
+            } else {
+                await callFoldersApi({ action: 'create', name, color });
+            }
+            window.location.reload();
+        } catch (err) {
+            errEl.textContent = err.message;
+            errEl.classList.remove('hidden');
+            submitBtn.disabled = false;
+        }
+    }
+
+    function confirmDeleteFolder(folderId, folderName, itemCount) {
+        const safeName = escapeDocHtml(folderName);
+        const note = itemCount > 0
+            ? `The <strong>${itemCount} certificate(s)</strong> inside will be safely moved to <strong>Unfiled</strong> (no files are deleted).`
+            : 'This empty folder will be removed.';
+        showSystemConfirm({
+            title: 'Delete Virtual Folder?',
+            message: `Delete folder <strong>"${safeName}"</strong>? ${note}`,
+            type: 'warning',
+            confirmText: 'Delete Folder',
+            cancelText: 'Cancel',
+            onConfirm: async function() {
+                try {
+                    await callFoldersApi({ action: 'delete', folder_id: folderId });
+                    window.location.reload();
+                } catch (err) {
+                    showSystemAlert({
+                        title: 'Folder Deletion Failed',
+                        message: err.message,
+                        type: 'error',
+                        buttonText: 'OK'
+                    });
+                }
+            }
+        });
+    }
+
+    function openMoveModal(certIds, label = '', currentFolderId = null) {
+        moveTargetCertIds = Array.isArray(certIds) ? certIds.map(id => parseInt(id, 10)).filter(Boolean) : [];
+        if (moveTargetCertIds.length === 0) return;
+
+        const modal = document.getElementById('moveFolderModal');
+        const subtitle = document.getElementById('moveFolderSubtitle');
+        const select = document.getElementById('moveTargetFolderSelect');
+        const errEl = document.getElementById('moveFolderError');
+
+        if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+        if (moveTargetCertIds.length === 1 && label) {
+            subtitle.innerHTML = `Select destination folder for <strong>"${escapeDocHtml(label)}"</strong>.`;
+        } else {
+            subtitle.innerHTML = `Move <strong>${moveTargetCertIds.length} selected certificate(s)</strong> to:`;
+        }
+        select.value = currentFolderId ? String(currentFolderId) : '';
+        modal.classList.remove('hidden');
+    }
+
+    function openBulkMoveModal() {
+        const ids = getSelectedIds();
+        if (ids.length === 0) return;
+        openMoveModal(ids);
+    }
+
+    function closeMoveModal() {
+        const modal = document.getElementById('moveFolderModal');
+        if (modal) modal.classList.add('hidden');
+        moveTargetCertIds = [];
+    }
+
+    async function submitMoveModal(event) {
+        event.preventDefault();
+        if (moveTargetCertIds.length === 0) return;
+
+        const select = document.getElementById('moveTargetFolderSelect');
+        const errEl = document.getElementById('moveFolderError');
+        const submitBtn = document.getElementById('moveFolderSubmitBtn');
+        const rawVal = select.value;
+        const folderId = rawVal ? parseInt(rawVal, 10) : null;
+
+        submitBtn.disabled = true;
+        try {
+            await callFoldersApi({
+                action: 'move_certificates',
+                certificate_ids: moveTargetCertIds,
+                folder_id: folderId
+            });
+            window.location.reload();
+        } catch (err) {
+            errEl.textContent = err.message;
+            errEl.classList.remove('hidden');
+            submitBtn.disabled = false;
+        }
+    }
 </script>
 
 <?php require_once __DIR__ . '/../layouts/layout_end.php'; ?>

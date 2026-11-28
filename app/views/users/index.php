@@ -72,8 +72,9 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     <form method="GET" action="users.php" class="flex-1 flex flex-wrap items-center gap-2">
         <div class="relative flex-1 min-w-[200px]">
             <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs absolute left-3 top-2.5"></i>
-            <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-                   placeholder="Search by name, CICI ID, email, or employee number..."
+            <input type="text" id="usersSearchInput" name="search" value="<?= htmlspecialchars($search) ?>"
+                   oninput="filterUsersLive(this.value)"
+                   placeholder="Live search by name, CICI ID, email, or employee number..."
                    class="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 transition-all">
         </div>
 
@@ -131,8 +132,13 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors <?= !$isActive ? 'bg-rose-50/30 dark:bg-rose-950/20' : '' ?>">
                             <td class="p-3">
                                 <div class="flex items-center gap-2.5">
-                                    <div class="w-8 h-8 rounded-full <?= $u['role'] === 'dean' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300' ?> flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-inner">
-                                        <?= htmlspecialchars(mb_strtoupper(mb_substr($u['full_name'] ?? 'U', 0, 1, 'UTF-8')), ENT_QUOTES, 'UTF-8') ?>
+                                    <?php $rowAvatar = (!empty($u['avatar_path']) && is_file(BASE_DIR . '/public/' . $u['avatar_path'])) ? $u['avatar_path'] : ''; ?>
+                                    <div class="w-8 h-8 rounded-full overflow-hidden <?= $u['role'] === 'dean' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300' ?> flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-inner">
+                                        <?php if ($rowAvatar): ?>
+                                            <img src="<?= htmlspecialchars($rowAvatar, ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($u['full_name'], ENT_QUOTES, 'UTF-8') ?>" class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                            <?= htmlspecialchars(mb_strtoupper(mb_substr($u['full_name'] ?? 'U', 0, 1, 'UTF-8')), ENT_QUOTES, 'UTF-8') ?>
+                                        <?php endif; ?>
                                     </div>
                                     <div>
                                         <strong class="text-slate-900 dark:text-slate-100 block"><?= htmlspecialchars($u['full_name']) ?></strong>
@@ -639,6 +645,16 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                     showSystemAlert({ title: 'Error', message: err.message, type: 'error' });
                 });
             }
+        });
+    }
+
+    function filterUsersLive(term) {
+        const query = (term || '').toLowerCase().trim();
+        const tbody = document.getElementById('users-table-body');
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(row => {
+            const text = (row.textContent || '').toLowerCase();
+            row.style.display = (!query || text.includes(query)) ? '' : 'none';
         });
     }
 </script>

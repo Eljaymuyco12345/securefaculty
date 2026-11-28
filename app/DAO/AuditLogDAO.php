@@ -38,13 +38,22 @@ class AuditLogDAO implements AuditLogDAOInterface {
         return $stmt->fetchAll();
     }
 
-    public static function getPaginatedLogs(?string $search = null, ?string $actionFilter = null, int $page = 1, int $perPage = 10, ?int $facultyId = null, ?string $category = null): array {
-        $pdo = Database::getConnection();
-
+    /**
+     * Build shared FROM/JOIN, WHERE, SELECT, and parameter bindings for audit log queries.
+     * Prevents polymorphic target_id collisions between certificate IDs and user IDs.
+     */
+    private static function buildQueryParts(
+        ?string $search,
+        ?string $actionFilter,
+        ?int $facultyId,
+        ?string $category
+    ): array {
         $fromAndJoin = "
             FROM audit_logs a
             LEFT JOIN users u_target ON a.target_id = u_target.id
+                AND (a.action LIKE 'USER_%' OR a.action = 'PROFILE_SWITCH' OR a.action = 'PASSWORD_RESET_OTP_SENT')
             LEFT JOIN certificates c ON a.target_id = c.id
+                AND a.action IN ('ARCHIVE_DOCUMENT','DELETE_DOCUMENT','VIEW_DOCUMENT','DOWNLOAD_DOCUMENT','COMMIT_VAULT_RECORD','BULK_DELETE_DOCUMENTS')
             LEFT JOIN users u_cert ON c.faculty_id = u_cert.id
             LEFT JOIN users u_actor ON a.user_id = u_actor.id
             WHERE 1=1
@@ -87,7 +96,7 @@ class AuditLogDAO implements AuditLogDAOInterface {
         }
 
         if ($facultyId !== null && $facultyId > 0) {
-            $whereClauses .= " AND (a.target_id = :fac_id1 OR c.faculty_id = :fac_id2 OR (a.target_id IS NULL AND a.user_id = :fac_id3))";
+            $whereClauses .= " AND (a.user_id = :fac_id1 OR c.faculty_id = :fac_id2 OR u_target.id = :fac_id3)";
             $params[':fac_id1'] = $facultyId;
             $params[':fac_id2'] = $facultyId;
             $params[':fac_id3'] = $facultyId;
@@ -99,20 +108,11 @@ class AuditLogDAO implements AuditLogDAOInterface {
             $params[':cat_term'] = '%' . trim($category) . '%';
         }
 
-        $countQuery = "SELECT COUNT(*) " . $fromAndJoin . $whereClauses;
-        $countStmt = $pdo->prepare($countQuery);
-        $countStmt->execute($params);
-        $totalRows = (int)$countStmt->fetchColumn();
-
-        $totalPages = max(1, (int)ceil($totalRows / $perPage));
-        $page = max(1, min($page, $totalPages));
-        $offset = ($page - 1) * $perPage;
-
         $selectFields = "
             SELECT a.*,
             COALESCE(
-                u_target.full_name,
                 u_cert.full_name,
+                u_target.full_name,
                 u_actor.full_name,
                 CASE 
                     WHEN a.action IN ('DATABASE_BACKUP_CREATED', 'BACKUP_FAILED') THEN 'System Service'
@@ -121,6 +121,22 @@ class AuditLogDAO implements AuditLogDAOInterface {
                 END
             ) AS faculty_display
         ";
+
+        return [$fromAndJoin, $whereClauses, $selectFields, $params];
+    }
+
+    public static function getPaginatedLogs(?string $search = null, ?string $actionFilter = null, int $page = 1, int $perPage = 10, ?int $facultyId = null, ?string $category = null): array {
+        $pdo = Database::getConnection();
+        [$fromAndJoin, $whereClauses, $selectFields, $params] = self::buildQueryParts($search, $actionFilter, $facultyId, $category);
+
+        $countQuery = "SELECT COUNT(*) " . $fromAndJoin . $whereClauses;
+        $countStmt = $pdo->prepare($countQuery);
+        $countStmt->execute($params);
+        $totalRows = (int)$countStmt->fetchColumn();
+
+        $totalPages = max(1, (int)ceil($totalRows / $perPage));
+        $page = max(1, min($page, $totalPages));
+        $offset = ($page - 1) * $perPage;
 
         $logQuery = $selectFields . $fromAndJoin . $whereClauses . " ORDER BY a.created_at DESC, a.id DESC LIMIT :limit OFFSET :offset";
 
@@ -143,74 +159,7 @@ class AuditLogDAO implements AuditLogDAOInterface {
 
     public static function getExportLogs(?string $search = null, ?string $actionFilter = null, ?int $facultyId = null, ?string $category = null): array {
         $pdo = Database::getConnection();
-
-        $fromAndJoin = "
-            FROM audit_logs a
-            LEFT JOIN users u_target ON a.target_id = u_target.id
-            LEFT JOIN certificates c ON a.target_id = c.id
-            LEFT JOIN users u_cert ON c.faculty_id = u_cert.id
-            LEFT JOIN users u_actor ON a.user_id = u_actor.id
-            WHERE 1=1
-        ";
-
-        $params = [];
-        $whereClauses = "";
-
-        if ($search && trim($search) !== '') {
-            $trimmedSearch = mb_substr(trim($search), 0, 100);
-            $whereClauses .= " AND (a.details LIKE :s1 OR a.username LIKE :s2 OR a.ip_address LIKE :s3 OR a.action LIKE :s4 OR u_target.full_name LIKE :s5 OR u_cert.full_name LIKE :s6 OR u_actor.full_name LIKE :s7)";
-            $term = "%" . $trimmedSearch . "%";
-            $params[':s1'] = $term;
-            $params[':s2'] = $term;
-            $params[':s3'] = $term;
-            $params[':s4'] = $term;
-            $params[':s5'] = $term;
-            $params[':s6'] = $term;
-            $params[':s7'] = $term;
-        }
-
-        if ($actionFilter && trim($actionFilter) !== '' && $actionFilter !== 'ALL') {
-            $act = trim($actionFilter);
-            if ($act === 'LOGIN') {
-                $whereClauses .= " AND (a.action LIKE 'LOGIN%' OR a.action = 'LOGOUT')";
-            } elseif ($act === 'OCR_EXTRACT') {
-                $whereClauses .= " AND (a.action LIKE 'OCR%' OR a.action = 'BATCH_UPLOAD')";
-            } elseif ($act === 'EXPORT_REPORT') {
-                $whereClauses .= " AND a.action LIKE '%EXPORT%'";
-            } elseif ($act === 'DOC_OPERATIONS' || $act === 'DOC_OPS') {
-                $whereClauses .= " AND a.action IN ('ARCHIVE_DOCUMENT','DELETE_DOCUMENT','VIEW_DOCUMENT','DOWNLOAD_DOCUMENT','OCR_EXTRACT','COMMIT_VAULT_RECORD','BULK_DELETE_DOCUMENTS')";
-            } else {
-                $whereClauses .= " AND a.action = :act";
-                $params[':act'] = mb_substr($act, 0, 50);
-            }
-        }
-
-        if ($facultyId !== null && $facultyId > 0) {
-            $whereClauses .= " AND (a.target_id = :fac_id1 OR c.faculty_id = :fac_id2 OR (a.target_id IS NULL AND a.user_id = :fac_id3))";
-            $params[':fac_id1'] = $facultyId;
-            $params[':fac_id2'] = $facultyId;
-            $params[':fac_id3'] = $facultyId;
-        }
-
-        if ($category && trim($category) !== '' && $category !== 'All') {
-            $whereClauses .= " AND (c.category LIKE :cat OR a.details LIKE :cat_term)";
-            $params[':cat'] = '%' . trim($category) . '%';
-            $params[':cat_term'] = '%' . trim($category) . '%';
-        }
-
-        $selectFields = "
-            SELECT a.*,
-            COALESCE(
-                u_target.full_name,
-                u_cert.full_name,
-                u_actor.full_name,
-                CASE 
-                    WHEN a.action IN ('DATABASE_BACKUP_CREATED', 'BACKUP_FAILED') THEN 'System Service'
-                    WHEN a.action LIKE '%EXPORT%' THEN 'Accreditation Ledger'
-                    ELSE 'Anonymous / Unauthenticated'
-                END
-            ) AS faculty_display
-        ";
+        [$fromAndJoin, $whereClauses, $selectFields, $params] = self::buildQueryParts($search, $actionFilter, $facultyId, $category);
 
         $query = $selectFields . $fromAndJoin . $whereClauses . " ORDER BY a.created_at DESC, a.id DESC";
 

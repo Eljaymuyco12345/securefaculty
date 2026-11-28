@@ -35,7 +35,7 @@ class AuditController extends BaseController {
                     'username' => $r['username'] ?? 'Anonymous',
                     'role' => strtoupper($r['role'] ?? 'GUEST'),
                     'action' => $r['action'],
-                    'faculty_display' => $r['faculty_display'] ?: 'Dr. Arlene S. Poblador',
+                    'faculty_display' => $r['faculty_display'] ?: 'System / Institutional',
                     'details' => $r['details'] ?? '',
                     'ip_address' => $r['ip_address'] ?? '127.0.0.1',
                     'integrity' => 'SHA-256 Validated'
@@ -47,7 +47,7 @@ class AuditController extends BaseController {
                     'action_filter' => $actionFilter ?: 'All Events',
                     'search' => $search,
                     'auditor_name' => $currentUser['full_name'] ?? 'Dr. Arlene S. Poblador',
-                    'generated_at' => date('F d, Y \a\t h:i A')
+                    'generated_at' => date(DateHelper::DATETIME_FORMAT)
                 ],
                 'records' => $formattedRecords
             ];

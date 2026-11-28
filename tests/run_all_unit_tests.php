@@ -10,6 +10,8 @@ require_once __DIR__ . '/TestCase.php';
 $testFiles = [
     'Core' => [
         __DIR__ . '/Unit/Core/DatabaseTest.php',
+        __DIR__ . '/Unit/Core/EnvTest.php',
+        __DIR__ . '/Unit/Core/DateHelperTest.php',
     ],
     'Models' => [
         __DIR__ . '/Unit/Models/CertificateModelTest.php',
@@ -19,6 +21,7 @@ $testFiles = [
         __DIR__ . '/Unit/DAO/UserDAOTest.php',
         __DIR__ . '/Unit/DAO/CertificateDAOTest.php',
         __DIR__ . '/Unit/DAO/AuditLogDAOTest.php',
+        __DIR__ . '/Unit/DAO/FolderDAOTest.php',
     ],
     'Services' => [
         __DIR__ . '/Unit/Services/CryptoServiceTest.php',
@@ -27,6 +30,8 @@ $testFiles = [
         __DIR__ . '/Unit/Services/CategoryServiceTest.php',
         __DIR__ . '/Unit/Services/CertificateServiceTest.php',
         __DIR__ . '/Unit/Services/UserServiceTest.php',
+        __DIR__ . '/Unit/Services/PasswordResetServiceTest.php',
+        __DIR__ . '/Unit/Services/AvatarServiceTest.php',
         __DIR__ . '/Unit/Services/BackupServiceTest.php',
     ],
     'Controllers' => [

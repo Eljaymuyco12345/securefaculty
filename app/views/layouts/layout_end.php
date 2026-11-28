@@ -14,16 +14,22 @@
                     <span class="text-slate-300 dark:text-slate-600">•</span>
                     <span class="font-medium">ISUFST CICI Systematic Records Management</span>
                 </div>
-                <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <div class="flex flex-wrap items-center justify-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
                     <span>RA 10173 (Data Privacy Act) Compliant</span>
                     <span class="text-slate-300 dark:text-slate-600">•</span>
                     <span>AES-256 Encrypted Vault</span>
+                    <span class="text-slate-300 dark:text-slate-600">•</span>
+                    <button type="button" onclick="openLegalModal('terms')" class="hover:text-blue-600 dark:hover:text-blue-400 underline-offset-2 hover:underline transition cursor-pointer">Terms of Use</button>
+                    <span class="text-slate-300 dark:text-slate-600">•</span>
+                    <button type="button" onclick="openLegalModal('privacy')" class="hover:text-blue-600 dark:hover:text-blue-400 underline-offset-2 hover:underline transition cursor-pointer">Privacy Policy</button>
                 </div>
             </footer>
 
         </div>
 
     </div>
+
+    <?php require_once __DIR__ . '/legal_modals.php'; ?>
 
     <!-- 1. System Preferences & Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden" onclick="if(event.target===this)closeSettingsModal()">
@@ -59,57 +65,81 @@
                     <p class="text-[10px] text-slate-400 dark:text-slate-500">Updates your name across the header, vault, audit logs, and official PDF/Print signature blocks.</p>
                 </div>
 
-                <!-- Theme Mode Setting -->
-                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80">
-                    <span class="font-semibold text-slate-700 dark:text-slate-200 block mb-1.5">Appearance & Color Scheme:</span>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="setTheme('light')"
-                                class="py-2 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex items-center justify-center gap-2 transition-all">
-                            <i class="fa-solid fa-sun text-amber-500"></i>
-                            <span>Light Mode</span>
-                        </button>
-                        <button type="button" onclick="setTheme('dark')"
-                                class="py-2 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex items-center justify-center gap-2 transition-all">
-                            <i class="fa-solid fa-moon text-blue-400"></i>
-                            <span>Dark Mode</span>
+                <?php
+                    $modalUser = $currentUser ?? (class_exists('AuthService') ? AuthService::user() : null);
+                    $modalUserRow = (!empty($modalUser['id']) && class_exists('UserDAO')) ? UserDAO::find((int)$modalUser['id']) : null;
+                    $modalProfile = (!empty($modalUser['id']) && class_exists('UserModel')) ? UserModel::getProfile((int)$modalUser['id']) : null;
+                    $modalEmail = $modalUserRow['email'] ?? ($modalUser['email'] ?? '');
+                    $modalAvatarUrl = (!empty($modalUserRow['avatar_path']) && is_file(BASE_DIR . '/public/' . $modalUserRow['avatar_path'])) ? $modalUserRow['avatar_path'] : '';
+                    $isModalDean = (($modalUser['role'] ?? '') === 'dean');
+                ?>
+                <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-200/80 dark:border-slate-700/60">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="relative flex-shrink-0 group">
+                                <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="uploadProfileAvatar(this)">
+                                <button type="button" onclick="document.getElementById('avatarFileInput').click()" title="Upload Profile Picture"
+                                        class="w-12 h-12 rounded-full overflow-hidden bg-blue-100 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-base border-2 border-blue-300 dark:border-blue-700 hover:border-blue-500 transition-all cursor-pointer relative">
+                                    <span id="modal-avatar-box" class="w-full h-full flex items-center justify-center">
+                                        <?php if ($modalAvatarUrl): ?>
+                                            <img src="<?= htmlspecialchars($modalAvatarUrl) ?>" alt="Avatar" class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                            <i class="<?= $isModalDean ? 'fa-solid fa-user-shield' : 'fa-solid fa-user-graduate' ?>"></i>
+                                        <?php endif; ?>
+                                    </span>
+                                    <span class="absolute inset-0 bg-slate-900/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-camera"></i>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="font-bold text-slate-900 dark:text-slate-100 block truncate text-xs"><?= htmlspecialchars($modalUser['full_name'] ?? 'Faculty User') ?></span>
+                                <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono block truncate">@<?= htmlspecialchars($modalUser['username'] ?? 'user') ?></span>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <button type="button" onclick="document.getElementById('avatarFileInput').click()" class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">
+                                        <i class="fa-solid fa-camera mr-0.5"></i>Change Photo
+                                    </button>
+                                    <button type="button" id="removeAvatarBtn" onclick="removeProfileAvatar()" class="<?= $modalAvatarUrl ? '' : 'hidden' ?> text-[10px] font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0 <?= $isModalDean ? 'bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' : 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' ?>">
+                            <?= $isModalDean ? 'Dean' : 'Faculty' ?>
+                        </span>
+                    </div>
+                    <div id="avatar-status-msg" class="hidden text-[11px] p-2 rounded-lg"></div>
+                    <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block text-[10px]">Employee ID</span>
+                            <span class="font-semibold text-slate-700 dark:text-slate-200 font-mono"><?= htmlspecialchars($modalProfile['employee_id'] ?? 'N/A') ?></span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block text-[10px]">Department</span>
+                            <span class="font-semibold text-slate-700 dark:text-slate-200"><?= htmlspecialchars($modalUser['department'] ?? 'CICI') ?></span>
+                        </div>
+                        <div class="col-span-2">
+                            <span class="text-slate-400 dark:text-slate-500 block text-[10px]">Email Address</span>
+                            <span class="font-semibold text-slate-700 dark:text-slate-200 break-all"><?= htmlspecialchars($modalEmail !== '' ? $modalEmail : 'Not set') ?></span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block text-[10px]">Academic Rank</span>
+                            <span class="font-semibold text-slate-700 dark:text-slate-200"><?= htmlspecialchars($modalProfile['academic_rank'] ?? 'Faculty Member') ?></span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block text-[10px]">Specialization</span>
+                            <span class="font-semibold text-slate-700 dark:text-slate-200 truncate block" title="<?= htmlspecialchars($modalProfile['specialization'] ?? '') ?>"><?= htmlspecialchars($modalProfile['specialization'] ?? 'N/A') ?></span>
+                        </div>
+                    </div>
+                    <div class="pt-2.5 mt-2 border-t border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-2">
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400">Account Security</span>
+                        <button type="button" onclick="closeSettingsModal(); openChangePasswordModal();"
+                                class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-key text-[10px]"></i>
+                            <span>Change Password</span>
                         </button>
                     </div>
-                </div>
-
-                <!-- Screen Zoom / Display Scale Setting -->
-                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80">
-                    <span class="font-semibold text-slate-700 dark:text-slate-200 block mb-1.5 flex items-center justify-between">
-                        <span>Display Scale &amp; Screen Zoom:</span>
-                        <span id="currentZoomBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold">107% (Ergonomic)</span>
-                    </span>
-                    <div class="grid grid-cols-3 gap-2 text-xs">
-                        <button type="button" onclick="setSystemZoom('1.0')" id="zoomBtn_100"
-                                class="py-2 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex flex-col items-center justify-center transition-all cursor-pointer">
-                            <span class="font-bold">100%</span>
-                            <span class="text-[9px] text-slate-400">Standard</span>
-                        </button>
-                        <button type="button" onclick="setSystemZoom('1.07')" id="zoomBtn_107"
-                                class="py-2 px-2 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold flex flex-col items-center justify-center transition-all shadow-sm cursor-pointer">
-                            <span class="font-bold">107%</span>
-                            <span class="text-[9px] text-blue-600 dark:text-blue-400 font-semibold">Ergonomic</span>
-                        </button>
-                        <button type="button" onclick="setSystemZoom('1.15')" id="zoomBtn_115"
-                                class="py-2 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold flex flex-col items-center justify-center transition-all cursor-pointer">
-                            <span class="font-bold">115%</span>
-                            <span class="text-[9px] text-slate-400">Presentation</span>
-                        </button>
-                    </div>
-                    <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5">Enlarges typography and dashboard cards closer for clean readability without overflowing the screen.</p>
-                </div>
-
-                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80">
-                    <span class="font-semibold text-slate-700 dark:text-slate-200 block">Database Engine:</span>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5"><?= DB_DRIVER === 'sqlite' ? 'SQLite Active (<code class="text-blue-600 dark:text-blue-400 font-mono">securefaculty.sqlite</code>)' : 'MySQL Production Engine (' . htmlspecialchars(DB_NAME) . ')' ?>. Dual-compatible architecture.</p>
-                </div>
-
-                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80">
-                    <span class="font-semibold text-slate-700 dark:text-slate-200 block">Cryptographic Layer:</span>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">AES-256-CBC with randomized IVs and Just-in-Time Decryption to memory.</p>
                 </div>
             </div>
 
@@ -767,6 +797,22 @@
             modal.classList.remove('hidden');
         }
 
+        function confirmSignOut(e) {
+            if (e) e.preventDefault();
+            if (typeof toggleUserDropdown === 'function') toggleUserDropdown(false);
+            showSystemConfirm({
+                title: 'Sign Out?',
+                message: 'Are you sure you want to sign out of SecureFaculty?',
+                type: 'warning',
+                confirmText: 'Sign Out',
+                cancelText: 'Cancel',
+                onConfirm: function () {
+                    window.location.href = 'logout.php';
+                }
+            });
+            return false;
+        }
+
         // Global Uniform Theme Controller
         function toggleTheme() {
             const isDark = document.documentElement.classList.contains('dark');
@@ -856,6 +902,7 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeSettingsModal();
+                closeChangePasswordModal();
                 document.getElementById('system-alert-modal')?.classList.add('hidden');
                 document.getElementById('system-confirm-modal')?.classList.add('hidden');
                 document.getElementById('notifications-dropdown')?.classList.add('hidden');
@@ -876,5 +923,352 @@
         });
         <?php endif; ?>
     </script>
+
+    <!-- Change Password Modal (Self-Service for Faculty & Dean) -->
+    <div id="change-password-modal" class="hidden fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-[#111c36] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-key text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Change Password</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Update your personal account credentials</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="changePasswordForm" onsubmit="submitChangePassword(event)" class="p-5 space-y-3.5 text-xs">
+                <div id="cp-error-box" class="hidden p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs"></div>
+                <div id="cp-success-box" class="hidden p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs"></div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Current Password</label>
+                    <input type="password" id="cp_current" required autocomplete="current-password"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">New Password (min. 6 characters)</label>
+                    <input type="password" id="cp_new" required minlength="6" autocomplete="new-password"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Confirm New Password</label>
+                    <input type="password" id="cp_confirm" required minlength="6" autocomplete="new-password"
+                           class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeChangePasswordModal()"
+                            class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" id="cp-submit-btn"
+                            class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-sm cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Update Password</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize consistent YYYY-MM-DD Flatpickr datepickers across all views
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof flatpickr === 'function') {
+                document.querySelectorAll('.sf-datepicker').forEach(function(el) {
+                    flatpickr(el, {
+                        dateFormat: 'Y-m-d',
+                        allowInput: false,
+                        disableMobile: true
+                    });
+                });
+            }
+        });
+
+        function openChangePasswordModal() {
+            const modal = document.getElementById('change-password-modal');
+            const form = document.getElementById('changePasswordForm');
+            const errBox = document.getElementById('cp-error-box');
+            const okBox = document.getElementById('cp-success-box');
+            if (form) form.reset();
+            if (errBox) errBox.classList.add('hidden');
+            if (okBox) okBox.classList.add('hidden');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('change-password-modal')?.classList.add('hidden');
+        }
+
+        function setAvatarStatus(msg, isOk) {
+            const box = document.getElementById('avatar-status-msg');
+            if (!box) return;
+            box.textContent = msg;
+            box.className = 'text-[11px] p-2 rounded-lg border ' + (isOk
+                ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+                : 'bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300');
+            box.classList.remove('hidden');
+        }
+
+        function updateAvatarDom(avatarPath) {
+            const headerBox = document.getElementById('header-avatar-box');
+            const modalBox = document.getElementById('modal-avatar-box');
+            const removeBtn = document.getElementById('removeAvatarBtn');
+            const fallbackIcon = <?= json_encode((($modalUser['role'] ?? '') === 'dean') ? 'fa-solid fa-user-shield' : 'fa-solid fa-user-graduate') ?>;
+
+            if (avatarPath) {
+                const bust = avatarPath + '?t=' + Date.now();
+                const imgHtml = `<img src="${bust}" alt="Profile Picture" class="w-full h-full object-cover">`;
+                if (headerBox) headerBox.innerHTML = imgHtml;
+                if (modalBox) modalBox.innerHTML = imgHtml;
+                if (removeBtn) removeBtn.classList.remove('hidden');
+            } else {
+                const iconHtml = `<i class="${fallbackIcon}"></i>`;
+                if (headerBox) headerBox.innerHTML = iconHtml;
+                if (modalBox) modalBox.innerHTML = iconHtml;
+                if (removeBtn) removeBtn.classList.add('hidden');
+            }
+        }
+
+        async function uploadProfileAvatar(input) {
+            if (!input || !input.files || !input.files[0]) return;
+            const file = input.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                setAvatarStatus('Profile picture must be under 5 MB.', false);
+                input.value = '';
+                return;
+            }
+            const fd = new FormData();
+            fd.append('action', 'upload');
+            fd.append('avatar', file);
+            fd.append('csrf_token', window.CSRF_TOKEN || '');
+
+            try {
+                const res = await fetch('api/upload_avatar.php', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': window.CSRF_TOKEN || '' },
+                    body: fd
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    updateAvatarDom(data.avatar_path);
+                    setAvatarStatus(data.message, true);
+                } else {
+                    setAvatarStatus(data.message || 'Upload failed.', false);
+                }
+            } catch (err) {
+                setAvatarStatus('Network error while uploading profile picture.', false);
+            } finally {
+                input.value = '';
+            }
+        }
+
+        async function removeProfileAvatar() {
+            const fd = new FormData();
+            fd.append('action', 'remove');
+            fd.append('csrf_token', window.CSRF_TOKEN || '');
+
+            try {
+                const res = await fetch('api/upload_avatar.php', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': window.CSRF_TOKEN || '' },
+                    body: fd
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    updateAvatarDom(null);
+                    setAvatarStatus(data.message, true);
+                } else {
+                    setAvatarStatus(data.message || 'Unable to remove photo.', false);
+                }
+            } catch (err) {
+                setAvatarStatus('Network error while removing profile picture.', false);
+            }
+        }
+
+        async function submitChangePassword(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('cp-error-box');
+            const okBox = document.getElementById('cp-success-box');
+            const btn = document.getElementById('cp-submit-btn');
+            errBox?.classList.add('hidden');
+            okBox?.classList.add('hidden');
+
+            const currentPassword = document.getElementById('cp_current').value;
+            const newPassword = document.getElementById('cp_new').value;
+            const confirmPassword = document.getElementById('cp_confirm').value;
+
+            if (newPassword !== confirmPassword) {
+                errBox.textContent = 'New password and confirmation do not match.';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            if (btn) btn.disabled = true;
+            try {
+                const res = await fetch('api/change_password.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': window.CSRF_TOKEN || ''
+                    },
+                    body: JSON.stringify({
+                        current_password: currentPassword,
+                        new_password: newPassword,
+                        confirm_password: confirmPassword,
+                        csrf_token: window.CSRF_TOKEN || ''
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    okBox.textContent = data.message || 'Password updated successfully.';
+                    okBox.classList.remove('hidden');
+                    document.getElementById('changePasswordForm')?.reset();
+                    setTimeout(() => closeChangePasswordModal(), 1400);
+                } else {
+                    errBox.textContent = data.message || 'Failed to update password.';
+                    errBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                errBox.textContent = 'Network error while updating password.';
+                errBox.classList.remove('hidden');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // 10-Minute Inactivity Session Guard & Warning Modal
+        // -----------------------------------------------------------------
+        (function initSessionInactivityGuard() {
+            const TIMEOUT_SECONDS = <?= (int)AuthService::getTimeoutSeconds() ?>;
+            if (!TIMEOUT_SECONDS || TIMEOUT_SECONDS <= 0) return;
+
+            const WARNING_SECONDS = Math.min(60, Math.max(15, Math.floor(TIMEOUT_SECONDS / 5)));
+            const PING_THROTTLE_MS = 60000;
+
+            let lastActivityAt = Date.now();
+            let lastPingAt = Date.now();
+            let warningShown = false;
+            let expiring = false;
+
+            const modal = document.getElementById('session-timeout-modal');
+            const countdownEl = document.getElementById('session-timeout-countdown');
+
+            function formatRemaining(sec) {
+                const s = Math.max(0, Math.ceil(sec));
+                const mins = Math.floor(s / 60);
+                const rem = s % 60;
+                return mins > 0 ? `${mins}:${String(rem).padStart(2, '0')}` : `${rem}s`;
+            }
+
+            function showWarning(remainingSec) {
+                if (!modal) return;
+                warningShown = true;
+                if (countdownEl) countdownEl.textContent = formatRemaining(remainingSec);
+                modal.classList.remove('hidden');
+            }
+
+            function hideWarning() {
+                if (!modal) return;
+                warningShown = false;
+                modal.classList.add('hidden');
+            }
+
+            function forceTimeoutLogout() {
+                if (expiring) return;
+                expiring = true;
+                window.location.href = 'logout.php?reason=timeout';
+            }
+
+            async function pingServerSession(force = false) {
+                const now = Date.now();
+                if (!force && (now - lastPingAt) < PING_THROTTLE_MS) return true;
+                lastPingAt = now;
+                try {
+                    const res = await fetch('api/session_ping.php', {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (res.status === 401) {
+                        forceTimeoutLogout();
+                        return false;
+                    }
+                    return res.ok;
+                } catch (e) {
+                    return true;
+                }
+            }
+
+            window.extendActiveSession = async function () {
+                const ok = await pingServerSession(true);
+                if (ok) {
+                    lastActivityAt = Date.now();
+                    hideWarning();
+                }
+            };
+
+            function onUserActivity() {
+                if (expiring || warningShown) return;
+                lastActivityAt = Date.now();
+                if ((Date.now() - lastPingAt) >= PING_THROTTLE_MS) {
+                    pingServerSession(false);
+                }
+            }
+
+            ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach((evt) => {
+                document.addEventListener(evt, onUserActivity, { passive: true });
+            });
+
+            setInterval(() => {
+                if (expiring) return;
+                const elapsedSec = (Date.now() - lastActivityAt) / 1000;
+                const remainingSec = TIMEOUT_SECONDS - elapsedSec;
+
+                if (remainingSec <= 0) {
+                    forceTimeoutLogout();
+                    return;
+                }
+
+                if (remainingSec <= WARNING_SECONDS) {
+                    showWarning(remainingSec);
+                } else if (warningShown) {
+                    hideWarning();
+                }
+            }, 1000);
+        })();
+    </script>
+
+    <!-- Session Inactivity Warning Modal -->
+    <div id="session-timeout-modal" class="fixed inset-0 z-[90] hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="session-timeout-title">
+        <div class="w-full max-w-md rounded-2xl border border-amber-500/30 bg-slate-900 p-6 shadow-2xl text-slate-100">
+            <div class="flex items-start gap-3.5">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <h3 id="session-timeout-title" class="text-base font-bold text-white">Session Expiring Soon</h3>
+                    <p class="mt-1 text-xs leading-relaxed text-slate-300">
+                        For your security, you will be automatically signed out due to inactivity in
+                        <span id="session-timeout-countdown" class="font-mono font-bold text-amber-300">60s</span>.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-5 flex items-center justify-end gap-2.5">
+                <a href="logout.php?reason=timeout" class="rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition">
+                    Sign Out Now
+                </a>
+                <button type="button" onclick="extendActiveSession()" class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 transition shadow-sm">
+                    Stay Signed In
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

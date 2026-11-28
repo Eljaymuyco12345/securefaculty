@@ -26,6 +26,20 @@ $searchAction = basename($_SERVER['PHP_SELF']);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Local Flatpickr (Offline-Ready YYYY-MM-DD Date Picker) -->
+    <link rel="stylesheet" href="assets/vendor/flatpickr/flatpickr.min.css">
+    <script src="assets/vendor/flatpickr/flatpickr.min.js"></script>
+    <style>
+        .sf-datepicker { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.6rem center; background-size: 0.95rem 0.95rem; padding-right: 2rem !important; }
+        html.dark .flatpickr-calendar { background: #111c36; border-color: #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.5); color: #e2e8f0; }
+        html.dark .flatpickr-months .flatpickr-month, html.dark .flatpickr-current-month .flatpickr-monthDropdown-months, html.dark span.flatpickr-weekday { background: #111c36; color: #cbd5e1; fill: #cbd5e1; }
+        html.dark .flatpickr-months .flatpickr-prev-month, html.dark .flatpickr-months .flatpickr-next-month { color: #cbd5e1; fill: #cbd5e1; }
+        html.dark .flatpickr-day { color: #e2e8f0; }
+        html.dark .flatpickr-day:hover, html.dark .flatpickr-day:focus { background: #1e293b; border-color: #334155; }
+        html.dark .flatpickr-day.selected { background: #2563eb; border-color: #2563eb; color: #fff; }
+        html.dark .flatpickr-day.today { border-color: #60a5fa; }
+        html.dark .flatpickr-day.prevMonthDay, html.dark .flatpickr-day.nextMonthDay { color: #475569; }
+    </style>
     <!-- Inline synchronous theme & zoom initializer to eliminate FOUC -->
     <script>
         window.CSRF_TOKEN = <?= json_encode(Auth::getCsrfToken()) ?>;
@@ -472,18 +486,6 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                     </a>
                 </nav>
             </div>
-
-            <!-- Bottom User Card & Sign Out matching Figure 4.3 -->
-            <div class="p-2.5 border-t border-[#14335e] flex-shrink-0">
-                <a href="logout.php"
-                   class="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#14335e]/70 hover:bg-[#14335e] text-sm font-semibold text-slate-200 hover:text-white transition-all shadow-sm">
-                    <span class="flex items-center gap-2.5">
-                        <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
-                        <span>Sign Out</span>
-                    </span>
-                    <i class="fa-solid fa-angles-right text-xs text-slate-400"></i>
-                </a>
-            </div>
         </aside>
 
         <!-- Right Main Workspace -->
@@ -567,11 +569,19 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                     </div>
 
                     <!-- Interactive User Profile Dropdown Pill matching Figure 4.3 -->
+                    <?php
+                        $headerUserRow = (!empty($currentUser['id']) && class_exists('UserDAO')) ? UserDAO::find((int)$currentUser['id']) : null;
+                        $headerAvatarUrl = (!empty($headerUserRow['avatar_path']) && is_file(BASE_DIR . '/public/' . $headerUserRow['avatar_path'])) ? $headerUserRow['avatar_path'] : '';
+                    ?>
                     <div class="relative">
                         <button type="button" id="userMenuBtn" onclick="toggleUserDropdown()"
                                 class="flex items-center gap-2.5 pl-2 pr-1.5 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all text-left">
-                            <div class="w-9 h-9 rounded-full <?= $isDean ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300' ?> flex items-center justify-center font-bold text-sm shadow-inner">
-                                <i class="<?= $isDean ? 'fa-solid fa-user-shield' : 'fa-solid fa-user-graduate' ?>"></i>
+                            <div id="header-avatar-box" class="w-9 h-9 rounded-full overflow-hidden <?= $isDean ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300' ?> flex items-center justify-center font-bold text-sm shadow-inner flex-shrink-0">
+                                <?php if ($headerAvatarUrl): ?>
+                                    <img src="<?= htmlspecialchars($headerAvatarUrl) ?>" alt="Profile Picture" class="w-full h-full object-cover">
+                                <?php else: ?>
+                                    <i class="<?= $isDean ? 'fa-solid fa-user-shield' : 'fa-solid fa-user-graduate' ?>"></i>
+                                <?php endif; ?>
                             </div>
                             <div class="hidden sm:block text-left text-sm leading-tight">
                                 <div class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5 text-sm">
@@ -629,13 +639,13 @@ $searchAction = basename($_SERVER['PHP_SELF']);
                                 <?php endif; ?>
                                 <button type="button" onclick="openSettingsModal(); toggleUserDropdown(false)"
                                         class="w-full flex items-center gap-2.5 px-4 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors text-left text-sm">
-                                    <i class="fa-solid fa-gear w-4 text-slate-400"></i>
-                                    <span>Preferences & Profile Switch</span>
+                                    <i class="fa-solid fa-user-gear w-4 text-slate-400"></i>
+                                    <span>Profile &amp; Account Settings</span>
                                 </button>
                             </div>
 
                             <div class="pt-1 border-t border-slate-100 dark:border-slate-800">
-                                <a href="logout.php" class="flex items-center gap-2.5 px-4 py-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800/60 transition-colors font-semibold text-sm">
+                                <a href="logout.php" onclick="return confirmSignOut(event)" class="flex items-center gap-2.5 px-4 py-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800/60 transition-colors font-semibold text-sm">
                                     <i class="fa-solid fa-arrow-right-from-bracket w-4"></i>
                                     <span>Sign Out</span>
                                 </a>

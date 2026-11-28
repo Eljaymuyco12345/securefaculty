@@ -111,4 +111,37 @@ class AuditLogDAOTest extends TestCase {
         $this->assertTrue(is_array($exported));
         $this->assertGreaterThan(0, count($exported));
     }
+
+    public function testPolymorphicTargetIdDoesNotLeakWrongProfessor(): void {
+        $marker = 'poly_leak_check_' . bin2hex(random_bytes(3));
+        $pdo = Database::getConnection();
+
+        // Log a document view by user_id=2 (mikhail) on certificate target_id=99999 (not user 3)
+        AuditLogDAO::insertLog(
+            2,
+            'mikhail',
+            'faculty',
+            'VIEW_DOCUMENT',
+            3,
+            "Viewed cert {$marker}",
+            '127.0.0.1',
+            'PolyTester/1.0'
+        );
+
+        try {
+            // Filtering by facultyId=2 (the actor) MUST return this row
+            $resActor = AuditLogDAO::getPaginatedLogs($marker, 'VIEW_DOCUMENT', 1, 10, 2, '');
+            $this->assertEquals(1, $resActor['totalRows'], "Actor user_id=2 must be matched");
+
+            // Check that faculty_display is NOT blindly joined as user_id=3 when cert #3 belongs to someone else (or is missing)
+            $cert3Owner = $pdo->query("SELECT faculty_id FROM certificates WHERE id = 3")->fetchColumn();
+            if ((int)$cert3Owner !== 3) {
+                $resWrongProf = AuditLogDAO::getPaginatedLogs($marker, 'VIEW_DOCUMENT', 1, 10, 3, '');
+                $this->assertEquals(0, $resWrongProf['totalRows'], "Filtering by user_id=3 must NOT match document target_id=3 owned by another user");
+            }
+        } finally {
+            $del = $pdo->prepare("DELETE FROM audit_logs WHERE details LIKE ?");
+            $del->execute(["%{$marker}%"]);
+        }
+    }
 }

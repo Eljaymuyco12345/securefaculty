@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `full_name` VARCHAR(150) NOT NULL,
     `email` VARCHAR(150),
     `department` VARCHAR(100) DEFAULT 'CICI',
+    `avatar_path` VARCHAR(255) NULL,
     `is_active` TINYINT(1) DEFAULT 1,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `faculty_profiles` (
 CREATE TABLE IF NOT EXISTS `certificates` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `faculty_id` INT NOT NULL,
+    `folder_id` INT NULL,
     `title` VARCHAR(255) NOT NULL,
     `issuer` VARCHAR(255),
     `date_issued` VARCHAR(50),
@@ -54,6 +56,7 @@ CREATE TABLE IF NOT EXISTS `certificates` (
     `status` VARCHAR(50) DEFAULT 'approved',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX `idx_certificates_faculty` (`faculty_id`),
+    INDEX `idx_certificates_folder` (`folder_id`),
     INDEX `idx_certificates_hash` (`file_hash`),
     INDEX `idx_certificates_date` (`date_issued`),
     FOREIGN KEY (`faculty_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
@@ -112,6 +115,32 @@ CREATE TABLE IF NOT EXISTS `processing_batches` (
     `log_summary` TEXT,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 8. Password Resets Table (6-Digit Email OTP Recovery)
+CREATE TABLE IF NOT EXISTS `password_resets` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `email` VARCHAR(150) NOT NULL,
+    `token_hash` VARCHAR(64) NOT NULL,
+    `attempts` INT DEFAULT 0,
+    `expires_at` DATETIME NOT NULL,
+    `used_at` DATETIME NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX `idx_password_resets_user` (`user_id`),
+    INDEX `idx_password_resets_hash` (`token_hash`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 9. Virtual Folders Table (1-Level Vault Organization)
+CREATE TABLE IF NOT EXISTS `vault_folders` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `name` VARCHAR(120) NOT NULL,
+    `color` VARCHAR(32) DEFAULT 'blue',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX `idx_vault_folders_user` (`user_id`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

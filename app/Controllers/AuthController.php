@@ -81,7 +81,102 @@ class AuthController extends BaseController {
      * Terminate user session
      */
     public function logout(): void {
+        $reason = $_GET['reason'] ?? '';
+        AuthService::initSession();
+        if ($reason === 'timeout' && isset($_SESSION['user_id'])) {
+            $mins = max(1, (int)round(AuthService::getTimeoutSeconds() / 60));
+            AuditLogger::log('SESSION_TIMEOUT', "User session automatically signed out after {$mins} minutes of inactivity", (int)$_SESSION['user_id']);
+        }
         AuthService::logout();
-        $this->redirect('index.php?msg=logged_out');
+        $msg = ($reason === 'timeout') ? 'session_expired' : 'logged_out';
+        $this->redirect('index.php?msg=' . $msg);
+    }
+
+    /**
+     * Handle authenticated user Change Password API
+     */
+    public function handleChangePasswordApi(): void {
+        if (!headers_sent()) header('Content-Type: application/json');
+        AuthService::initSession();
+
+        if (!AuthService::check()) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'Unauthorized session.'], 401);
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['status' => 'error', 'message' => 'Method not allowed.'], 405);
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $csrfToken = $input['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        if (!AuthService::verifyCsrfToken($csrfToken)) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'CSRF Security Violation: Invalid or expired token.'], 403);
+        }
+
+        $currentUser = AuthService::user();
+        $res = PasswordResetService::changePassword(
+            (int)$currentUser['id'],
+            (string)($input['current_password'] ?? ''),
+            (string)($input['new_password'] ?? ''),
+            (string)($input['confirm_password'] ?? '')
+        );
+
+        if (!$res['success']) {
+            $this->jsonResponse(['status' => 'error', 'message' => $res['message']], $res['code'] ?? 400);
+        }
+
+        $this->jsonResponse(['status' => 'success', 'message' => $res['message']]);
+    }
+
+    /**
+     * Show Forgot Password (6-Digit OTP) page
+     */
+    public function showForgotPassword(): void {
+        AuthService::initSession();
+        if (AuthService::check()) {
+            $this->redirect(AuthService::isDean() ? 'dashboard.php' : 'vault.php');
+        }
+        $this->renderView('auth/forgot_password.php', [
+            'smtpConfigured' => EmailService::isConfigured()
+        ]);
+    }
+
+    /**
+     * Handle Forgot Password OTP request & verification API
+     */
+    public function handleForgotPasswordApi(): void {
+        if (!headers_sent()) header('Content-Type: application/json');
+        AuthService::initSession();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['status' => 'error', 'message' => 'Method not allowed.'], 405);
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $csrfToken = $input['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        if (!AuthService::verifyCsrfToken($csrfToken)) {
+            $this->jsonResponse(['status' => 'error', 'message' => 'CSRF Security Violation: Invalid or expired token.'], 403);
+        }
+
+        $action = $input['action'] ?? '';
+        if ($action === 'request_otp') {
+            $res = PasswordResetService::requestOtp((string)($input['identifier'] ?? ''));
+        } elseif ($action === 'verify_reset') {
+            $res = PasswordResetService::verifyOtpAndReset(
+                (string)($input['identifier'] ?? ''),
+                (string)($input['otp'] ?? ''),
+                (string)($input['new_password'] ?? ''),
+                (string)($input['confirm_password'] ?? '')
+            );
+        } else {
+            $this->jsonResponse(['status' => 'error', 'message' => 'Invalid action.'], 400);
+            return;
+        }
+
+        if (!$res['success']) {
+            $this->jsonResponse(['status' => 'error', 'message' => $res['message']], $res['code'] ?? 400);
+        }
+
+        $this->jsonResponse(['status' => 'success', 'message' => $res['message']]);
     }
 }

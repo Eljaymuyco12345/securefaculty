@@ -34,7 +34,7 @@ class DashboardController extends BaseController {
             $category = substr($category, 0, 100);
         }
         $page = max(1, min(1000, (int)($_GET['page'] ?? 1)));
-        $perPage = 10;
+        $perPage = 15;
 
         $logData = AuditLogger::getPaginatedLogs($search, $actionFilter, $page, $perPage, $facultyId, $category);
         $displayRows = $logData['rows'];

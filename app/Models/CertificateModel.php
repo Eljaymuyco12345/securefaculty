@@ -133,8 +133,8 @@ class CertificateModel {
         return CertificateDAO::getForFaculty($facultyId, $filters);
     }
 
-    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null, ?string $scope = null, ?string $indexing = null, ?string $accreditationArea = null): array {
-        return CertificateDAO::getAll($categoryOrFilters, $search, $facultyId, $dateFrom, $dateTo, $issuedYear, $scope, $indexing, $accreditationArea);
+    public static function getAll($categoryOrFilters = null, ?string $search = null, ?int $facultyId = null, ?string $dateFrom = null, ?string $dateTo = null, ?string $issuedYear = null, ?string $scope = null, ?string $indexing = null, ?string $accreditationArea = null, $folderId = null): array {
+        return CertificateDAO::getAll($categoryOrFilters, $search, $facultyId, $dateFrom, $dateTo, $issuedYear, $scope, $indexing, $accreditationArea, $folderId);
     }
 
     public static function create(array $data, array $coAuthorIds = []): int {
@@ -144,6 +144,7 @@ class CertificateModel {
         if (isset($data['indexing'])) {
             $data['indexing'] = self::normalizeIndexing($data['indexing']);
         }
+        $data['folder_id'] = !empty($data['folder_id']) ? (int)$data['folder_id'] : null;
         return CertificateDAO::create($data, $coAuthorIds);
     }
 

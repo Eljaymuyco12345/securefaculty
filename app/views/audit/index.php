@@ -197,7 +197,7 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                         ?>
                         <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors audit-log-row <?= !$isRecordValid ? 'bg-rose-50/30 dark:bg-rose-950/10' : '' ?>"
                             data-search="<?= strtolower($log['created_at'] . ' ' . $userId . ' ' . $actionLabel . ' ' . $affectedRecord . ' ' . $log['ip_address']) ?>">
-                            <td class="py-2.5 px-3 text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap"><?= htmlspecialchars($log['created_at']) ?></td>
+                            <td class="py-2.5 px-3 text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap"><?= htmlspecialchars(DateHelper::formatDateTime($log['created_at'] ?? null)) ?></td>
                             <td class="py-2.5 px-3 font-bold text-slate-900 dark:text-white font-mono"><?= htmlspecialchars($userId) ?></td>
                             <td class="py-2.5 px-3">
                                 <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold border <?= $actionColor ?>">
@@ -270,20 +270,42 @@ require_once __DIR__ . '/../layouts/layout_start.php';
 </div>
 
 <script>
+    let auditSearchTimer = null;
+    const currentAuditAction = <?= json_encode($actionFilter ?? '') ?>;
+
     function filterAuditRows(term) {
         const query = (term || '').toLowerCase().trim();
         const rows = document.querySelectorAll('#auditTableBody .audit-log-row');
-        let visible = 0;
         rows.forEach(r => {
             const data = r.dataset.search || '';
-            if (!query || data.includes(query)) {
-                r.style.display = '';
-                visible++;
-            } else {
-                r.style.display = 'none';
-            }
+            r.style.display = (!query || data.includes(query)) ? '' : 'none';
         });
+
+        clearTimeout(auditSearchTimer);
+        auditSearchTimer = setTimeout(() => {
+            const trimmed = (term || '').trim();
+            const currentUrlSearch = new URLSearchParams(window.location.search).get('search') || '';
+            if (trimmed !== currentUrlSearch) {
+                sessionStorage.setItem('sf_focus_audit_search', '1');
+                const params = new URLSearchParams();
+                if (currentAuditAction) params.set('action', currentAuditAction);
+                if (trimmed) params.set('search', trimmed);
+                window.location.href = 'audit_logs.php' + (params.toString() ? '?' + params.toString() : '');
+            }
+        }, 500);
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (sessionStorage.getItem('sf_focus_audit_search') === '1') {
+            sessionStorage.removeItem('sf_focus_audit_search');
+            const input = document.getElementById('auditSearchInput');
+            if (input) {
+                input.focus();
+                const len = input.value.length;
+                input.setSelectionRange(len, len);
+            }
+        }
+    });
 </script>
 
 <?php require_once __DIR__ . '/../layouts/layout_end.php'; ?>

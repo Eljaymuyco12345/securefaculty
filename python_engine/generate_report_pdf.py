@@ -144,7 +144,7 @@ def generate_pdf(data_json_path, output_pdf_path):
     date_scope = html.escape(str(meta.get('date_scope', 'All Validated Records')))
     faculty_scope = html.escape(str(meta.get('faculty_scope', 'All Faculty')))
     auditor = html.escape(str(meta.get('auditor_name', 'Authorized Administrator')))
-    generated_at = html.escape(str(meta.get('generated_at', datetime.now().strftime("%B %d, %Y at %I:%M %p"))))
+    generated_at = html.escape(str(meta.get('generated_at', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))))
     total_count = len(records)
 
     faculty_line = f"<br/><font color='#4338ca'>Faculty: <b>{faculty_scope}</b></font>" if faculty_scope and faculty_scope != 'All Faculty' else ""

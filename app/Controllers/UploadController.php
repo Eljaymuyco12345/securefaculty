@@ -20,10 +20,16 @@ class UploadController extends BaseController {
         // When Dean/Admin is uploading, include all academic profiles (Dean + Faculty) so Dean can archive their own certificates or upload for others
         $facultyList = $isDean ? UserModel::getFacultyList() : UserModel::getFacultyOnly();
 
+        if (!class_exists('FolderDAO') && file_exists(__DIR__ . '/../DAO/FolderDAO.php')) {
+            require_once __DIR__ . '/../DAO/FolderDAO.php';
+        }
+        $folders = class_exists('FolderDAO') ? FolderDAO::getForUser((int)$currentUser['id']) : [];
+
         $this->renderView('upload/index.php', [
             'currentUser' => $currentUser,
             'isDean' => $isDean,
             'facultyList' => $facultyList,
+            'folders' => $folders,
             'activeNav' => 'pipeline',
             'pageTitle' => 'Upload & Scan - Certificate Ingestion'
         ]);
@@ -298,14 +304,19 @@ class UploadController extends BaseController {
             CertificateModel::incrementQuota();
         }
 
-        // Enforce Policy: Staged assets are converted to locked PDF format
+        // Enforce Policy: Non-DOCX assets (e.g. images) are converted to locked PDF format.
+        // Original DOCX files are preserved so users can download either editable DOCX or JIT-converted PDF.
         $stagedFilename = $tempFilename;
         $stagedFilePath = $tempFilePath;
         $effectiveType = $extension;
 
         if (!empty($result['converted_pdf'])) {
             $convertedCandidate = TEMP_DIR . DIRECTORY_SEPARATOR . basename($result['converted_pdf']);
-            if (file_exists($convertedCandidate) && filesize($convertedCandidate) > 0) {
+            if ($extension === 'docx') {
+                if ($convertedCandidate !== $tempFilePath && file_exists($convertedCandidate)) {
+                    @unlink($convertedCandidate);
+                }
+            } elseif (file_exists($convertedCandidate) && filesize($convertedCandidate) > 0) {
                 if ($convertedCandidate !== $tempFilePath && file_exists($tempFilePath)) {
                     @unlink($tempFilePath);
                 }
@@ -494,6 +505,19 @@ class UploadController extends BaseController {
             $accreditationArea = CategoryService::inferAccreditationArea($category);
         }
 
+        $folderId = (!empty($input['folder_id']) && is_numeric($input['folder_id']) && (int)$input['folder_id'] > 0)
+            ? (int)$input['folder_id']
+            : null;
+        if ($folderId !== null) {
+            if (!class_exists('FolderDAO') && file_exists(__DIR__ . '/../DAO/FolderDAO.php')) {
+                require_once __DIR__ . '/../DAO/FolderDAO.php';
+            }
+            $folder = class_exists('FolderDAO') ? FolderDAO::find($folderId) : null;
+            if (!$folder || (int)$folder['user_id'] !== (int)$currentUser['id']) {
+                $this->jsonResponse(['status' => 'error', 'message' => 'Invalid or unauthorized destination folder.'], 403);
+            }
+        }
+
         $certData = [
             'faculty_id' => $assignedFacultyId,
             'title' => $title,
@@ -515,7 +539,8 @@ class UploadController extends BaseController {
             'indexing' => $indexing,
             'place_issued' => $placeIssued,
             'authors' => $authors,
-            'accreditation_area' => $accreditationArea
+            'accreditation_area' => $accreditationArea,
+            'folder_id' => $folderId
         ];
 
         try {

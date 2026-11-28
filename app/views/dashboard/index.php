@@ -127,7 +127,8 @@ require_once __DIR__ . '/../layouts/layout_start.php';
             <div class="flex-1 min-w-[200px] relative">
                 <i class="fa-solid fa-magnifying-glass text-xs text-slate-400 absolute left-3 top-3"></i>
                 <input type="text" name="search" id="dashboardSearchInput" value="<?= htmlspecialchars($search) ?>"
-                       placeholder="Filter across entire database by keyword, faculty, record, or IP..."
+                       oninput="handleDashboardLiveSearch(this.value)"
+                       placeholder="Live search across entire database by keyword, faculty, record, or IP..."
                        class="w-full pl-8 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all">
                 <?php if (!empty($search)): ?>
                     <a href="dashboard.php?action=<?= urlencode($actionFilter) ?>&faculty_id=<?= urlencode((string)($facultyId ?? '')) ?>&category=<?= urlencode($category ?? '') ?>"
@@ -182,12 +183,12 @@ require_once __DIR__ . '/../layouts/layout_start.php';
                                 $actionLabel = ucwords(strtolower(str_replace('_', ' ', $actionRaw)));
                                 $faculty = !empty($row['faculty_display']) && $row['faculty_display'] !== 'System / Institutional'
                                     ? $row['faculty_display']
-                                    : 'Prof. Levy Mikhail B. Aguilar';
+                                    : 'System / Institutional';
                             ?>
                             <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors table-row-item"
                                 data-action="<?= strtoupper($actionRaw) ?>"
                                 data-text="<?= strtolower($uid . ' ' . $actionLabel . ' ' . $faculty . ' ' . ($row['ip_address'] ?? '')) ?>">
-                                <td class="py-2.5 px-3.5 text-slate-600 dark:text-slate-400 font-mono text-xs whitespace-nowrap"><?= htmlspecialchars($row['created_at']) ?></td>
+                                <td class="py-2.5 px-3.5 text-slate-600 dark:text-slate-400 font-mono text-xs whitespace-nowrap"><?= htmlspecialchars(DateHelper::formatDateTime($row['created_at'] ?? null)) ?></td>
                                 <td class="py-2.5 px-3.5 font-bold text-slate-900 dark:text-slate-100"><?= htmlspecialchars($uid) ?></td>
                                 <td class="py-2.5 px-3.5 text-slate-800 dark:text-slate-200 font-semibold"><?= htmlspecialchars($actionLabel) ?></td>
                                 <td class="py-2.5 px-3.5 text-slate-700 dark:text-slate-300 font-medium"><?= htmlspecialchars($faculty) ?></td>
@@ -499,6 +500,33 @@ require_once __DIR__ . '/../layouts/layout_start.php';
     function refreshDashboard() {
         window.location.href = 'dashboard.php';
     }
+
+    let dashboardSearchTimer = null;
+    function handleDashboardLiveSearch(term) {
+        const query = (term || '').toLowerCase().trim();
+        document.querySelectorAll('#dashboardTableBody .table-row-item').forEach(row => {
+            const text = (row.dataset.text || row.textContent || '').toLowerCase();
+            row.style.display = (!query || text.includes(query)) ? '' : 'none';
+        });
+
+        clearTimeout(dashboardSearchTimer);
+        dashboardSearchTimer = setTimeout(() => {
+            sessionStorage.setItem('sf_focus_dash_search', '1');
+            submitDashboardFilter({ search: (term || '').trim() });
+        }, 450);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (sessionStorage.getItem('sf_focus_dash_search') === '1') {
+            sessionStorage.removeItem('sf_focus_dash_search');
+            const input = document.getElementById('dashboardSearchInput');
+            if (input) {
+                input.focus();
+                const len = input.value.length;
+                input.setSelectionRange(len, len);
+            }
+        }
+    });
 
     function resetDashboardFilters() {
         refreshDashboard();
